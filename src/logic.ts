@@ -7,11 +7,12 @@ export type StreakDetails = {
 export type StreakStats = {
   current: StreakDetails
   max: StreakDetails
+  total: number
 }
 
-export function calculateStreakStats(days: GitHubContributionDay[]): StreakStats {
+export function calculateStreakStats(days: GitHubContributionDay[], total: number = 0): StreakStats {
   const empty = { count: 0, start: '', end: '' }
-  if (days.length === 0) return { current: empty, max: empty }
+  if (days.length === 0) return { current: empty, max: empty, total: 0 }
 
   let streaks: StreakDetails[] = []
   let ongoingStart: string | null = null
@@ -50,7 +51,7 @@ export function calculateStreakStats(days: GitHubContributionDay[]): StreakStats
     }
   }
 
-  return { current, max }
+  return { current, max, total }
 }
 
 export function getIntensityColor(count: number, maxCount: number): string {

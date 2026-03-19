@@ -7,6 +7,14 @@ function formatDate(dateStr: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
+function formatNumber(num: number): string {
+  return new Intl.NumberFormat('en-US', {
+    notation: 'compact',
+    compactDisplay: 'short',
+    maximumFractionDigits: 1
+  }).format(num)
+}
+
 export function renderSVG(stats: StreakStats, last7: GitHubContributionDay[], maxCount: number, theme: Theme = 'transparent') {
   const width = 420
   const height = 180
@@ -55,19 +63,27 @@ export function renderSVG(stats: StreakStats, last7: GitHubContributionDay[], ma
       <!-- Current Streak -->
       <g transform="translate(${padding}, 40)">
         <text class="label">Current Streak</text>
-        <text y="28" class="stat">🔥 ${stats.current.count} Days</text>
+        <text y="28" class="stat">🔥 ${stats.current.count}</text>
         <text y="45" class="date">${formatDate(stats.current.start)} - ${formatDate(stats.current.end)}</text>
       </g>
 
       <!-- Max Streak -->
-      <g transform="translate(${width / 2 + 10}, 40)">
+      <g transform="translate(${width / 2 - 50}, 40)">
         <text class="label">Personal Best</text>
-        <text y="28" class="stat">🏆 ${stats.max.count} Days</text>
+        <text y="28" class="stat">🏆 ${stats.max.count}</text>
         <text y="45" class="date">${formatDate(stats.max.start)} - ${formatDate(stats.max.end)}</text>
       </g>
 
-      <!-- Separator -->
-      <line x1="${width / 2}" y1="40" x2="${width / 2}" y2="85" stroke="${theme === 'transparent' ? '#00000010' : t.border}" stroke-width="1" />
+      <!-- Total Contributions -->
+      <g transform="translate(${width - padding - 105}, 40)">
+        <text class="label">Total Contribs</text>
+        <text y="28" class="stat">✨ ${formatNumber(stats.total)}+</text>
+        <text y="45" class="date">Total count</text>
+      </g>
+
+      <!-- Separators -->
+      <line x1="${width / 2 - 65}" y1="40" x2="${width / 2 - 65}" y2="85" stroke="${theme === 'transparent' ? '#00000010' : t.border}" stroke-width="1" />
+      <line x1="${width / 2 + 75}" y1="40" x2="${width / 2 + 75}" y2="85" stroke="${theme === 'transparent' ? '#00000010' : t.border}" stroke-width="1" />
 
       <!-- Heat Strip -->
       <g transform="translate(${padding}, 110)">

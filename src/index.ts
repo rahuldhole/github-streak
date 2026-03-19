@@ -21,8 +21,8 @@ app.all('/', async (c) => {
   const theme = (c.req.query('theme') || 'transparent') as Theme
 
   try {
-    const allDays = await fetchGitHubData(username, token)
-    const stats = calculateStreakStats(allDays)
+    const { days: allDays, totalContributions } = await fetchGitHubData(username, token)
+    const stats = calculateStreakStats(allDays, totalContributions)
     const last7 = allDays.slice(-7)
     const maxCount = Math.max(...last7.map(d => d.contributionCount), 1)
 

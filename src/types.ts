@@ -12,6 +12,7 @@ export type GitHubResponse = {
     user: {
       contributionsCollection: {
         contributionCalendar: {
+          totalContributions: number
           weeks: {
             contributionDays: GitHubContributionDay[]
           }[]
