@@ -93,6 +93,7 @@ export async function fetchGitHubData(username: string, token: string): Promise<
 
   return {
     days: currentCalendar.weeks.flatMap((w: any) => w.contributionDays),
-    totalContributions: allTimeTotal
+    totalContributions: allTimeTotal,
+    contributionYears: years
   }
 }

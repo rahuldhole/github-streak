@@ -8,11 +8,12 @@ export type StreakStats = {
   current: StreakDetails
   max: StreakDetails
   total: number
+  yearRange: string
 }
 
-export function calculateStreakStats(days: GitHubContributionDay[], total: number = 0): StreakStats {
+export function calculateStreakStats(days: GitHubContributionDay[], total: number = 0, years: number[] = []): StreakStats {
   const empty = { count: 0, start: '', end: '' }
-  if (days.length === 0) return { current: empty, max: empty, total: 0 }
+  if (days.length === 0) return { current: empty, max: empty, total: 0, yearRange: '' }
 
   let streaks: StreakDetails[] = []
   let ongoingStart: string | null = null
@@ -51,7 +52,8 @@ export function calculateStreakStats(days: GitHubContributionDay[], total: numbe
     }
   }
 
-  return { current, max, total }
+  const yearRange = years.length > 0 ? `${Math.min(...years)} - ${Math.max(...years)}` : ''
+  return { current, max, total, yearRange }
 }
 
 export function getIntensityColor(count: number, maxCount: number): string {

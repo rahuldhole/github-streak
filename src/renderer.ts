@@ -78,7 +78,7 @@ export function renderSVG(stats: StreakStats, last7: GitHubContributionDay[], ma
       <g transform="translate(${width - padding - 105}, 40)">
         <text class="label">Total Contribs</text>
         <text y="28" class="stat">✨ ${formatNumber(stats.total)}+</text>
-        <text y="45" class="date">Total count</text>
+        <text y="45" class="date">${stats.yearRange}</text>
       </g>
 
       <!-- Separators -->
