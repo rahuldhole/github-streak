@@ -22,7 +22,7 @@ export async function fetchGitHubData(username: string, token: string): Promise<
   const headers = {
     "Content-Type": "application/json",
     "Authorization": "Bearer " + token,
-    "User-Agent": "Streak-Pulse-Worker"
+    "User-Agent": "Github-Streak-Worker"
   }
 
   // Initial fetch to get the current calendar and the list of contribution years
@@ -47,11 +47,11 @@ export async function fetchGitHubData(username: string, token: string): Promise<
   const user = json.data.user
   const currentCalendar = user.contributionsCollection.contributionCalendar
   const years: number[] = user.contributionsCollection.contributionYears
-  
+
   // The first call returns the last 365 days of contributions, which we use for the streak display.
   // For the "Total Contributions" count, we need to sum up all time contributions across all years.
   // We use GraphQL aliases to fetch all years in a single batch request to solve the N+1 problem.
-  
+
   if (years.length === 0) {
     return {
       days: currentCalendar.weeks.flatMap((w: any) => w.contributionDays),
@@ -90,7 +90,7 @@ export async function fetchGitHubData(username: string, token: string): Promise<
 
   const batchJson = (await batchRes.json()) as any
   const batchData = batchJson.data?.user || {}
-  
+
   const allTimeTotal = Object.values(batchData).reduce((sum: number, collection: any) => {
     return sum + (collection?.contributionCalendar?.totalContributions || 0)
   }, 0)

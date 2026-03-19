@@ -1,4 +1,4 @@
-# 🔥 Streak Pulse
+# 🔥 Github Streak
 
 A Duolingo-inspired GitHub activity streak widget that visualizes your coding consistency in real-time.
 
@@ -6,13 +6,13 @@ It turns your GitHub contributions into a **living motivation system** instead o
 
 **Demo:**
 
-![Streak Pulse](https://streak-pulse.rahuldhole.com?user=rahuldhole&theme=dark)
+![Github Streak](https://github-streak.rahuldhole.com?user=rahuldhole&theme=dark)
 
 ---
 
 ## ⚡ What this is
 
-Streak Pulse is a lightweight visual layer on top of your GitHub activity:
+Github Streak is a lightweight visual layer on top of your GitHub activity:
 
 - 🔥 Daily streak tracking
 - 📊 Commit intensity visualization
@@ -26,7 +26,7 @@ Streak Pulse is a lightweight visual layer on top of your GitHub activity:
 
 GitHub shows your history.
 
-Streak Pulse shows your **discipline**.
+Github Streak shows your **discipline**.
 
 Most dev dashboards are passive. This one is intentionally visual:
 
@@ -43,7 +43,7 @@ It’s not decoration. It’s feedback.
 embed it into a GitHub README:
 
 ```md
-![Streak Pulse](https://streak-pulse.rahuldhole.com?user=your_github_user_name&theme=dark)
+![Github Streak](https://github-streak.rahuldhole.com?user=your_github_user_name&theme=dark)
 
 Themes: `transparent` (default), `light`, `dark`.
 ```

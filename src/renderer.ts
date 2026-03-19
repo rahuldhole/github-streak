@@ -123,8 +123,8 @@ export function renderLandingPage(origin: string = '') {
   const initialUser = 'rahuldhole'
   const initialTheme = 'dark'
   const cardUrl = `${origin}/?user=${initialUser}&theme=${initialTheme}`
-  const markdown = `![Streak Pulse](${cardUrl})`
-  const htmlCode = `<img src="${cardUrl}" alt="Streak Pulse" />`
+  const markdown = `![Github Streak](${cardUrl})`
+  const htmlCode = `<img src="${cardUrl}" alt="Github Streak" />`
   const escapedHtml = htmlCode.replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
   return `
@@ -133,7 +133,7 @@ export function renderLandingPage(origin: string = '') {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Streak Pulse | GitHub Streak Widget</title>
+        <title>Github Streak | GitHub Streak Widget</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
         <style>
           :root { --bg: #ffffff; --text: #1a1a1a; --muted: #666666; --border: #e1e4e8; --accent: #2c974b; }
@@ -171,7 +171,7 @@ export function renderLandingPage(origin: string = '') {
       </head>
       <body>
         <div class="container">
-          <h1>🔥 Streak Pulse</h1>
+          <h1>🔥 Github Streak</h1>
           <p>A Duolingo-inspired GitHub streak widget.</p>
 
           <div class="card">
@@ -193,7 +193,7 @@ export function renderLandingPage(origin: string = '') {
             </div>
 
             <div class="preview">
-              <img id="preview-img" src="${cardUrl}" alt="Streak Pulse Preview">
+              <img id="preview-img" src="${cardUrl}" alt="Github Streak Preview">
             </div>
             
             <label style="margin-top: 1.5rem;">Markdown</label>
@@ -212,7 +212,7 @@ export function renderLandingPage(origin: string = '') {
 
           <div class="footer">
             Built by <a href="https://rahuldhole.com" target="_blank">Rahul Dhole</a> | 
-            <a href="https://github.com/rahuldhole/streak-pulse" target="_blank">GitHub</a>
+            <a href="https://github.com/rahuldhole/github-streak" target="_blank">GitHub</a>
           </div>
         </div>
 
@@ -230,8 +230,8 @@ export function renderLandingPage(origin: string = '') {
             
             previewImg.src = cardUrl;
             
-            const markdown = \`![Streak Pulse](\${cardUrl})\`;
-            const html = \`<img src="\${cardUrl}" alt="Streak Pulse" />\`;
+            const markdown = \`![Github Streak](\${cardUrl})\`;
+            const html = \`<img src="\${cardUrl}" alt="Github Streak" />\`;
             
             mdCode.textContent = markdown;
             htmlCode.textContent = html;
