@@ -211,7 +211,8 @@ export function renderLandingPage(origin: string = '') {
 
 
           <div class="footer">
-            Built by <a href="https://github.com/rahuldhole/streak-pulse" target="_blank">Streak Pulse</a>
+            Built by <a href="https://rahuldhole.com" target="_blank">Rahul Dhole</a> | 
+            <a href="https://github.com/rahuldhole/streak-pulse" target="_blank">GitHub</a>
           </div>
         </div>
 
