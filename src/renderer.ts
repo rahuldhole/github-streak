@@ -71,100 +71,111 @@ export function renderLandingPage() {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Streak Pulse | Your GitHub Consistency</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+        <title>Streak Pulse | GitHub Streak Widget</title>
         <style>
-          body {
-            background-color: #0B1220;
-            color: white;
-            font-family: 'Inter', sans-serif;
-            background-image: radial-gradient(circle at 50% -20%, #1e293b 0%, #0b1220 50%);
-          }
-          .glass { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); }
-          .font-outfit { font-family: 'Outfit', sans-serif; }
-          #preview-container { min-height: 160px; display: flex; align-items: center; justify-content: center; }
-          .tab-btn.active { background: #22c55e; color: #0b1220; }
+          :root { --bg: #ffffff; --text: #1a1a1a; --muted: #666666; --border: #e1e4e8; --accent: #2c974b; }
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; margin: 0; padding: 2rem; display: flex; flex-direction: column; align-items: center; }
+          .container { width: 100%; max-width: 600px; }
+          h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; text-align: center; }
+          p { color: var(--muted); text-align: center; margin-bottom: 2rem; font-size: 0.9rem; }
+          .card { border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; }
+          .form-group { margin-bottom: 1.5rem; }
+          label { display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+          input { width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
+          .themes { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+          .themes button { flex: 1; padding: 0.5rem; border: 1px solid var(--border); background: white; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
+          .themes button.active { background: var(--text); color: white; border-color: var(--text); }
+          .preview { display: flex; justify-content: center; align-items: center; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; background: #f6f8fa; margin-top: 1.5rem; min-height: 160px; }
+          .preview img { max-width: 100%; height: auto; }
+          .code-box { position: relative; margin-top: 1.5rem; }
+          pre { background: #f6f8fa; padding: 1rem; border-radius: 6px; font-size: 0.85rem; overflow-x: auto; margin: 0; color: #24292e; border: 1px solid var(--border); }
+          .copy-btn { position: absolute; top: 0.5rem; right: 0.5rem; padding: 0.4rem 0.8rem; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: 600; }
+          .copy-btn:active { background: #f3f4f6; }
+          .footer { margin-top: 3rem; font-size: 0.75rem; color: var(--muted); text-align: center; }
+          .footer a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--border); }
         </style>
       </head>
-      <body class="min-h-screen flex flex-col items-center justify-center p-6 md:p-12">
-        <div class="w-full max-w-xl space-y-12">
-          <!-- Header -->
-          <div class="text-center space-y-2">
-            <h1 class="text-4xl font-black font-outfit tracking-tighter uppercase">🔥 STREAK <span class="text-green-500">PULSE</span></h1>
-            <p class="text-slate-400 font-medium">Your GitHub consistency, reimagined.</p>
-          </div>
+      <body>
+        <div class="container">
+          <h1>🔥 Streak Pulse</h1>
+          <p>A Duolingo-inspired GitHub streak widget.</p>
 
-          <!-- Interaction Card -->
-          <div class="glass rounded-[2rem] p-8 md:p-10 shadow-2xl space-y-8 transition-all hover:border-green-500/20">
-            <div class="space-y-6">
-              <div class="space-y-3">
-                <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">GitHub Username</label>
-                <input type="text" id="username" placeholder="e.g., rahuldhole" 
-                  class="w-full bg-slate-900/50 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500 transition-all text-xl font-bold font-outfit">
-              </div>
+          <div class="card">
+            <div class="form-group">
+              <label>GitHub Username</label>
+              <input type="text" id="username" placeholder="username" value="rahuldhole">
+            </div>
 
-              <div class="flex items-center justify-between space-x-2">
-                <div class="flex bg-slate-900/50 p-1 rounded-xl border border-white/5 w-full">
-                  <button onclick="setTheme('transparent')" id="theme-transparent" class="tab-btn active flex-1 py-2 text-xs font-black uppercase rounded-lg transition-all">Transparent</button>
-                  <button onclick="setTheme('dark')" id="theme-dark" class="tab-btn flex-1 py-2 text-xs font-black uppercase rounded-lg transition-all">Dark</button>
-                  <button onclick="setTheme('light')" id="theme-light" class="tab-btn flex-1 py-2 text-xs font-black uppercase rounded-lg transition-all">Light</button>
-                </div>
+            <div class="form-group">
+              <label>Theme</label>
+              <div class="themes">
+                <button onclick="setTheme('transparent')" id="theme-transparent" class="active">Transparent</button>
+                <button onclick="setTheme('light')" id="theme-light">Light</button>
+                <button onclick="setTheme('dark')" id="theme-dark">Dark</button>
               </div>
             </div>
 
-            <div id="preview-container" class="relative group">
-              <div class="absolute inset-0 bg-green-500/5 blur-3xl rounded-full"></div>
-              <img id="preview-img" src="/?user=rahuldhole" alt="Preview" 
-                class="relative opacity-0 transition-opacity duration-1000 max-w-full" onload="this.style.opacity='1'">
-            </div>
-
-            <div class="space-y-4 pt-4 border-t border-white/5">
-              <button onclick="copyMarkdown()" 
-                class="w-full bg-green-500 text-slate-900 font-black py-4 rounded-2xl uppercase tracking-wider font-outfit hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-green-500/20">
-                Copy Markdown for README
-              </button>
-              <p id="feedback" class="text-center text-xs font-bold text-green-500 opacity-0 transition-opacity">Copied to clipboard!</p>
+            <div class="preview">
+              <img id="preview-img" src="/?user=rahuldhole" alt="Streak Pulse Preview">
             </div>
           </div>
 
-          <!-- Simple Footer -->
-          <div class="text-center text-[10px] uppercase tracking-widest text-slate-600 font-black">
-            <a href="https://github.com/rahuldhole/streak-pulse" target="_blank" class="hover:text-green-500 transition-colors">GitHub Repository</a>
+          <label>Markdown</label>
+          <div class="code-box">
+            <pre id="md-code"></pre>
+            <button class="copy-btn" onclick="copy('md-code')">Copy</button>
+          </div>
+
+          <label style="margin-top: 1.5rem;">HTML</label>
+          <div class="code-box">
+            <pre id="html-code"></pre>
+            <button class="copy-btn" onclick="copy('html-code')">Copy</button>
+          </div>
+
+          <div class="footer">
+            Built by <a href="https://github.com/rahuldhole/streak-pulse" target="_blank">Streak Pulse</a>
           </div>
         </div>
 
         <script>
-          let currentTheme = 'transparent';
+          let theme = 'transparent';
           const usernameInput = document.getElementById('username');
           const previewImg = document.getElementById('preview-img');
-          const feedback = document.getElementById('feedback');
+          const mdCode = document.getElementById('md-code');
+          const htmlCode = document.getElementById('html-code');
 
-          function updatePreview() {
-            const user = usernameInput.value || 'rahuldhole';
-            const url = \`/?user=\${user}&theme=\${currentTheme}\`;
-            previewImg.src = url;
-            previewImg.style.opacity = '0.5';
+          function update() {
+            const user = usernameInput.value || 'username';
+            const baseUrl = window.location.origin;
+            const cardUrl = \`\${baseUrl}/?user=\${user}&theme=\${theme}\`;
+            
+            previewImg.src = cardUrl;
+            
+            const markdown = \`![Streak Pulse](\${cardUrl})\`;
+            const html = \`<img src="\${cardUrl}" alt="Streak Pulse" />\`;
+            
+            mdCode.textContent = markdown;
+            htmlCode.textContent = html;
           }
 
-          function setTheme(theme) {
-            currentTheme = theme;
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('theme-' + theme).classList.add('active');
-            updatePreview();
+          function setTheme(t) {
+            theme = t;
+            document.querySelectorAll('.themes button').forEach(b => b.classList.remove('active'));
+            document.getElementById('theme-' + t).classList.add('active');
+            update();
           }
 
-          usernameInput.addEventListener('input', updatePreview);
-
-          function copyMarkdown() {
-            const user = usernameInput.value || 'YOUR_NAME';
-            const url = \`https://streak-pulse.rahuldhole.com/?user=\${user}&theme=\${currentTheme}\`;
-            const markdown = \`![Streak Pulse](\${url})\`;
-            navigator.clipboard.writeText(markdown).then(() => {
-              feedback.style.opacity = '1';
-              setTimeout(() => feedback.style.opacity = '0', 2000);
-            });
+          function copy(id) {
+            const text = document.getElementById(id).textContent;
+            navigator.clipboard.writeText(text);
+            const btn = event.target;
+            const original = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = original, 2000);
           }
+
+          usernameInput.addEventListener('input', update);
+          update();
         </script>
       </body>
     </html>
