@@ -191,13 +191,13 @@ export function renderLandingPage(origin: string = '') {
             <label style="margin-top: 1.5rem;">Markdown</label>
             <div class="code-box">
               <pre id="md-code">${markdown}</pre>
-              <button class="copy-btn" onclick="copy('md-code')">Copy</button>
+              <button class="copy-btn" onclick="copy('md-code', this)">Copy</button>
             </div>
   
             <label style="margin-top: 1.5rem;">HTML</label>
             <div class="code-box">
               <pre id="html-code">${escapedHtml}</pre>
-              <button class="copy-btn" onclick="copy('html-code')">Copy</button>
+              <button class="copy-btn" onclick="copy('html-code', this)">Copy</button>
             </div>
           </div>
 
@@ -235,13 +235,42 @@ export function renderLandingPage(origin: string = '') {
             update();
           }
 
-          function copy(id) {
-            const text = document.getElementById(id).textContent;
-            navigator.clipboard.writeText(text);
-            const btn = event.target;
+          function copy(id, btn) {
+            const text = document.getElementById(id).textContent.trim();
             const original = btn.textContent;
-            btn.textContent = 'Copied!';
-            setTimeout(() => btn.textContent = original, 2000);
+            
+            const handleSuccess = () => {
+              btn.textContent = 'Copied!';
+              setTimeout(() => btn.textContent = original, 2000);
+            };
+
+            const fallbackCopy = () => {
+              const textArea = document.createElement("textarea");
+              textArea.value = text;
+              textArea.style.position = "fixed";
+              textArea.style.left = "-9999px";
+              textArea.style.top = "0";
+              document.body.appendChild(textArea);
+              textArea.focus();
+              textArea.select();
+              textArea.setSelectionRange(0, 99999); // Important for mobile browsers (iOS)
+              try {
+                document.execCommand('copy');
+                handleSuccess();
+              } catch (err) {
+                console.error('All copy methods failed', err);
+              }
+              document.body.removeChild(textArea);
+            };
+
+            // Only attempt modern API in a secure context
+            if (window.isSecureContext && navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text)
+                .then(handleSuccess)
+                .catch(() => fallbackCopy());
+            } else {
+              fallbackCopy();
+            }
           }
 
           usernameInput.addEventListener('keypress', (e) => {
