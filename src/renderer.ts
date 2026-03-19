@@ -119,7 +119,13 @@ export function renderErrorSVG(message: string): string {
   `.replace(/\s+/g, ' ').trim()
 }
 
-export function renderLandingPage() {
+export function renderLandingPage(origin: string = '') {
+  const initialUser = 'rahuldhole'
+  const initialTheme = 'dark'
+  const cardUrl = `${origin}/?user=${initialUser}&theme=${initialTheme}`
+  const markdown = `![Streak Pulse](${cardUrl})`
+  const html = `<img src="${cardUrl}" alt="Streak Pulse" />`
+
   return `
     <!DOCTYPE html>
     <html lang="en">
@@ -163,7 +169,7 @@ export function renderLandingPage() {
             <div class="form-group">
               <label>GitHub Username</label>
               <div class="input-group">
-                <input type="text" id="username" placeholder="username" value="rahuldhole">
+                <input type="text" id="username" placeholder="username" value="${initialUser}">
                 <button class="generate-btn" onclick="update()">Generate</button>
               </div>
             </div>
@@ -178,18 +184,18 @@ export function renderLandingPage() {
             </div>
 
             <div class="preview">
-              <img id="preview-img" src="/?user=rahuldhole" alt="Streak Pulse Preview">
+              <img id="preview-img" src="${cardUrl}" alt="Streak Pulse Preview">
             </div>
             
             <label style="margin-top: 1.5rem;">Markdown</label>
             <div class="code-box">
-              <pre id="md-code"></pre>
+              <pre id="md-code">${markdown}</pre>
               <button class="copy-btn" onclick="copy('md-code')">Copy</button>
             </div>
   
             <label style="margin-top: 1.5rem;">HTML</label>
             <div class="code-box">
-              <pre id="html-code"></pre>
+              <pre id="html-code">${html}</pre>
               <button class="copy-btn" onclick="copy('html-code')">Copy</button>
             </div>
           </div>
@@ -201,7 +207,7 @@ export function renderLandingPage() {
         </div>
 
         <script>
-          let theme = 'dark';
+          let theme = '${initialTheme}';
           const usernameInput = document.getElementById('username');
           const previewImg = document.getElementById('preview-img');
           const mdCode = document.getElementById('md-code');
@@ -240,7 +246,6 @@ export function renderLandingPage() {
           usernameInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') update();
           });
-          update();
         </script>
       </body>
     </html>
