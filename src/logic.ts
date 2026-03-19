@@ -1,4 +1,7 @@
+import { GitHubContributionDay } from './types'
+
 export type StreakDetails = {
+
   count: number
   start: string
   end: string

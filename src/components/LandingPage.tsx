@@ -1,125 +1,6 @@
-import { GitHubContributionDay, Theme } from './types'
-import { getIntensityColor, StreakStats } from './logic'
+import { html } from 'hono/html'
 
-function formatDate(dateStr: string): string {
-  if (!dateStr) return '---'
-  const d = new Date(dateStr)
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-}
-
-function formatNumber(num: number): string {
-  return new Intl.NumberFormat('en-US', {
-    notation: 'compact',
-    compactDisplay: 'short',
-    maximumFractionDigits: 1
-  }).format(num)
-}
-
-export function renderSVG(stats: StreakStats, last7: GitHubContributionDay[], maxCount: number, theme: Theme = 'transparent') {
-  const width = 420
-  const height = 180
-  const padding = 25
-
-  const themes = {
-    light: {
-      bg: '#FFFFFF',
-      border: '#E2E8F0',
-      text: '#0F172A',
-      textMuted: '#64748B',
-      accent: '#22c55e'
-    },
-    dark: {
-      bg: '#0B1220',
-      border: '#1E293B',
-      text: '#FFFFFF',
-      textMuted: '#94A3B8',
-      accent: '#22c55e'
-    },
-    transparent: {
-      bg: 'none',
-      border: 'none',
-      text: '#626a75ff',
-      textMuted: '#576374ff',
-      accent: '#15af4eff'
-    }
-  }
-
-  const t = themes[theme] || themes.dark
-  const dayLabels = last7.map(d => new Date(d.date).toLocaleDateString("en", { weekday: "short" })[0])
-
-  return `
-    <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <style>
-        .label { font: bold 10px sans-serif; fill: ${t.textMuted}; text-transform: uppercase; letter-spacing: 1px; }
-        .stat { font: bold 22px sans-serif; fill: ${t.text}; }
-        .date { font: 10px sans-serif; fill: ${t.textMuted}; }
-        .day { font: 9px sans-serif; fill: #ffffff; }
-        .count { font: bold 11px sans-serif; fill: #ffffff; }
-      </style>
-      
-      ${t.bg !== 'none' ? `<rect width="${width}" height="${height}" rx="20" fill="${t.bg}"/>` : ''}
-      ${t.border !== 'none' ? `<rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="19.5" stroke="${t.border}"/>` : ''}
-
-      <!-- Current Streak -->
-      <g transform="translate(${padding}, 40)">
-        <text class="label">Current Streak</text>
-        <text y="28" class="stat">🔥 ${stats.current.count}</text>
-        <text y="45" class="date">${formatDate(stats.current.start)} - ${formatDate(stats.current.end)}</text>
-      </g>
-
-      <!-- Max Streak -->
-      <g transform="translate(${width / 2 - 50}, 40)">
-        <text class="label">Personal Best</text>
-        <text y="28" class="stat">🏆 ${stats.max.count}</text>
-        <text y="45" class="date">${formatDate(stats.max.start)} - ${formatDate(stats.max.end)}</text>
-      </g>
-
-      <!-- Total Contributions -->
-      <g transform="translate(${width - padding - 105}, 40)">
-        <text class="label">Total Contribs</text>
-        <text y="28" class="stat">✨ ${formatNumber(stats.total)}+</text>
-        <text y="45" class="date">${stats.yearRange}</text>
-      </g>
-
-      <!-- Separators -->
-      <line x1="${width / 2 - 65}" y1="40" x2="${width / 2 - 65}" y2="85" stroke="${theme === 'transparent' ? '#00000010' : t.border}" stroke-width="1" />
-      <line x1="${width / 2 + 75}" y1="40" x2="${width / 2 + 75}" y2="85" stroke="${theme === 'transparent' ? '#00000010' : t.border}" stroke-width="1" />
-
-      <!-- Heat Strip -->
-      <g transform="translate(${padding}, 110)">
-        ${last7.map((d, i) => {
-    const rectW = (width - 2 * padding - 6 * 8) / 7
-    const x = i * (rectW + 8)
-    const color = getIntensityColor(d.contributionCount, maxCount)
-    return `
-            <g transform="translate(${x}, 0)">
-              <rect width="${rectW}" height="40" rx="6" fill="${color}"/>
-              <text x="${rectW / 2}" y="15" class="day" text-anchor="middle" opacity="0.8">${dayLabels[i]}</text>
-              <text x="${rectW / 2}" y="28" class="count" text-anchor="middle">${d.contributionCount}</text>
-            </g>
-          `
-  }).join('')}
-      </g>
-    </svg>
-  `.replace(/\s+/g, ' ').trim()
-}
-
-export function renderErrorSVG(message: string): string {
-  return `
-    <svg width="420" height="180" viewBox="0 0 420 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="420" height="180" rx="20" fill="#0B1220"/>
-      <rect x="0.5" y="0.5" width="419.5" height="179.5" rx="19.5" stroke="#1E293B"/>
-      <text x="210" y="85" text-anchor="middle" fill="#FFFFFF" font-family="sans-serif" font-size="14" font-weight="bold">
-        ${message}
-      </text>
-      <text x="210" y="110" text-anchor="middle" fill="#94A3B8" font-family="sans-serif" font-size="12">
-        Temporarily Unavailable
-      </text>
-    </svg>
-  `.replace(/\s+/g, ' ').trim()
-}
-
-export function renderLandingPage(origin: string = '') {
+export function LandingPage({ origin = '' }: { origin?: string }) {
   const initialUser = 'rahuldhole'
   const initialTheme = 'dark'
   const cardUrl = `${origin}/?user=${initialUser}&theme=${initialTheme}`
@@ -127,15 +8,15 @@ export function renderLandingPage(origin: string = '') {
   const htmlCode = `<img src="${cardUrl}" alt="Github Streak" />`
   const escapedHtml = htmlCode.replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-  return `
-    <!DOCTYPE html>
+  return (
     <html lang="en">
       <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Github Streak | GitHub Streak Widget</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>" />
         <style>
+          {html`
           :root { --bg: #ffffff; --text: #1a1a1a; --muted: #666666; --border: #e1e4e8; --accent: #2c974b; }
           body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; margin: 0; padding: 1rem; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
           .container { width: 100%; max-width: 600px; }
@@ -167,6 +48,7 @@ export function renderLandingPage(origin: string = '') {
             .card { padding: 1rem; border-radius: 8px; }
             .themes button { font-size: 0.75rem; padding: 0.4rem; }
           }
+          `}
         </style>
       </head>
       <body>
@@ -178,7 +60,7 @@ export function renderLandingPage(origin: string = '') {
             <div class="form-group">
               <label>GitHub Username</label>
               <div class="input-group">
-                <input type="text" id="username" placeholder="username" value="${initialUser}">
+                <input type="text" id="username" placeholder="username" value={initialUser} />
                 <button class="generate-btn" onclick="update()">Generate</button>
               </div>
             </div>
@@ -193,18 +75,18 @@ export function renderLandingPage(origin: string = '') {
             </div>
 
             <div class="preview">
-              <img id="preview-img" src="${cardUrl}" alt="Github Streak Preview">
+              <img id="preview-img" src={cardUrl} alt="Github Streak Preview" />
             </div>
             
-            <label style="margin-top: 1.5rem;">Markdown</label>
+            <label style={{ marginTop: '1.5rem', display: 'block' }}>Markdown</label>
             <div class="code-box">
-              <pre id="md-code">${markdown}</pre>
+              <pre id="md-code">{markdown}</pre>
               <button class="copy-btn" onclick="copy('md-code', this)">Copy</button>
             </div>
   
-            <label style="margin-top: 1.5rem;">HTML</label>
+            <label style={{ marginTop: '1.5rem', display: 'block' }}>HTML</label>
             <div class="code-box">
-              <pre id="html-code">${escapedHtml}</pre>
+              <pre id="html-code">{escapedHtml}</pre>
               <button class="copy-btn" onclick="copy('html-code', this)">Copy</button>
             </div>
           </div>
@@ -216,6 +98,7 @@ export function renderLandingPage(origin: string = '') {
           </div>
         </div>
 
+        {html`
         <script>
           let theme = '${initialTheme}';
           const usernameInput = document.getElementById('username');
@@ -262,7 +145,7 @@ export function renderLandingPage(origin: string = '') {
               document.body.appendChild(textArea);
               textArea.focus();
               textArea.select();
-              textArea.setSelectionRange(0, 99999); // Important for mobile browsers (iOS)
+              textArea.setSelectionRange(0, 99999);
               try {
                 document.execCommand('copy');
                 handleSuccess();
@@ -272,7 +155,6 @@ export function renderLandingPage(origin: string = '') {
               document.body.removeChild(textArea);
             };
 
-            // Only attempt modern API in a secure context
             if (window.isSecureContext && navigator.clipboard && navigator.clipboard.writeText) {
               navigator.clipboard.writeText(text)
                 .then(handleSuccess)
@@ -286,7 +168,8 @@ export function renderLandingPage(origin: string = '') {
             if (e.key === 'Enter') update();
           });
         </script>
+        `}
       </body>
     </html>
-  `
+  )
 }
