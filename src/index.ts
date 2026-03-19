@@ -10,6 +10,7 @@ app.all('/', async (c) => {
   const username = c.req.query('user')
 
   if (!username) {
+    c.header('Cache-Control', 'public, max-age=86400, s-maxage=86400')
     return c.html(renderLandingPage())
   }
 
