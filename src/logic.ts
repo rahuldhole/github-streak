@@ -63,8 +63,8 @@ export function getIntensityColor(count: number, maxCount: number): string {
   if (count === 0) return "#1e293b14"
   const ratio = count / Math.max(maxCount, 1)
 
-  if (ratio >= 0.75) return "#0e8a3cff"
-  if (ratio >= 0.5) return "#15af4eff"
-  if (ratio >= 0.25) return "#35df73ff"
-  return "#60ec91ff"
+  if (ratio >= 0.75) return "#60ec91ff"
+  if (ratio >= 0.5) return "#35df73ff"
+  if (ratio >= 0.25) return "#15af4eff"
+  return "#0e8a3cff"
 }
