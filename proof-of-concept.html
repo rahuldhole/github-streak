@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Streak Heat MVP</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/petite-vue" defer init></script>
+
+  <style>
+    body {
+      background: #0b1220;
+    }
+  </style>
+</head>
+
+<body class="flex items-center justify-center min-h-screen text-white">
+
+<div v-scope="App()" class="w-[420px] p-5 rounded-2xl bg-slate-900/60 backdrop-blur border border-slate-700">
+
+  <!-- INPUT -->
+  <div class="flex gap-2">
+    <input
+      v-model="username"
+      placeholder="GitHub username"
+      class="flex-1 px-3 py-2 rounded bg-slate-800 outline-none"
+    />
+    <button
+      @click="load"
+      class="px-4 py-2 bg-green-500 text-black font-bold rounded"
+    >
+      Load
+    </button>
+  </div>
+
+  <!-- STREAK -->
+  <div class="mt-4">
+    <div class="text-xl font-bold">
+      🔥 {{ streak }} day streak
+    </div>
+    <div class="text-xs opacity-60">
+      based on consecutive contribution days
+    </div>
+  </div>
+
+  <!-- HEAT STRIP -->
+  <div class="mt-5 flex gap-2">
+    <div
+      v-for="d in days"
+      class="flex-1 rounded-lg p-2 text-center"
+      :style="{ background: color(d.count) }"
+    >
+      <div class="text-xs opacity-80">{{ d.label }}</div>
+      <div class="text-sm font-bold">{{ d.count }}</div>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="mt-4 text-sm opacity-80">
+    <div>Max day: {{ maxCount }}</div>
+    <div>Active days: {{ activeDays }}/7</div>
+  </div>
+
+</div>
+
+<script>
+function App() {
+  return {
+    username: "",
+    streak: 0,
+    days: [],
+    maxCount: 0,
+    activeDays: 0,
+
+    async load() {
+      const token = "YOUR_GITHUB_TOKEN"; // ⚠️ DO NOT SHIP THIS CLIENT SIDE
+
+      const query = `
+      query($login:String!) {
+        user(login:$login) {
+          contributionsCollection {
+            contributionCalendar {
+              weeks {
+                contributionDays {
+                  date
+                  contributionCount
+                }
+              }
+            }
+          }
+        }
+      }`;
+
+      const res = await fetch("https://api.github.com/graphql", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({
+          query,
+          variables: { login: this.username }
+        })
+      });
+
+      const json = await res.json();
+
+      const raw = json.data.user.contributionsCollection.contributionCalendar.weeks
+        .flatMap(w => w.contributionDays);
+
+      // last 7 days
+      const last7 = raw.slice(-7);
+
+      this.maxCount = Math.max(...last7.map(d => d.contributionCount), 1);
+
+      this.days = last7.map(d => ({
+        label: new Date(d.date).toLocaleDateString("en", { weekday: "short" })[0],
+        count: d.contributionCount
+      }));
+
+      // streak (simple reverse scan)
+      let streak = 0;
+      for (let i = raw.length - 1; i >= 0; i--) {
+        if (raw[i].contributionCount > 0) streak++;
+        else break;
+      }
+      this.streak = streak;
+
+      this.activeDays = last7.filter(d => d.contributionCount > 0).length;
+    },
+
+color(count) {
+  if (count === 0) return "rgba(148, 163, 184, 0.08)";
+
+  const ratio = count / this.maxCount;
+
+  // Inverted intensity:
+  // higher commits => weaker color
+  // lower commits => stronger urgency color
+
+  if (ratio >= 0.75) return "rgba(34, 197, 94, 0.15)"; // heavy activity (dimmed)
+  if (ratio >= 0.5)  return "rgba(34, 197, 94, 0.30)";
+  if (ratio >= 0.25) return "rgba(34, 197, 94, 0.55)";
+  return "rgba(34, 197, 94, 1)"; // low activity (loud / urgent)
+}
+  }
+}
+</script>
+
+</body>
+</html>
