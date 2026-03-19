@@ -24,10 +24,10 @@ GitHub shows your history.
 
 Streak Pulse shows your **discipline**.
 
-Most dev dashboards are passive. This one is intentionally psychological:
+Most dev dashboards are passive. This one is intentionally visual:
 
-- High activity → visually muted (you already did well)
-- Low activity → visually loud (you feel it immediately)
+- High activity → visually bold (you feel the momentum)
+- Low activity → visually subtle (you feel the gap)
 
 It’s not decoration. It’s feedback.
 
@@ -44,7 +44,9 @@ It’s not decoration. It’s feedback.
 Or embed it into a GitHub README:
 
 ```md
-![Streak Pulse](https://your-domain.com/streak?user=yourname)
+![Streak Pulse](https://streak-pulse.rahuldhole.com?user=your_github_user_name)
+
+Themes: `transparent` (default), `light`, `dark`.
 ```
 
 ---
@@ -57,14 +59,14 @@ Tracks consecutive days with contributions using GitHub GraphQL data.
 
 ### 📊 Relative Intensity Mapping
 
-Each day is colored based on its value compared to the highest activity day.
+- [x] Standard GitHub-style heat logic (darker = more active)
 
-* Peak day → dimmed (already achieved)
-* Low activity → highlighted (attention trigger)
+* Peak day -> strongest green
+* Low activity -> light/subtle green
 
 ### 🟩 Heat Visualization
 
-GitHub-inspired but behaviorally inverted design system.
+GitHub-style heat logic (relative scaling).
 
 ### ⚡ Minimal Integration
 
