@@ -124,7 +124,8 @@ export function renderLandingPage(origin: string = '') {
   const initialTheme = 'dark'
   const cardUrl = `${origin}/?user=${initialUser}&theme=${initialTheme}`
   const markdown = `![Streak Pulse](${cardUrl})`
-  const html = `<img src="${cardUrl}" alt="Streak Pulse" />`
+  const htmlCode = `<img src="${cardUrl}" alt="Streak Pulse" />`
+  const escapedHtml = htmlCode.replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
   return `
     <!DOCTYPE html>
@@ -195,7 +196,7 @@ export function renderLandingPage(origin: string = '') {
   
             <label style="margin-top: 1.5rem;">HTML</label>
             <div class="code-box">
-              <pre id="html-code">${html}</pre>
+              <pre id="html-code">${escapedHtml}</pre>
               <button class="copy-btn" onclick="copy('html-code')">Copy</button>
             </div>
           </div>
