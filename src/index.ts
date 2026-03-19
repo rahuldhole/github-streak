@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { Bindings, Theme } from './types'
 import { fetchGitHubData } from './github'
 import { calculateStreakStats } from './logic'
-import { renderSVG, renderLandingPage } from './renderer'
+import { renderSVG, renderLandingPage, renderErrorSVG } from './renderer'
 
 const app = new Hono<{ Bindings: Bindings }>()
 
@@ -15,7 +15,9 @@ app.all('/', async (c) => {
 
   const token = c.env.GITHUB_TOKEN
   if (!token) {
-    return c.json({ error: 'GITHUB_TOKEN is not configured' }, 500)
+    return c.body(renderErrorSVG('Config Error'), 500, {
+      'Content-Type': 'image/svg+xml'
+    })
   }
 
   const theme = (c.req.query('theme') || 'transparent') as Theme
@@ -44,7 +46,13 @@ app.all('/', async (c) => {
       'Cache-Control': 'public, max-age=3600, s-maxage=7200'
     })
   } catch (error: any) {
-    return c.json({ error: error.message }, 500)
+    const isNotFound = error.message?.includes('not found')
+    const errorSvg = renderErrorSVG(isNotFound ? 'User Not Found' : 'GitHub API Error')
+    
+    return c.body(errorSvg, 200, {
+      'Content-Type': 'image/svg+xml',
+      'Cache-Control': 'no-cache'
+    })
   }
 })
 
