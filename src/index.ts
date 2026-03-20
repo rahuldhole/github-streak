@@ -19,11 +19,15 @@ app.all('/', async (c) => {
     return c.html(renderLandingPage(origin))
   }
 
-  // Cloudflare Cache API: Store the rendered SVG to avoid redundant Worker executions and GitHub API calls
-  const cache = (caches as any).default
-  const cacheKey = new Request(url.toString(), c.req.raw)
-  let response = await cache.match(cacheKey)
-  if (response) return response
+  // Cloudflare Cache API: Store the rendered SVG to avoid redundant Worker executions and GitHub API calls.
+  // We check for 'caches' existence to remain compatible with Netlify or other runtimes.
+  const cache = typeof caches !== 'undefined' ? (caches as any).default : null
+  const cacheKey = cache ? new Request(url.toString(), c.req.raw) : null
+  
+  if (cache && cacheKey) {
+    let response = await cache.match(cacheKey)
+    if (response) return response
+  }
 
   const token = c.env.GITHUB_TOKEN
   if (!token) {
@@ -59,8 +63,10 @@ app.all('/', async (c) => {
       'Cache-Control': 'public, max-age=3600, s-maxage=7200'
     })
 
-    // Populate cache asynchronously
-    c.executionCtx.waitUntil(cache.put(cacheKey, finalResponse.clone()))
+    // Populate cache asynchronously if supported (Cloudflare)
+    if (cache && cacheKey && 'executionCtx' in c && (c as any).executionCtx?.waitUntil) {
+      (c as any).executionCtx.waitUntil(cache.put(cacheKey, finalResponse.clone()))
+    }
     return finalResponse
 
   } catch (error: any) {
