@@ -1,8 +1,8 @@
 import { Hono } from 'hono'
-import { Bindings, Theme } from './types'
-import { fetchGitHubData } from './github'
-import { calculateStreakStats } from './logic'
-import { renderSVG, renderLandingPage, renderErrorSVG } from './renderer'
+import { Bindings, Theme } from './types.ts'
+import { fetchGitHubData } from './github.ts'
+import { calculateStreakStats } from './logic.ts'
+import { renderSVG, renderLandingPage, renderErrorSVG } from './renderer.tsx'
 
 const app = new Hono<{ Bindings: Bindings }>()
 

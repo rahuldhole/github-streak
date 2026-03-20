@@ -1,8 +1,8 @@
-import { GitHubContributionDay, Theme } from './types'
-import { StreakStats } from './logic'
-import { GitHubStreakSVG } from './components/GitHubStreakSVG'
-import { ErrorSVG } from './components/ErrorSVG'
-import { LandingPage } from './components/LandingPage'
+import { GitHubContributionDay, Theme } from './types.ts'
+import { StreakStats } from './logic.ts'
+import { GitHubStreakSVG } from './components/GitHubStreakSVG.tsx'
+import { ErrorSVG } from './components/ErrorSVG.tsx'
+import { LandingPage } from './components/LandingPage.tsx'
 
 /**
  * Renders the main GitHub Streak SVG card

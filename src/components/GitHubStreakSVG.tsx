@@ -1,5 +1,5 @@
-import { GitHubContributionDay, Theme } from '../types'
-import { getIntensityColor, StreakStats } from '../logic'
+import { GitHubContributionDay, Theme } from '../types.ts'
+import { getIntensityColor, StreakStats } from '../logic.ts'
 
 function formatDate(dateStr: string): string {
   if (!dateStr) return '---'

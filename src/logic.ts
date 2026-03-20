@@ -1,4 +1,4 @@
-import { GitHubContributionDay } from './types'
+import { GitHubContributionDay } from './types.ts'
 
 export type StreakDetails = {
 

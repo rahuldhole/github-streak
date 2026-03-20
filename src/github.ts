@@ -1,4 +1,4 @@
-import { GitHubContributionDay, GitHubResponse } from './types'
+import { GitHubContributionDay, GitHubResponse } from './types.ts'
 
 const GITHUB_GRAPHQL_QUERY = `
 query($login:String!) {
