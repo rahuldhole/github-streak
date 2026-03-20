@@ -1,3 +1,4 @@
+/** @jsxImportSource hono/jsx */
 export function ErrorSVG({ message }: { message: string }) {
   return (
     <svg width="420" height="180" viewBox="0 0 420 180" fill="none" xmlns="http://www.w3.org/2000/svg">

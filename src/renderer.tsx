@@ -1,3 +1,4 @@
+/** @jsxImportSource hono/jsx */
 import { GitHubContributionDay, Theme } from './types.ts'
 import { StreakStats } from './logic.ts'
 import { GitHubStreakSVG } from './components/GitHubStreakSVG.tsx'

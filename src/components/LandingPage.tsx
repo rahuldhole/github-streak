@@ -1,3 +1,4 @@
+/** @jsxImportSource hono/jsx */
 import { html } from 'hono/html'
 
 export function LandingPage({ origin = '' }: { origin?: string }) {

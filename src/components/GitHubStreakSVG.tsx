@@ -1,3 +1,4 @@
+/** @jsxImportSource hono/jsx */
 import { GitHubContributionDay, Theme } from '../types.ts'
 import { getIntensityColor, StreakStats } from '../logic.ts'
 
