@@ -1,6 +1,13 @@
 import app from "../../src/index.ts";
 
-export default (request: Request) => {
-  // @ts-ignore - Deno is a global in Netlify Edge
-  return app.fetch(request, Deno.env.toObject());
+// Netlify Edge Functions pass (Request, Context) where Context.env holds env vars.
+// We forward Context.env (or Deno.env.toObject() as fallback) to Hono's bindings.
+export default async (request: Request, context: any) => {
+  try {
+    const env = context?.env ?? (typeof Deno !== "undefined" ? (Deno as any).env.toObject() : {});
+    return await app.fetch(request, env);
+  } catch (err) {
+    console.error("Edge function error:", err);
+    return new Response("Internal Server Error", { status: 500 });
+  }
 };

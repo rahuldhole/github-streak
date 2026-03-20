@@ -2,10 +2,10 @@
   "name": "github-streak",
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev --ip 0.0.0.0",
+    "dev": "bunx netlify dev",
+    "dev:cf": "wrangler dev --ip 0.0.0.0",
     "deploy": "wrangler deploy --minify",
-    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
-    "netlify:dev": "netlify dev"
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {
     "hono": "^4.12.8"
