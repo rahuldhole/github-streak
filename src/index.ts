@@ -134,16 +134,15 @@ app.all('*', async (c) => {
     }
   } catch (e) {}
 
-  const normalizedUrl = new URL(url.origin);
-  normalizedUrl.pathname = c.req.path || '/'; // be explicit
-  normalizedUrl.searchParams.set('user', username);
-  if (c.req.query('theme')) normalizedUrl.searchParams.set('theme', c.req.query('theme')!);
-  if (c.req.query('type')) normalizedUrl.searchParams.set('type', c.req.query('type')!);
-  const v = c.req.query('v');
-  if (v) normalizedUrl.searchParams.set('v', v);
-  if (c.req.query('no-cache')) normalizedUrl.searchParams.set('no-cache', 'true');
+  const theme = (c.req.query('theme') || 'transparent') as Theme
+  const type = c.req.query('type')
+  const v = c.req.query('v')
 
-  const cacheKey = cache ? new Request(normalizedUrl.toString(), c.req.raw) : null;
+  // MANUAL CACHE KEY CONSTRUCTION
+  // Ensures the internal Cache API correctly distinguishes between users
+  const cacheIdentifier = `user=${username}&theme=${theme}&type=${type || 'svg'}&v=${v || 'default'}`;
+  const cacheKey = cache ? new Request(new URL(`${url.origin}${url.pathname}?${cacheIdentifier}`).toString()) : null;
+
   if (cache && cacheKey && !c.req.query('no-cache')) {
     const cachedResponse = await cache.match(cacheKey)
     if (cachedResponse) {
@@ -166,8 +165,6 @@ app.all('*', async (c) => {
     })
   }
 
-  const theme = (c.req.query('theme') || 'transparent') as Theme
-
   try {
     const { days: allDays, totalContributions, contributionYears, rateLimit } = await fetchGitHubData(username, token)
     
@@ -180,7 +177,6 @@ app.all('*', async (c) => {
     const last7 = allDays.slice(-7)
     const maxCount = Math.max(...last7.map(d => d.contributionCount), 1)
 
-    const type = c.req.query('type')
     if (type === 'json') {
       c.header('Vary', 'Accept')
       return c.json({ username, stats, last7, maxCount, theme })
