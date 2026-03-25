@@ -52,6 +52,23 @@ app.notFound((c) => {
 app.all('*', async (c) => {
   const url = new URL(c.req.url)
 
+  // Return a mock sample SVG for the landing page preview
+  if (c.req.path === '/sample.svg') {
+    const mockStats = { 
+      current: { count: parseInt(c.req.query('current') || '42'), start: '2024-01-01', end: '2024-02-12' }, 
+      max: { count: parseInt(c.req.query('max') || '99'), start: '2023-05-10', end: '2023-08-17' }, 
+      total: parseInt(c.req.query('total') || '1337'),
+      yearRange: '2015 - 2024'
+    }
+    const mockLast7 = Array.from({ length: 7 }, (_, i) => ({ 
+      contributionCount: Math.floor(Math.random() * 10), 
+      date: new Date(Date.now() - (6-i) * 86400000).toISOString().split('T')[0] 
+    }))
+    const mockTheme = (c.req.query('theme') || 'dark') as Theme
+    const svg = renderSVG(mockStats as any, mockLast7 as any, 10, mockTheme)
+    return c.body(svg.toString(), 200, { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'no-store' })
+  }
+
   // If NO 'user' parameter is present, return HTML (Landing Page or 404)
   if (!url.searchParams.has('user')) {
     if (c.req.path === '/' || c.req.path === '') {

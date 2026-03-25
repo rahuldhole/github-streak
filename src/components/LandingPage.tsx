@@ -3,13 +3,13 @@ import { html } from 'hono/html'
 import pkg from '../../package.json' with { type: 'json' }
 
 export function LandingPage({ origin = '' }: { origin?: string }) {
-  const initialUser = 'rahuldhole'
+  const initialUser = ''
   const initialTheme = 'dark'
   const version = pkg.version
-  const cardUrl = `${origin}/?user=${initialUser}&theme=${initialTheme}&v=${version}`
-  const markdown = `![Github Streak](${cardUrl})`
-  const htmlCode = `<img src="${cardUrl}" alt="Github Streak" />`
-  const escapedHtml = htmlCode.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  const sampleUrl = `${origin}/sample.svg?theme=${initialTheme}`
+  const initialMarkdown = `![Github Streak](${origin}/?user=YOUR_USERNAME&theme=${initialTheme})`
+  const initialHtml = `<img src="${origin}/?user=YOUR_USERNAME&theme=${initialTheme}" alt="Github Streak" />`
+  const escapedHtml = initialHtml.replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
   return (
     <>
@@ -18,7 +18,7 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
         <head>
           <meta charset="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <title>Github Streak | GitHub Streak Widget</title>
+          <title>GitHub Streak | Streak Widget Generator</title>
           <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>" />
           <style>
             {html`
@@ -60,14 +60,14 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
         </head>
         <body>
           <div class="container">
-            <h1>🔥 Github Streak</h1>
-            <p>A Duolingo-inspired GitHub streak widget.</p>
+            <h1>🔥 GitHub Streak</h1>
+            <p>Generate a Duolingo-inspired GitHub streak widget for your profile.</p>
 
             <div class="card">
               <div class="form-group">
                 <label>GitHub Username</label>
                 <div class="input-group">
-                  <input type="text" id="username" placeholder="username" value={initialUser} autocomplete="off" />
+                  <input type="text" id="username" placeholder="Enter GitHub username" value={initialUser} autocomplete="off" />
                   <button class="generate-btn" onclick="update()">Generate</button>
                 </div>
               </div>
@@ -84,12 +84,12 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
               <div id="error-banner" class="error-banner"></div>
 
               <div class="preview">
-                <img id="preview-img" src={cardUrl} alt="Github Streak Preview" />
+                <img id="preview-img" src={sampleUrl} alt="GitHub Streak Preview" />
               </div>
               
               <label style={{ marginTop: '1.5rem', display: 'block' }}>Markdown</label>
               <div class="code-box">
-                <pre id="md-code">{markdown}</pre>
+                <pre id="md-code">{initialMarkdown}</pre>
                 <button class="copy-btn" onclick="copy('md-code', this)">Copy</button>
               </div>
     
@@ -103,7 +103,7 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
 
             <div class="footer">
               Built by <a href="https://rahuldhole.com" target="_blank">Rahul Dhole</a> | 
-              <a href="https://github.com/rahuldhole/github-streak" target="_blank">GitHub</a>
+              <a href="https://github.com/rahuldhole/github-streak" target="_blank">GitHub Repository</a>
               <p style={{ marginTop: '1rem', fontSize: '0.7rem' }}>
                 Notice an error? Please open a <a href="https://github.com/rahuldhole/github-streak/issues" target="_blank">GitHub Issue</a> or <a href="https://github.com/rahuldhole/github-streak/pulls" target="_blank">Pull Request</a>.
               </p>
@@ -127,6 +127,7 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
               const user = usernameInput.value.trim();
               
               if (!user || !GITHUB_USERNAME_REGEX.test(user)) {
+                if (!user) return; // Silent return if empty
                 usernameInput.style.borderColor = '#d73a49';
                 usernameInput.style.boxShadow = '0 0 0 3px rgba(215, 58, 73, 0.1)';
                 generateBtn.textContent = 'Invalid User';
@@ -159,8 +160,8 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
                   generateBtn.textContent = 'Error';
                 } else {
                   previewImg.src = cardUrl;
-                  const markdown = \`![Github Streak](\${cardUrl})\`;
-                  const htmlStr = \`<img src="\${cardUrl}" alt="Github Streak" />\`;
+                  const markdown = \`![GitHub Streak](\${cardUrl})\`;
+                  const htmlStr = \`<img src="\${cardUrl}" alt="GitHub Streak" />\`;
                   mdCode.textContent = markdown;
                   htmlCode.textContent = htmlStr;
                   generateBtn.textContent = 'Generate';
@@ -184,7 +185,12 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
               theme = t;
               document.querySelectorAll('.themes button').forEach(b => b.classList.remove('active'));
               document.getElementById('theme-' + t).classList.add('active');
-              update();
+              
+              if (usernameInput.value.trim()) {
+                update();
+              } else {
+                previewImg.src = \`\${window.location.origin}/sample.svg?theme=\${theme}\`;
+              }
             }
 
             function copy(id, btn) {
