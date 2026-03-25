@@ -97,10 +97,17 @@ app.all('/', async (c) => {
 
     const finalResponse = c.body(svg.toString(), 200, headers)
 
-    // Populate cache asynchronously if supported (Cloudflare/Netlify)
+    // Populate the Cache API asynchronously (Cloudflare Workers).
+    // On Netlify Edge Functions, context.waitUntil() attempts an internal filesystem write
+    // that Deno's sandboxed runtime blocks. The cache write is a best-effort optimisation.
+    // Netlify's CDN handles caching via the Netlify-CDN-Cache-Control header.
     const executionCtx = (c as any).executionCtx
     if (cache && cacheKey && executionCtx?.waitUntil) {
-      executionCtx.waitUntil(cache.put(cacheKey, finalResponse.clone()))
+      executionCtx.waitUntil(
+        cache.put(cacheKey, finalResponse.clone()).catch((cacheErr: any) => {
+          console.warn('Cache write skipped:', cacheErr.message)
+        })
+      )
     }
     return finalResponse
 
