@@ -32,7 +32,17 @@ app.all('/', async (c) => {
     console.error('Cache API not available:', e)
   }
 
-  const cacheKey = cache ? new Request(url.toString(), c.req.raw) : null;
+  // Construct a normalized URL for the cache key
+  const normalizedUrl = new URL(url.origin);
+  normalizedUrl.searchParams.set('user', username);
+  if (url.searchParams.has('theme')) {
+    normalizedUrl.searchParams.set('theme', url.searchParams.get('theme')!);
+  }
+  if (url.searchParams.has('type')) {
+    normalizedUrl.searchParams.set('type', url.searchParams.get('type')!);
+  }
+
+  const cacheKey = cache ? new Request(normalizedUrl.toString(), c.req.raw) : null;
 
   if (cache && cacheKey) {
     let response = await cache.match(cacheKey);
