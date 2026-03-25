@@ -63,10 +63,15 @@ export async function fetchGitHubData(username: string, token: string, targetYea
 
   // LIGHT MODE: If we only need the current year's streak data
   if (targetYear && targetYear === new Date().getFullYear()) {
+    const allDays = currentCalendar.weeks.flatMap((w: any) => w.contributionDays)
+    const cyTotal = allDays
+      .filter((d: any) => d.date.startsWith(targetYear.toString()))
+      .reduce((sum: number, d: any) => sum + d.contributionCount, 0)
+
     return {
-      days: currentCalendar.weeks.flatMap((w: any) => w.contributionDays),
-      totalContributions: currentCalendar.totalContributions,
-      contributionYears: [targetYear],
+      days: allDays,
+      totalContributions: cyTotal,
+      contributionYears: years,
       rateLimit
     }
   }
@@ -122,7 +127,8 @@ export async function fetchGitHubData(username: string, token: string, targetYea
 
   // Sum totals across all chunks
   const allTimeTotal = chunkResults.reduce((total: number, chunkData: any) => {
-    return total + Object.values(chunkData).reduce((sum: number, collection: any) => {
+    return total + Object.entries(chunkData).reduce((sum: number, [key, collection]: [string, any]) => {
+      if (!key.startsWith('y')) return sum
       return sum + (collection?.contributionCalendar?.totalContributions || 0)
     }, 0)
   }, 0)

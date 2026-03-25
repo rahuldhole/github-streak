@@ -144,14 +144,18 @@ app.all('*', async (c) => {
         githubRateLimitResetAt = new Date(fresh.rateLimit.resetAt).getTime()
       }
 
+      const currentYearTotal = fresh.days
+        .filter(d => d.date.startsWith(currentYear.toString()))
+        .reduce((sum, d) => sum + d.contributionCount, 0)
+
       // If we did a full fetch (no targetYear set), calculate and update history
       if (!targetYear) {
-        const histTotal = fresh.totalContributions - fresh.days.filter(d => d.date.startsWith(currentYear.toString())).reduce((a, b) => a + b.contributionCount, 0)
+        const histTotal = fresh.totalContributions - currentYearTotal
         historyBlob = { total: histTotal, years: fresh.contributionYears.filter(y => y !== currentYear) }
         await streakStore.setJSON(historyKey, historyBlob).catch(() => {})
       }
 
-      const stats = calculateStreakStats(fresh.days, fresh.totalContributions, fresh.contributionYears)
+      const stats = calculateStreakStats(fresh.days, currentYearTotal, fresh.contributionYears)
       const last7 = fresh.days.slice(-7)
       const maxCount = Math.max(...last7.map(d => d.contributionCount), 1)
 
