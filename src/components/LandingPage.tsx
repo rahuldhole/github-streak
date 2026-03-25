@@ -6,7 +6,7 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
   const initialUser = ''
   const initialTheme = 'dark'
   const version = pkg.version
-  const sampleUrl = `${origin}/sample.svg?theme=${initialTheme}`
+  const sampleUrl = `${origin}/sample.svg?theme=${initialTheme}&v=${version}`
   const initialMarkdown = `![GitHub Streak](${origin}/?user=YOUR_USERNAME&theme=${initialTheme}&v=${version})`
   const initialHtml = `<img src="${origin}/?user=YOUR_USERNAME&theme=${initialTheme}&v=${version}" alt="GitHub Streak" />`
   const escapedHtml = initialHtml.replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -148,7 +148,7 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
 
               errorBanner.style.display = 'none';
               loadingOverlay.style.display = 'flex';
-              previewImg.style.opacity = '0.3';
+              previewImg.style.opacity = '0';
 
               const baseUrl = window.location.origin;
               const cardUrl = \`\${baseUrl}/?user=\${user}&theme=\${theme}&v=\${version}\`;
@@ -169,7 +169,14 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
                   errorBanner.style.display = 'block';
                   generateBtn.textContent = 'Error';
                 } else {
+                  // Wait for the browser to actually finish fetching AND rendering the SVG bytes
+                  const onloadPromise = new Promise((resolve) => {
+                    previewImg.onload = resolve;
+                    previewImg.onerror = resolve; // Continue reveal even if image is broken
+                  });
                   previewImg.src = cardUrl;
+                  await onloadPromise;
+
                   const markdown = \`![GitHub Streak](\${cardUrl})\`;
                   const htmlStr = \`<img src="\${cardUrl}" alt="GitHub Streak" />\`;
                   mdCode.textContent = markdown;
@@ -201,7 +208,7 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
               if (usernameInput.value.trim()) {
                 update();
               } else {
-                previewImg.src = \`\${window.location.origin}/sample.svg?theme=\${theme}\`;
+                previewImg.src = \`\${window.location.origin}/sample.svg?theme=\${theme}&v=\${version}\`;
               }
             }
 
