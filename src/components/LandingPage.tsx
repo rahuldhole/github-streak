@@ -7,8 +7,8 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
   const initialTheme = 'dark'
   const version = pkg.version
   const sampleUrl = `${origin}/sample.svg?theme=${initialTheme}`
-  const initialMarkdown = `![GitHub Streak](${origin}/?user=YOUR_USERNAME&theme=${initialTheme})`
-  const initialHtml = `<img src="${origin}/?user=YOUR_USERNAME&theme=${initialTheme}" alt="GitHub Streak" />`
+  const initialMarkdown = `![GitHub Streak](${origin}/?user=YOUR_USERNAME&theme=${initialTheme}&v=${version})`
+  const initialHtml = `<img src="${origin}/?user=YOUR_USERNAME&theme=${initialTheme}&v=${version}" alt="GitHub Streak" />`
   const escapedHtml = initialHtml.replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
   return (

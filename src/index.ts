@@ -24,6 +24,7 @@ app.onError((err, c) => {
   
   // Use Hono's native query parser
   if (c.req.query('user') !== undefined) {
+    c.header('Vary', 'Accept')
     return c.body(renderErrorSVG(message).toString(), 200, {
       'Content-Type': 'image/svg+xml',
       'Cache-Control': 'no-store, no-cache, must-revalidate'
@@ -31,18 +32,21 @@ app.onError((err, c) => {
   }
   
   const status = (err as any).status || 500
+  c.header('Vary', 'Accept')
   return c.html(`<h1>Error: ${message}</h1>`, status)
 })
 
 app.notFound((c) => {
   // Use Hono's native query parser
   if (c.req.query('user') !== undefined) {
+    c.header('Vary', 'Accept')
     return c.body(renderErrorSVG('Path Not Found').toString(), 200, {
       'Content-Type': 'image/svg+xml',
       'Cache-Control': 'no-store, no-cache, must-revalidate'
     })
   }
   
+  c.header('Vary', 'Accept')
   return c.html('<h1>404 Not Found</h1>', 404)
 })
 
@@ -66,6 +70,7 @@ app.all('*', async (c) => {
       { contributionCount: 3, date: '2024-03-07' }
     ]
     const svg = renderSVG(mockStats as any, mockLast7 as any, 10, (c.req.query('theme') || 'dark') as Theme)
+    c.header('Vary', 'Accept')
     return c.body(svg.toString(), 200, { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'no-store' })
   }
 
@@ -74,10 +79,12 @@ app.all('*', async (c) => {
   // If NO 'user' parameter is present (strictly undefined), return HTML
   if (queryUser === undefined) {
     if (c.req.path === '/' || c.req.path === '') {
-      c.header('Cache-Control', 'public, max-age=86400, s-maxage=86400')
-      c.header('Netlify-CDN-Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=604800')
+      c.header('Vary', 'Accept')
+      c.header('Cache-Control', 'public, max-age=3600, s-maxage=3600')
+      c.header('Netlify-CDN-Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=0')
       return c.html(renderLandingPage(url.origin))
     }
+    c.header('Vary', 'Accept')
     return c.notFound()
   }
 
@@ -85,6 +92,7 @@ app.all('*', async (c) => {
   const username = queryUser.trim()
 
   if (!username || !GITHUB_USERNAME_REGEX.test(username)) {
+    c.header('Vary', 'Accept')
     return c.body(renderErrorSVG('Invalid Username').toString(), 200, {
       'Content-Type': 'image/svg+xml',
       'Cache-Control': 'no-store, no-cache, must-revalidate'
@@ -97,6 +105,7 @@ app.all('*', async (c) => {
 
   if (userLimit && now < userLimit.reset) {
     if (userLimit.count >= MAX_REQUESTS_PER_WINDOW) {
+      c.header('Vary', 'Accept')
       return c.body(renderErrorSVG('Rate Limit Exceeded').toString(), 200, {
         'Content-Type': 'image/svg+xml',
         'Cache-Control': 'no-store, no-cache, must-revalidate',
@@ -110,6 +119,7 @@ app.all('*', async (c) => {
 
   if (githubRateLimitRemaining < 50 && now < githubRateLimitResetAt) {
     const retryAfter = Math.ceil((githubRateLimitResetAt - now) / 1000)
+    c.header('Vary', 'Accept')
     return c.body(renderErrorSVG('Circuit Breaker Active').toString(), 200, {
       'Content-Type': 'image/svg+xml',
       'Cache-Control': 'no-store, no-cache, must-revalidate',
@@ -125,9 +135,13 @@ app.all('*', async (c) => {
   } catch (e) {}
 
   const normalizedUrl = new URL(url.origin);
+  normalizedUrl.pathname = c.req.path || '/'; // be explicit
   normalizedUrl.searchParams.set('user', username);
   if (c.req.query('theme')) normalizedUrl.searchParams.set('theme', c.req.query('theme')!);
   if (c.req.query('type')) normalizedUrl.searchParams.set('type', c.req.query('type')!);
+  const v = c.req.query('v');
+  if (v) normalizedUrl.searchParams.set('v', v);
+  if (c.req.query('no-cache')) normalizedUrl.searchParams.set('no-cache', 'true');
 
   const cacheKey = cache ? new Request(normalizedUrl.toString(), c.req.raw) : null;
   if (cache && cacheKey && !c.req.query('no-cache')) {
@@ -137,6 +151,7 @@ app.all('*', async (c) => {
       if (age && parseInt(age) < 3600) {
         const response = new Response(cachedResponse.body, cachedResponse);
         response.headers.set('X-Cache', 'HIT');
+        response.headers.set('Vary', 'Accept');
         return response;
       }
     }
@@ -144,6 +159,7 @@ app.all('*', async (c) => {
 
   const token = c.env.GITHUB_TOKEN
   if (!token) {
+    c.header('Vary', 'Accept')
     return c.body(renderErrorSVG('Config Error').toString(), 200, {
       'Content-Type': 'image/svg+xml',
       'Cache-Control': 'no-store, no-cache, must-revalidate'
@@ -166,15 +182,17 @@ app.all('*', async (c) => {
 
     const type = c.req.query('type')
     if (type === 'json') {
+      c.header('Vary', 'Accept')
       return c.json({ username, stats, last7, maxCount, theme })
     }
 
     const svg = renderSVG(stats, last7, maxCount, theme)
-    const headers = {
+    const headers: Record<string, string> = {
       'Content-Type': 'image/svg+xml',
       'Cache-Control': 'public, max-age=3600, s-maxage=3600',
-      'Netlify-CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
-      'X-GitHub-Remaining': githubRateLimitRemaining.toString()
+      'Netlify-CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=0',
+      'X-GitHub-Remaining': githubRateLimitRemaining.toString(),
+      'Vary': 'Accept'
     }
 
     const finalResponse = c.body(svg.toString(), 200, headers)
@@ -193,6 +211,7 @@ app.all('*', async (c) => {
     const message = isNotFound ? 'User Not Found' : (isRateLimit ? 'API Rate Limit' : 'GitHub API Error')
     const errorSvg = renderErrorSVG(message)
     
+    c.header('Vary', 'Accept')
     return c.body(errorSvg.toString(), 200, {
       'Content-Type': 'image/svg+xml',
       'Cache-Control': 'no-store, no-cache, must-revalidate'
