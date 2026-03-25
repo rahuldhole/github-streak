@@ -19,20 +19,30 @@ const MAX_REQUESTS_PER_WINDOW = 30
 let githubRateLimitRemaining = 5000
 let githubRateLimitResetAt = 0
 
+// Safe error sanitization
+const getSafeErrorMessage = (err: any) => {
+  const msg = err.message || ''
+  if (msg.includes('not found')) return 'User Not Found'
+  if (msg.includes('401') || msg.includes('403')) return 'GitHub Auth Error'
+  if (msg.includes('rate limit')) return 'GitHub Rate Limit'
+  return 'System Error'
+}
+
 // Global error handler
 app.onError((err, c) => {
   console.error('App Error:', err)
-  const message = err.message || 'Internal Server Error'
+  const safeMessage = getSafeErrorMessage(err)
+  
   if (c.req.query('user') !== undefined) {
     c.header('Vary', 'Accept')
-    return c.body(renderErrorSVG(message).toString(), 200, {
+    return c.body(renderErrorSVG(safeMessage).toString(), 200, {
       'Content-Type': 'image/svg+xml',
       'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate'
     })
   }
   const status = (err as any).status || 500
   c.header('Vary', 'Accept')
-  return c.html(`<h1>Error: ${message}</h1>`, status)
+  return c.html(`<h1>Error: ${safeMessage}</h1>`, status)
 })
 
 app.notFound((c) => {
@@ -103,15 +113,14 @@ app.all('*', async (c) => {
   const ip = c.req.header('x-forwarded-for') || c.req.header('cf-connecting-ip') || 'unknown'
   const now = Date.now()
   const userLimit = ipRateLimit.get(ip)
+  let isIpRateLimited = false
+
   if (userLimit && now < userLimit.reset) {
     if (userLimit.count >= MAX_REQUESTS_PER_WINDOW) {
-      c.header('Vary', 'Accept')
-      return c.body(renderErrorSVG('Rate Limit Exceeded').toString(), 200, {
-        'Content-Type': 'image/svg+xml',
-        'Cache-Control': 'no-store, no-cache, must-revalidate'
-      })
+      isIpRateLimited = true
+    } else {
+      userLimit.count++
     }
-    userLimit.count++
   } else {
     ipRateLimit.set(ip, { count: 1, reset: now + RATE_LIMIT_WINDOW })
   }
@@ -137,11 +146,18 @@ app.all('*', async (c) => {
 
   const isCurrentStale = isVersionStale || !currentBlob || (Date.now() - currentBlob.timestamp > 3600000)
   
-  if (isCurrentStale || forceRefresh || !historyBlob) {
+  // High-Level Availability Guard
+  // Only proceed to GitHub fetch if NOT rate-limited AND NOT quota-exhausted
+  if ((isCurrentStale || forceRefresh || !historyBlob) && !isIpRateLimited) {
     const token = c.env.GITHUB_TOKEN
     if (!token) return c.body(renderErrorSVG('Config Error').toString(), 200, { 'Content-Type': 'image/svg+xml' });
 
-    try {
+    // Quota Guard: If we are critically low on GitHub quota (or exhausted), strictly serve stale data
+    const isQuotaExhausted = githubRateLimitRemaining === 0 && Date.now() < githubRateLimitResetAt
+    if ((githubRateLimitRemaining < 20 || isQuotaExhausted) && currentBlob) {
+        console.warn('Quota critically low or exhausted, serving stale data for:', username)
+    } else {
+        try {
       // TIERED FETCH: If we have history AND the version is current, only fetch the current year
       const targetYear = (historyBlob && !forceRefresh && !isVersionStale) ? currentYear : undefined
       const fresh = await fetchGitHubData(username, token, targetYear)
@@ -172,14 +188,24 @@ app.all('*', async (c) => {
 
       currentBlob = { stats, last7, maxCount, timestamp: Date.now(), cacheVersion: activeVersion }
       await streakStore.setJSON(currentKey, currentBlob).catch(() => {})
-    } catch (error: any) {
-      if (currentBlob) {
-        // Fallback to stale data
-      } else {
-        const isNotFound = error.message?.includes('not found')
-        return c.body(renderErrorSVG(isNotFound ? 'User Not Found' : 'GitHub API Error').toString(), 200, { 'Content-Type': 'image/svg+xml' });
-      }
+        } catch (error: any) {
+          if (currentBlob) {
+            // Fallback to stale data
+          } else {
+            return c.body(renderErrorSVG(getSafeErrorMessage(error)).toString(), 200, { 'Content-Type': 'image/svg+xml' });
+          }
+        }
     }
+  }
+
+  // Final validation before rendering: If we were rate-limited and still have no data, return error
+  if (!currentBlob) {
+    c.header('Vary', 'Accept')
+    const errorMsg = isIpRateLimited ? 'Rate Limit Exceeded' : 'Data Not Available'
+    return c.body(renderErrorSVG(errorMsg).toString(), 200, {
+      'Content-Type': 'image/svg+xml',
+      'Cache-Control': 'no-store, no-cache, must-revalidate'
+    })
   }
 
   // Final Aggregation: Combine cached history with current data

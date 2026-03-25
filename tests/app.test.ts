@@ -11,6 +11,27 @@ mock.module("@netlify/blobs", () => ({
   })
 }));
 
+// Mock global fetch for app.test.ts
+globalThis.fetch = mock(async () => {
+  return {
+      ok: true,
+      headers: new Headers({ "X-RateLimit-Remaining": "5000", "X-RateLimit-Reset": "12345678" }),
+      json: async () => ({
+          data: {
+              user: {
+                  contributionsCollection: {
+                      contributionYears: [2024],
+                      contributionCalendar: {
+                          totalContributions: 100,
+                          weeks: [{ contributionDays: [] }]
+                      }
+                  }
+              }
+          }
+      })
+  } as any;
+});
+
 import { app } from "../src/index.ts";
 
 describe("Application Routes and Status Codes", () => {
@@ -58,6 +79,7 @@ describe("Application Routes and Status Codes", () => {
     });
 
     test("Rate Limiting triggers (local simulation)", async () => {
+        mockGet.mockResolvedValue(null);
         const responses = [];
         for (let i = 0; i < 35; i++) {
            responses.push(await app.request("/?user=rahuldhole", {
