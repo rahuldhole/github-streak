@@ -110,8 +110,23 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
             const htmlCode = document.getElementById('html-code');
             const generateBtn = document.querySelector('.generate-btn');
 
+            const GITHUB_USERNAME_REGEX = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
+
             function update() {
-              const user = usernameInput.value || 'username';
+              const user = usernameInput.value.trim();
+              
+              if (!user || !GITHUB_USERNAME_REGEX.test(user)) {
+                usernameInput.style.borderColor = '#d73a49';
+                usernameInput.style.boxShadow = '0 0 0 3px rgba(215, 58, 73, 0.1)';
+                generateBtn.textContent = 'Invalid User';
+                setTimeout(() => {
+                  usernameInput.style.borderColor = '';
+                  usernameInput.style.boxShadow = '';
+                  generateBtn.textContent = 'Generate';
+                }, 2000);
+                return;
+              }
+
               const baseUrl = window.location.origin;
               const cardUrl = \`\${baseUrl}/?user=\${user}&theme=\${theme}\`;
               

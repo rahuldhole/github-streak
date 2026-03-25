@@ -18,7 +18,12 @@ query($login:String!) {
   }
 }`
 
-export async function fetchGitHubData(username: string, token: string): Promise<{ days: GitHubContributionDay[], totalContributions: number, contributionYears: number[] }> {
+export async function fetchGitHubData(username: string, token: string): Promise<{ 
+  days: GitHubContributionDay[], 
+  totalContributions: number, 
+  contributionYears: number[],
+  rateLimit?: { remaining: number, resetAt: string } 
+}> {
   const headers = {
     "Content-Type": "application/json",
     "Authorization": "Bearer " + token,
@@ -48,18 +53,23 @@ export async function fetchGitHubData(username: string, token: string): Promise<
   const currentCalendar = user.contributionsCollection.contributionCalendar
   const years: number[] = user.contributionsCollection.contributionYears
 
+  // Extract rate limit from headers
+  const remaining = res.headers.get("X-RateLimit-Remaining")
+  const resetAt = res.headers.get("X-RateLimit-Reset")
+  const rateLimit = remaining && resetAt ? { 
+    remaining: parseInt(remaining), 
+    resetAt: new Date(parseInt(resetAt) * 1000).toISOString() 
+  } : undefined
+
   // The first call returns the last 365 days of contributions, which we use for the streak display.
-  // For the "Total Contributions" count, we need to sum up all time contributions across all years.
-  //
-  // Accounts with 10+ years of history can exceed GitHub's GraphQL complexity limit in a single
-  // batched alias query. To avoid this, we chunk the years into batches of 5 and run them in
-  // parallel via Promise.all. Past-year data is immutable, so results are deterministic.
+  // ... (rest of the logic remains similar but returns rateLimit)
 
   if (years.length === 0) {
     return {
       days: currentCalendar.weeks.flatMap((w: any) => w.contributionDays),
       totalContributions: currentCalendar.totalContributions,
-      contributionYears: []
+      contributionYears: [],
+      rateLimit
     }
   }
 
@@ -114,6 +124,7 @@ export async function fetchGitHubData(username: string, token: string): Promise<
   return {
     days: currentCalendar.weeks.flatMap((w: any) => w.contributionDays),
     totalContributions: allTimeTotal,
-    contributionYears: years
+    contributionYears: years,
+    rateLimit
   }
 }

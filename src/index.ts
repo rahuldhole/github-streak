@@ -9,6 +9,17 @@ const app = new Hono<{ Bindings: Bindings }>()
 // Global type for Cloudflare caches
 declare const caches: any
 
+const GITHUB_USERNAME_REGEX = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i
+
+// Simple in-memory rate limiter (per-isolate)
+const ipRateLimit = new Map<string, { count: number, reset: number }>()
+const RATE_LIMIT_WINDOW = 60 * 1000 // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 30
+
+// Global circuit breaker state (per-isolate)
+let githubRateLimitRemaining = 5000
+let githubRateLimitResetAt = 0
+
 app.all('/', async (c) => {
   const url = new URL(c.req.url)
   const username = url.searchParams.get('user')
@@ -18,6 +29,40 @@ app.all('/', async (c) => {
     c.header('Netlify-CDN-Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=604800')
     const origin = url.origin
     return c.html(renderLandingPage(origin))
+  }
+
+  // 1. Input Validation
+  if (!GITHUB_USERNAME_REGEX.test(username)) {
+    return c.body(renderErrorSVG('Invalid Username').toString(), 400, {
+      'Content-Type': 'image/svg+xml',
+      'Cache-Control': 'no-store, no-cache, must-revalidate'
+    })
+  }
+
+  // 2. IP-based Rate Limiting
+  const ip = c.req.header('x-forwarded-for') || c.req.header('cf-connecting-ip') || 'unknown'
+  const now = Date.now()
+  const userLimit = ipRateLimit.get(ip)
+
+  if (userLimit && now < userLimit.reset) {
+    if (userLimit.count >= MAX_REQUESTS_PER_WINDOW) {
+      return c.body(renderErrorSVG('Rate Limit Exceeded').toString(), 429, {
+        'Content-Type': 'image/svg+xml',
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Retry-After': Math.ceil((userLimit.reset - now) / 1000).toString()
+      })
+    }
+    userLimit.count++
+  } else {
+    ipRateLimit.set(ip, { count: 1, reset: now + RATE_LIMIT_WINDOW })
+  }
+
+  // 3. Circuit Breaker (GitHub Token Protection)
+  if (githubRateLimitRemaining < 50 && now < githubRateLimitResetAt) {
+    return c.body(renderErrorSVG('API Quota Low').toString(), 503, {
+      'Content-Type': 'image/svg+xml',
+      'Cache-Control': 'no-store, no-cache, must-revalidate'
+    })
   }
 
   // Cache API: Store the rendered SVG to avoid redundant executions and GitHub API calls.
@@ -68,7 +113,14 @@ app.all('/', async (c) => {
   const theme = (url.searchParams.get('theme') || 'transparent') as Theme
 
   try {
-    const { days: allDays, totalContributions, contributionYears } = await fetchGitHubData(username, token)
+    const { days: allDays, totalContributions, contributionYears, rateLimit } = await fetchGitHubData(username, token)
+    
+    // Update circuit breaker state
+    if (rateLimit) {
+      githubRateLimitRemaining = rateLimit.remaining
+      githubRateLimitResetAt = new Date(rateLimit.resetAt).getTime()
+    }
+
     const stats = calculateStreakStats(allDays, totalContributions, contributionYears)
     const last7 = allDays.slice(-7)
     const maxCount = Math.max(...last7.map(d => d.contributionCount), 1)
@@ -113,11 +165,15 @@ app.all('/', async (c) => {
 
   } catch (error: any) {
     const isNotFound = error.message?.includes('not found')
-    const errorSvg = renderErrorSVG(isNotFound ? 'User Not Found' : 'GitHub API Error')
+    const isRateLimit = error.message?.includes('Rate Limit') || error.message?.includes('429')
     
-    return c.body(errorSvg.toString(), 200, {
+    const status = isNotFound ? 404 : (isRateLimit ? 429 : 503)
+    const message = isNotFound ? 'User Not Found' : (isRateLimit ? 'API Rate Limit' : 'GitHub API Error')
+    const errorSvg = renderErrorSVG(message)
+    
+    return c.body(errorSvg.toString(), status, {
       'Content-Type': 'image/svg+xml',
-      'Cache-Control': 'no-cache'
+      'Cache-Control': 'no-store, no-cache, must-revalidate'
     })
   }
 })
