@@ -4,12 +4,12 @@ import { fetchGitHubData } from './github.ts'
 import { calculateStreakStats } from './logic.ts'
 import { renderSVG, renderLandingPage, renderErrorSVG } from './renderer.tsx'
 
-const app = new Hono<{ Bindings: Bindings }>()
+export const app = new Hono<{ Bindings: Bindings }>()
 
 // Global type for Cloudflare caches
 declare const caches: any
 
-const GITHUB_USERNAME_REGEX = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i
+export const GITHUB_USERNAME_REGEX = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i
 
 // Simple in-memory rate limiter (per-isolate)
 const ipRateLimit = new Map<string, { count: number, reset: number }>()
