@@ -20,44 +20,40 @@ let githubRateLimitResetAt = 0
 // Global error handler
 app.onError((err, c) => {
   console.error('App Error:', err)
-  // Re-extract username to decide on format
   const url = new URL(c.req.url)
-  const username = c.req.query('user') || url.searchParams.get('user')
   const message = err.message || 'Internal Server Error'
-  const errorSvg = renderErrorSVG(message)
   
-  if (username !== null && username !== undefined) {
-    // MUST BE 200 FOR GITHUB CAMO
-    return c.body(errorSvg.toString(), 200, {
+  // Only return SVG if the ?user parameter was present
+  if (url.searchParams.has('user')) {
+    return c.body(renderErrorSVG(message).toString(), 200, {
       'Content-Type': 'image/svg+xml',
       'Cache-Control': 'no-store, no-cache, must-revalidate'
     })
   }
+  
   const status = (err as any).status || 500
-  return c.html(renderErrorSVG(message).toString(), status)
+  return c.html(`<h1>Error: ${message}</h1>`, status)
 })
 
 app.notFound((c) => {
   const url = new URL(c.req.url)
-  const username = c.req.query('user') || url.searchParams.get('user')
-  if (username !== null && username !== undefined) {
-    // MUST BE 200 FOR GITHUB CAMO
+  
+  // Only return SVG if the ?user parameter was present
+  if (url.searchParams.has('user')) {
     return c.body(renderErrorSVG('Path Not Found').toString(), 200, {
       'Content-Type': 'image/svg+xml',
       'Cache-Control': 'no-store, no-cache, must-revalidate'
     })
   }
-  return c.html(renderErrorSVG('Not Found').toString(), 404)
+  
+  return c.html('<h1>404 Not Found</h1>', 404)
 })
 
 app.all('*', async (c) => {
   const url = new URL(c.req.url)
-  const queryUser = c.req.query('user')
-  const searchUser = url.searchParams.get('user')
-  const rawUsername = queryUser !== undefined ? queryUser : searchUser
 
-  // If NO 'user' parameter is present (strictly null/undefined), show landing page on root
-  if (rawUsername === null || rawUsername === undefined) {
+  // If NO 'user' parameter is present, return HTML (Landing Page or 404)
+  if (!url.searchParams.has('user')) {
     if (c.req.path === '/' || c.req.path === '') {
       c.header('Cache-Control', 'public, max-age=86400, s-maxage=86400')
       c.header('Netlify-CDN-Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=604800')
@@ -66,8 +62,8 @@ app.all('*', async (c) => {
     return c.notFound()
   }
 
-  // If we have 'user', we MUST return an SVG (or JSON if requested)
-  const username = rawUsername.trim();
+  // --- From here on, we MUST return an SVG (or JSON if requested) ---
+  const username = url.searchParams.get('user')?.trim() || ''
 
   // 1. Input Validation
   if (!username || !GITHUB_USERNAME_REGEX.test(username)) {

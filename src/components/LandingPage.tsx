@@ -104,6 +104,9 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
             <div class="footer">
               Built by <a href="https://rahuldhole.com" target="_blank">Rahul Dhole</a> | 
               <a href="https://github.com/rahuldhole/github-streak" target="_blank">GitHub</a>
+              <p style={{ marginTop: '1rem', fontSize: '0.7rem' }}>
+                Notice an error? Please open a <a href="https://github.com/rahuldhole/github-streak/issues" target="_blank">GitHub Issue</a> or <a href="https://github.com/rahuldhole/github-streak/pulls" target="_blank">Pull Request</a>.
+              </p>
             </div>
           </div>
 
