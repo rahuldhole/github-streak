@@ -12,6 +12,7 @@
     "packageJson": {
       "dependencies": [
         "npm:@cloudflare/workers-types@^4.20260317.1",
+        "npm:@netlify/blobs@^10.7.4",
         "npm:@types/node@^25.5.0",
         "npm:hono@^4.12.8",
         "npm:typescript@^5.9.3",

@@ -10,6 +10,7 @@
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {
+    "@netlify/blobs": "^10.7.4",
     "hono": "^4.12.8"
   },
   "devDependencies": {

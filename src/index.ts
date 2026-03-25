@@ -1,12 +1,11 @@
 import { Hono } from 'hono'
+import { getStore } from '@netlify/blobs'
 import { Bindings, Theme } from './types.ts'
 import { fetchGitHubData } from './github.ts'
 import { calculateStreakStats } from './logic.ts'
 import { renderSVG, renderLandingPage, renderErrorSVG } from './renderer.tsx'
 
 export const app = new Hono<{ Bindings: Bindings }>()
-
-declare const caches: any
 
 export const GITHUB_USERNAME_REGEX = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i
 
@@ -22,12 +21,11 @@ app.onError((err, c) => {
   console.error('App Error:', err)
   const message = err.message || 'Internal Server Error'
   
-  // Use Hono's native query parser
   if (c.req.query('user') !== undefined) {
     c.header('Vary', 'Accept')
     return c.body(renderErrorSVG(message).toString(), 200, {
       'Content-Type': 'image/svg+xml',
-      'Cache-Control': 'no-store, no-cache, must-revalidate'
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate'
     })
   }
   
@@ -37,7 +35,6 @@ app.onError((err, c) => {
 })
 
 app.notFound((c) => {
-  // Use Hono's native query parser
   if (c.req.query('user') !== undefined) {
     c.header('Vary', 'Accept')
     return c.body(renderErrorSVG('Path Not Found').toString(), 200, {
@@ -69,27 +66,30 @@ app.all('*', async (c) => {
       { contributionCount: 7, date: '2024-03-06' },
       { contributionCount: 3, date: '2024-03-07' }
     ]
-    const svg = renderSVG(mockStats as any, mockLast7 as any, 10, (c.req.query('theme') || 'dark') as Theme)
+    const svg = renderSVG(mockStats as any, mockLast7 as any, 10, (c.req.query('theme') || 'dark') as Theme, 'Sample Data')
     c.header('Vary', 'Accept')
-    return c.body(svg.toString(), 200, { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'no-store' })
+    return c.body(svg.toString(), 200, { 
+      'Content-Type': 'image/svg+xml', 
+      'Cache-Control': 'no-store, no-cache, must-revalidate' 
+    })
   }
 
   const queryUser = c.req.query('user');
 
-  // If NO 'user' parameter is present (strictly undefined), return HTML
   if (queryUser === undefined) {
     if (c.req.path === '/' || c.req.path === '') {
       c.header('Vary', 'Accept')
       c.header('Cache-Control', 'public, max-age=3600, s-maxage=3600')
-      c.header('Netlify-CDN-Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=0')
+      c.header('Netlify-CDN-Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=3600')
       return c.html(renderLandingPage(url.origin))
     }
     c.header('Vary', 'Accept')
     return c.notFound()
   }
 
-  // --- From here on, we MUST return an SVG (or JSON if requested) ---
   const username = queryUser.trim()
+  const theme = (c.req.query('theme') || 'transparent') as Theme
+  const type = c.req.query('type')
 
   if (!username || !GITHUB_USERNAME_REGEX.test(username)) {
     c.header('Vary', 'Accept')
@@ -99,17 +99,16 @@ app.all('*', async (c) => {
     })
   }
 
+  // Rate limiting (in-memory)
   const ip = c.req.header('x-forwarded-for') || c.req.header('cf-connecting-ip') || 'unknown'
   const now = Date.now()
   const userLimit = ipRateLimit.get(ip)
-
   if (userLimit && now < userLimit.reset) {
     if (userLimit.count >= MAX_REQUESTS_PER_WINDOW) {
       c.header('Vary', 'Accept')
       return c.body(renderErrorSVG('Rate Limit Exceeded').toString(), 200, {
         'Content-Type': 'image/svg+xml',
-        'Cache-Control': 'no-store, no-cache, must-revalidate',
-        'Retry-After': Math.ceil((userLimit.reset - now) / 1000).toString()
+        'Cache-Control': 'no-store, no-cache, must-revalidate'
       })
     }
     userLimit.count++
@@ -117,102 +116,81 @@ app.all('*', async (c) => {
     ipRateLimit.set(ip, { count: 1, reset: now + RATE_LIMIT_WINDOW })
   }
 
-  if (githubRateLimitRemaining < 50 && now < githubRateLimitResetAt) {
-    const retryAfter = Math.ceil((githubRateLimitResetAt - now) / 1000)
-    c.header('Vary', 'Accept')
-    return c.body(renderErrorSVG('Circuit Breaker Active').toString(), 200, {
-      'Content-Type': 'image/svg+xml',
-      'Cache-Control': 'no-store, no-cache, must-revalidate',
-      'Retry-After': retryAfter.toString()
-    })
+  // NETLIFY BLOBS CACHING
+  const streakStore = getStore('streak-data')
+  let cachedData: any = null
+  
+  try {
+    if (!c.req.query('no-cache')) {
+      cachedData = await streakStore.get(username, { type: 'json' })
+    }
+  } catch (e) {
+    console.error('Blob fetch failed:', e)
   }
 
-  let cache: any = null
-  try {
-    if (typeof caches !== 'undefined') {
-      cache = (caches as any).default || (await caches.open('streak-cache'))
+  let finalData = cachedData
+  let lastUpdated = cachedData?.timestamp ? new Date(cachedData.timestamp).toLocaleTimeString() : undefined
+
+  // Re-fetch if no cache or cache older than 1 hour
+  const isStale = !cachedData || (Date.now() - cachedData.timestamp > 3600000)
+
+  if (isStale || c.req.query('no-cache')) {
+    const token = c.env.GITHUB_TOKEN
+    if (!token) {
+      return c.body(renderErrorSVG('Config Error').toString(), 200, {
+        'Content-Type': 'image/svg+xml',
+        'Cache-Control': 'no-store'
+      })
     }
-  } catch (e) {}
 
-  const theme = (c.req.query('theme') || 'transparent') as Theme
-  const type = c.req.query('type')
-  const v = c.req.query('v')
+    try {
+      const { days, totalContributions, contributionYears, rateLimit } = await fetchGitHubData(username, token)
+      
+      if (rateLimit) {
+        githubRateLimitRemaining = rateLimit.remaining
+        githubRateLimitResetAt = new Date(rateLimit.resetAt).getTime()
+      }
 
-  // MANUAL CACHE KEY CONSTRUCTION
-  // Ensures the internal Cache API correctly distinguishes between users
-  const cacheIdentifier = `user=${username}&theme=${theme}&type=${type || 'svg'}&v=${v || 'default'}`;
-  const cacheKey = cache ? new Request(new URL(`${url.origin}${url.pathname}?${cacheIdentifier}`).toString()) : null;
+      const stats = calculateStreakStats(days, totalContributions, contributionYears)
+      const last7 = days.slice(-7)
+      const maxCount = Math.max(...last7.map(d => d.contributionCount), 1)
 
-  if (cache && cacheKey && !c.req.query('no-cache')) {
-    const cachedResponse = await cache.match(cacheKey)
-    if (cachedResponse) {
-      const age = cachedResponse.headers.get('Age');
-      if (age && parseInt(age) < 3600) {
-        const response = new Response(cachedResponse.body, cachedResponse);
-        response.headers.set('X-Cache', 'HIT');
-        response.headers.set('Vary', 'Accept');
-        return response;
+      finalData = { stats, last7, maxCount, timestamp: Date.now() }
+      lastUpdated = new Date(finalData.timestamp).toLocaleTimeString()
+
+      // Async write to blobs
+      const executionCtx = (c as any).executionCtx
+      if (executionCtx?.waitUntil) {
+        executionCtx.waitUntil(streakStore.setJSON(username, finalData).catch(() => {}))
+      } else {
+        await streakStore.setJSON(username, finalData).catch(() => {})
+      }
+    } catch (error: any) {
+      if (cachedData) {
+        // Fallback to stale data on error
+        finalData = cachedData
+      } else {
+        const isNotFound = error.message?.includes('not found')
+        return c.body(renderErrorSVG(isNotFound ? 'User Not Found' : 'GitHub API Error').toString(), 200, {
+          'Content-Type': 'image/svg+xml',
+          'Cache-Control': 'no-store'
+        })
       }
     }
   }
 
-  const token = c.env.GITHUB_TOKEN
-  if (!token) {
+  if (type === 'json') {
     c.header('Vary', 'Accept')
-    return c.body(renderErrorSVG('Config Error').toString(), 200, {
-      'Content-Type': 'image/svg+xml',
-      'Cache-Control': 'no-store, no-cache, must-revalidate'
-    })
+    return c.json({ username, ...finalData, theme })
   }
 
-  try {
-    const { days: allDays, totalContributions, contributionYears, rateLimit } = await fetchGitHubData(username, token)
-    
-    if (rateLimit) {
-      githubRateLimitRemaining = rateLimit.remaining
-      githubRateLimitResetAt = new Date(rateLimit.resetAt).getTime()
-    }
-
-    const stats = calculateStreakStats(allDays, totalContributions, contributionYears)
-    const last7 = allDays.slice(-7)
-    const maxCount = Math.max(...last7.map(d => d.contributionCount), 1)
-
-    if (type === 'json') {
-      c.header('Vary', 'Accept')
-      return c.json({ username, stats, last7, maxCount, theme })
-    }
-
-    const svg = renderSVG(stats, last7, maxCount, theme)
-    const headers: Record<string, string> = {
-      'Content-Type': 'image/svg+xml',
-      'Cache-Control': 'public, max-age=3600, s-maxage=3600',
-      'Netlify-CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=0',
-      'X-GitHub-Remaining': githubRateLimitRemaining.toString(),
-      'Vary': 'Accept'
-    }
-
-    const finalResponse = c.body(svg.toString(), 200, headers)
-
-    const executionCtx = (c as any).executionCtx
-    if (cache && cacheKey && executionCtx?.waitUntil) {
-      executionCtx.waitUntil(
-        cache.put(cacheKey, finalResponse.clone()).catch(() => {})
-      )
-    }
-    return finalResponse
-
-  } catch (error: any) {
-    const isNotFound = error.message?.includes('not found')
-    const isRateLimit = error.message?.includes('Rate Limit') || error.message?.includes('429')
-    const message = isNotFound ? 'User Not Found' : (isRateLimit ? 'API Rate Limit' : 'GitHub API Error')
-    const errorSvg = renderErrorSVG(message)
-    
-    c.header('Vary', 'Accept')
-    return c.body(errorSvg.toString(), 200, {
-      'Content-Type': 'image/svg+xml',
-      'Cache-Control': 'no-store, no-cache, must-revalidate'
-    })
-  }
+  const svg = renderSVG(finalData.stats, finalData.last7, finalData.maxCount, theme, lastUpdated)
+  return c.body(svg.toString(), 200, {
+    'Content-Type': 'image/svg+xml',
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+    'Vary': 'Accept',
+    'X-Cache': isStale ? 'MISS' : 'HIT'
+  })
 })
 
 export default app

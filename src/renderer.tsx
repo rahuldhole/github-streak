@@ -8,13 +8,14 @@ import { LandingPage } from './components/LandingPage.tsx'
 /**
  * Renders the main GitHub Streak SVG card
  */
-export function renderSVG(stats: StreakStats, last7: GitHubContributionDay[], maxCount: number, theme: Theme = 'transparent') {
+export function renderSVG(stats: StreakStats, last7: GitHubContributionDay[], maxCount: number, theme: Theme = 'transparent', lastUpdated?: string) {
   return (
     <GitHubStreakSVG 
       stats={stats} 
       last7={last7} 
       maxCount={maxCount} 
       theme={theme} 
+      lastUpdated={lastUpdated}
     />
   )
 }

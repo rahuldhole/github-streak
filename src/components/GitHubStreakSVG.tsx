@@ -60,12 +60,14 @@ export function GitHubStreakSVG({
   stats, 
   last7, 
   maxCount, 
-  theme = 'transparent' 
+  theme = 'transparent',
+  lastUpdated
 }: { 
   stats: StreakStats, 
   last7: GitHubContributionDay[], 
   maxCount: number, 
-  theme: Theme 
+  theme: Theme,
+  lastUpdated?: string
 }) {
   const width = 420
   const height = 180
@@ -82,6 +84,7 @@ export function GitHubStreakSVG({
         .date { font: 10px sans-serif; fill: ${t.textMuted}; }
         .day { font: 9px sans-serif; fill: #ffffff; }
         .count { font: bold 11px sans-serif; fill: #ffffff; }
+        .last-updated { font: 8px sans-serif; fill: ${t.textMuted}; opacity: 0.6; }
         `}
       </style>
       
@@ -132,6 +135,12 @@ export function GitHubStreakSVG({
           )
         })}
       </g>
+
+      {lastUpdated && (
+        <text x={width - padding} y={height - 10} text-anchor="end" class="last-updated">
+          Last Updated: {lastUpdated}
+        </text>
+      )}
     </svg>
   )
 }
