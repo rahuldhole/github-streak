@@ -7,8 +7,8 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
   const initialTheme = 'dark'
   const version = pkg.version
   const sampleUrl = `${origin}/sample.svg?theme=${initialTheme}`
-  const initialMarkdown = `![Github Streak](${origin}/?user=YOUR_USERNAME&theme=${initialTheme})`
-  const initialHtml = `<img src="${origin}/?user=YOUR_USERNAME&theme=${initialTheme}" alt="Github Streak" />`
+  const initialMarkdown = `![GitHub Streak](${origin}/?user=YOUR_USERNAME&theme=${initialTheme})`
+  const initialHtml = `<img src="${origin}/?user=YOUR_USERNAME&theme=${initialTheme}" alt="GitHub Streak" />`
   const escapedHtml = initialHtml.replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
   return (
@@ -37,8 +37,10 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
             .themes { display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap; }
             .themes button { flex: 1; padding: 0.5rem; border: 1px solid var(--border); background: white; border-radius: 6px; cursor: pointer; font-size: 0.8rem; min-width: 80px; }
             .themes button.active { background: var(--text); color: white; border-color: var(--text); }
-            .preview { display: flex; justify-content: center; align-items: center; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; background: #f6f8fa; margin-top: 1rem; min-height: 120px; overflow: hidden; }
-            .preview img { max-width: 100%; height: auto; }
+            .preview-container { position: relative; display: flex; justify-content: center; align-items: center; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; background: #f6f8fa; margin-top: 1rem; min-height: 120px; overflow: hidden; }
+            .preview-img { max-width: 100%; height: auto; transition: opacity 0.3s ease; }
+            .loading-overlay { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(246, 248, 250, 0.8); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10; font-size: 0.8rem; font-weight: 500; color: var(--text); }
+            .loading-msg { margin-top: 0.5rem; color: var(--muted); font-size: 0.7rem; max-width: 250px; text-align: center; line-height: 1.4; }
             .error-banner { display: none; background: #fff5f5; border: 1px solid #feb2b2; color: #c53030; padding: 0.75rem; border-radius: 6px; font-size: 0.8rem; margin-top: 1rem; text-align: center; }
             .error-banner a { color: #c53030; font-weight: 600; text-decoration: underline; }
             .code-box { position: relative; margin-top: 1.5rem; }
@@ -83,8 +85,12 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
 
               <div id="error-banner" class="error-banner"></div>
 
-              <div class="preview">
-                <img id="preview-img" src={sampleUrl} alt="GitHub Streak Preview" />
+              <div class="preview-container">
+                <div id="loading-overlay" class="loading-overlay">
+                  <div>Generating...</div>
+                  <div class="loading-msg">Accounts with years of history might take a few seconds to calculate first time.</div>
+                </div>
+                <img id="preview-img" class="preview-img" src={sampleUrl} alt="GitHub Streak Preview" />
               </div>
               
               <label style={{ marginTop: '1.5rem', display: 'block' }}>Markdown</label>
@@ -116,6 +122,7 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
             const version = '${version}';
             const usernameInput = document.getElementById('username');
             const previewImg = document.getElementById('preview-img');
+            const loadingOverlay = document.getElementById('loading-overlay');
             const mdCode = document.getElementById('md-code');
             const htmlCode = document.getElementById('html-code');
             const errorBanner = document.getElementById('error-banner');
@@ -140,6 +147,9 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
               }
 
               errorBanner.style.display = 'none';
+              loadingOverlay.style.display = 'flex';
+              previewImg.style.opacity = '0.3';
+
               const baseUrl = window.location.origin;
               const cardUrl = \`\${baseUrl}/?user=\${user}&theme=\${theme}&v=\${version}\`;
               
@@ -171,6 +181,8 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
                 errorBanner.style.display = 'block';
                 generateBtn.textContent = 'Error';
               } finally {
+                loadingOverlay.style.display = 'none';
+                previewImg.style.opacity = '1';
                 generateBtn.disabled = false;
                 generateBtn.style.opacity = '1';
                 if (generateBtn.textContent === 'Error') {
