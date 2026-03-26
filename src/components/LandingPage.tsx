@@ -7,9 +7,10 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
   const initialTheme = 'dark'
   const version = pkg.version
   const sampleUrl = `${origin}/sample.svg?theme=${initialTheme}&v=${version}`
-  const initialMarkdown = `![GitHub Streak](${origin}/?user=YOUR_USERNAME&theme=${initialTheme}&v=${version})`
-  const initialHtml = `<img src="${origin}/?user=YOUR_USERNAME&theme=${initialTheme}&v=${version}" alt="GitHub Streak" />`
-  const escapedHtml = initialHtml.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  const escapedHtmlSampleUrl = sampleUrl.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  const escapedHtml = `<img src="${escapedHtmlSampleUrl}" alt="GitHub Streak" />`
+  const escapedMarkdown = `![GitHub Streak](${escapedHtmlSampleUrl})`
+
 
   return (
     <>
@@ -113,7 +114,7 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
               
               <label style={{ marginTop: '1.5rem', display: 'block' }}>Markdown</label>
               <div class="code-box">
-                <pre id="md-code">{initialMarkdown}</pre>
+                <pre id="md-code">{escapedMarkdown}</pre>
                 <button class="copy-btn" onclick="copy('md-code', this)">Copy</button>
               </div>
     
