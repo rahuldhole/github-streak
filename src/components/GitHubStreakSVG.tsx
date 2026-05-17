@@ -2,9 +2,32 @@
 import { GitHubContributionDay, Theme } from '../types.ts'
 import { getIntensityColor, StreakStats } from '../logic.ts'
 
-function formatDate(dateStr: string): string {
+function formatFullDate(dateStr: string): string {
   if (!dateStr) return '---'
+  const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (match) {
+    const [, year, month, day] = match
+    return `${day}/${month}/${year.slice(-2)}`
+  }
   const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return '---'
+  const day = String(d.getDate()).padStart(2, '0')
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const year = String(d.getFullYear()).slice(-2)
+  return `${day}/${month}/${year}`
+}
+
+function formatShortDate(dateStr: string): string {
+  if (!dateStr) return '---'
+  const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  let d: Date
+  if (match) {
+    const [, year, month, day] = match
+    d = new Date(Number(year), Number(month) - 1, Number(day))
+  } else {
+    d = new Date(dateStr)
+  }
+  if (isNaN(d.getTime())) return '---'
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
@@ -95,7 +118,17 @@ export function GitHubStreakSVG({
       <StatItem 
         label="Current Streak" 
         value={`🔥 ${stats.current.count}`} 
-        subValue={`${formatDate(stats.current.start)} - ${formatDate(stats.current.end)}`} 
+        subValue={
+          (() => {
+            if (!stats.current.start || !stats.current.end) return '---'
+            const startYear = stats.current.start.split('-')[0]
+            const endYear = stats.current.end.split('-')[0]
+            if (startYear && endYear && startYear !== endYear) {
+              return `${formatFullDate(stats.current.start)} - ${formatFullDate(stats.current.end)}`
+            }
+            return `${formatShortDate(stats.current.start)} - ${formatShortDate(stats.current.end)}`
+          })()
+        } 
         x={padding} 
         y={40} 
       />
@@ -103,7 +136,7 @@ export function GitHubStreakSVG({
       <StatItem 
         label="Personal Best" 
         value={`🏆 ${stats.max.count}`} 
-        subValue={`${formatDate(stats.max.start)} - ${formatDate(stats.max.end)}`} 
+        subValue={`${formatFullDate(stats.max.start)} - ${formatFullDate(stats.max.end)}`} 
         x={width / 2 - 50} 
         y={40} 
       />
