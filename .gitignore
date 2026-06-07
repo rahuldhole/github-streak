@@ -15,6 +15,9 @@ dist/
 node_modules/
 .wrangler
 
+# lock (project uses bun, not npm)
+package-lock.json
+
 # env
 .env
 .env.production
