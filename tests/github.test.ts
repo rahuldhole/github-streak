@@ -13,7 +13,8 @@ describe("fetchGitHubData Logic", () => {
     });
 
     test("Calculates totalContributions correctly in Light Mode (targetYear)", async () => {
-        const targetYear = 2026;
+        const targetYear = new Date().getFullYear();
+        const prevYear = targetYear - 1;
         globalThis.fetch = mock(async () => {
             return {
                 ok: true,
@@ -22,15 +23,15 @@ describe("fetchGitHubData Logic", () => {
                     data: {
                         user: {
                             contributionsCollection: {
-                                contributionYears: [2026, 2025],
+                                contributionYears: [targetYear, prevYear],
                                 contributionCalendar: {
                                     totalContributions: 500, // Rolling 365 days
                                     weeks: [
                                         { 
                                             contributionDays: [
-                                                { date: "2025-12-30", contributionCount: 5 }, // Should be excluded from 2026 total
-                                                { date: "2026-01-01", contributionCount: 10 }, 
-                                                { date: "2026-03-25", contributionCount: 15 }
+                                                { date: `${prevYear}-12-30`, contributionCount: 5 }, // Should be excluded from current year total
+                                                { date: `${targetYear}-01-01`, contributionCount: 10 }, 
+                                                { date: `${targetYear}-03-25`, contributionCount: 15 }
                                             ] 
                                         }
                                     ]
@@ -44,15 +45,16 @@ describe("fetchGitHubData Logic", () => {
 
         const result = await fetchGitHubData("testuser", "testtoken", targetYear);
         
-        // Total contributions should only be the ones in 2026 (10 + 15 = 25)
+        // Total contributions should only be the ones in current targetYear (10 + 15 = 25)
         // NOT the rolling 500.
         expect(result.totalContributions).toBe(25);
-        expect(result.contributionYears).toEqual([2026, 2025]);
+        expect(result.contributionYears).toEqual([targetYear, prevYear]);
         expect(result.days.length).toBe(3); // All days in the calendar weeks are returned, but total is filtered
     });
 
     test("Non-Light Mode sums all years correctly", async () => {
-        const currentYear = 2026;
+        const currentYear = new Date().getFullYear();
+        const prevYear = currentYear - 1;
         globalThis.fetch = mock(async (url:any, opts: any) => {
             const body = JSON.parse(opts.body);
             if (!body.query.includes("y" + currentYear)) {
@@ -64,10 +66,10 @@ describe("fetchGitHubData Logic", () => {
                         data: {
                             user: {
                                 contributionsCollection: {
-                                    contributionYears: [2026, 2025],
+                                    contributionYears: [currentYear, prevYear],
                                     contributionCalendar: {
                                         totalContributions: 500,
-                                        weeks: [{ contributionDays: [{ date: "2026-01-01", contributionCount: 10 }] }]
+                                        weeks: [{ contributionDays: [{ date: `${currentYear}-01-01`, contributionCount: 10 }] }]
                                     }
                                 }
                             }
@@ -81,8 +83,8 @@ describe("fetchGitHubData Logic", () => {
                     json: async () => ({
                         data: {
                             user: {
-                                y2026: { contributionCalendar: { totalContributions: 100 } },
-                                y2025: { contributionCalendar: { totalContributions: 400 } },
+                                [`y${currentYear}`]: { contributionCalendar: { totalContributions: 100 } },
+                                [`y${prevYear}`]: { contributionCalendar: { totalContributions: 400 } },
                                 __typename: "User" // Test for metadata isolation
                             }
                         }
@@ -97,3 +99,4 @@ describe("fetchGitHubData Logic", () => {
         expect(result.totalContributions).toBe(500);
     });
 });
+

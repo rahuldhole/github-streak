@@ -1,4 +1,4 @@
-import { expect, test, describe, mock } from "bun:test";
+import { expect, test, describe, mock, beforeEach, afterEach } from "bun:test";
 
 // Mock Netlify Blobs
 const mockGet = mock(async () => null);
@@ -11,23 +11,55 @@ mock.module("@netlify/blobs", () => ({
   })
 }));
 
-// Mock GitHub API function to track calls
-const mockFetchGitHub = mock(async () => ({
-    days: [],
-    contributionYears: [2024],
-    totalContributions: 100,
-    rateLimit: { remaining: 5000, resetAt: new Date().toISOString() }
-}));
-
-mock.module("../src/github.ts", () => ({
-    fetchGitHubData: mockFetchGitHub
-}));
-
 import { app } from "../src/index.ts";
 
 describe("Cache Versioning Logic", () => {
+    let originalFetch: any;
+    let fetchMock: any;
+
+    beforeEach(() => {
+        originalFetch = globalThis.fetch;
+        fetchMock = mock(async (url: any, opts: any) => {
+            const body = opts?.body ? JSON.parse(opts.body) : {};
+            const currentYear = new Date().getFullYear();
+            if (body.query && body.query.includes("y" + currentYear)) {
+                return {
+                    ok: true,
+                    json: async () => ({
+                        data: {
+                            user: {
+                                [`y${currentYear}`]: { contributionCalendar: { totalContributions: 100 } }
+                            }
+                        }
+                    })
+                } as any;
+            }
+            return {
+                ok: true,
+                headers: new Headers({ "X-RateLimit-Remaining": "5000", "X-RateLimit-Reset": "12345678" }),
+                json: async () => ({
+                    data: {
+                        user: {
+                            contributionsCollection: {
+                                contributionYears: [currentYear],
+                                contributionCalendar: {
+                                    totalContributions: 100,
+                                    weeks: [{ contributionDays: [{ date: `${currentYear}-01-01`, contributionCount: 10 }] }]
+                                }
+                            }
+                        }
+                    }
+                })
+            } as any;
+        });
+        globalThis.fetch = fetchMock;
+    });
+
+    afterEach(() => {
+        globalThis.fetch = originalFetch;
+    });
+
     test("Full refresh is triggered when cacheVersion in blob is missing", async () => {
-        mockFetchGitHub.mockClear();
         mockGet.mockImplementation(async (key: string) => {
             if (key.includes(':current')) return { 
                 stats: { total: 10, current: {}, max: {} }, 
@@ -41,14 +73,11 @@ describe("Cache Versioning Logic", () => {
 
         await app.request("/?user=tester", {}, { GITHUB_TOKEN: "test" });
         
-        // Check if fetchGitHubData was called with targetYear = undefined (Full Refresh)
-        expect(mockFetchGitHub.mock.calls.length).toBe(1);
-        const lastCall = mockFetchGitHub.mock.calls[0];
-        expect(lastCall[2]).toBeUndefined(); 
+        // Full refresh makes > 1 fetch call (initial query + chunk query)
+        expect(fetchMock.mock.calls.length).toBeGreaterThan(1);
     });
 
     test("Full refresh is triggered when cacheVersion in blob is older", async () => {
-        mockFetchGitHub.mockClear();
         mockGet.mockImplementation(async (key: string) => {
             if (key.includes(':current')) return { 
                 stats: { total: 10, current: {}, max: {} }, 
@@ -63,13 +92,11 @@ describe("Cache Versioning Logic", () => {
 
         await app.request("/?user=tester", {}, { GITHUB_TOKEN: "test" });
         
-        expect(mockFetchGitHub.mock.calls.length).toBe(1);
-        const lastCall = mockFetchGitHub.mock.calls[0];
-        expect(lastCall[2]).toBeUndefined(); 
+        // Full refresh makes > 1 fetch call (initial query + chunk query)
+        expect(fetchMock.mock.calls.length).toBeGreaterThan(1);
     });
 
     test("Tiered fetch is used when cacheVersion in blob matches activeVersion but time is stale", async () => {
-        mockFetchGitHub.mockClear();
         // Since package.json has cacheStoreVersion "2", we use 2 here.
         mockGet.mockImplementation(async (key: string) => {
             if (key.includes(':current')) return { 
@@ -85,10 +112,8 @@ describe("Cache Versioning Logic", () => {
 
         await app.request("/?user=tester", {}, { GITHUB_TOKEN: "test" });
         
-        expect(mockFetchGitHub.mock.calls.length).toBe(1);
-        const lastCall = mockFetchGitHub.mock.calls[0];
-        // targetYear should be defined (current year) -> Tiered fetch
-        expect(lastCall[2]).toBeDefined();
-        expect(lastCall[2]).toBe(new Date().getFullYear());
+        // Tiered fetch makes ONLY 1 fetch call (Light Mode, no chunk query)
+        expect(fetchMock.mock.calls.length).toBe(1);
     });
 });
+
