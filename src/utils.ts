@@ -20,3 +20,4 @@ export const getSafeErrorMessage = (err: any) => {
   if (msg.includes('rate limit')) return 'GitHub Rate Limit';
   return 'System Error';
 };
+

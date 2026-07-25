@@ -93,14 +93,10 @@ app.all('*', async (c) => {
 
   let queryUser = c.req.query('user');
   let isShareSVG = false;
-  let isOG = false;
 
   if (c.req.path.startsWith('/share-svg/')) {
     queryUser = c.req.path.split('/share-svg/')[1];
     isShareSVG = true;
-  } else if (c.req.path.startsWith('/og/')) {
-    queryUser = c.req.path.split('/og/')[1];
-    isOG = true;
   }
 
   if (queryUser === undefined) {
@@ -257,12 +253,6 @@ app.all('*', async (c) => {
     c.header('Vary', 'Accept')
     logEvent({ name: 'api_request', data: { username, theme } })
     return c.json({ username, ...currentBlob, total: aggregatedTotal, theme })
-  }
-
-  if (isOG) {
-    const svgUrl = `${url.origin}/share-svg/${username}?theme=${theme}`
-    const netlifyImgUrl = `${url.origin}/.netlify/images?url=${encodeURIComponent(svgUrl)}&fm=png&w=1200&h=630&fit=cover`
-    return c.redirect(netlifyImgUrl, 302)
   }
 
   if (isShareSVG) {
