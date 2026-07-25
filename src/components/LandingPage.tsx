@@ -59,6 +59,14 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
             pre { background: #f6f8fa; padding: 1rem; border-radius: 6px; font-size: 0.8rem; overflow-x: auto; margin: 0; color: #24292e; border: 1px solid var(--border); }
             .copy-btn { position: absolute; top: 0.5rem; right: 0.5rem; padding: 0.4rem 0.8rem; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
             .copy-btn:active { background: #f3f4f6; }
+            .share-section { display: none; margin-top: 1.5rem; text-align: center; }
+            .share-section.active { display: block; }
+            .share-buttons { display: flex; gap: 0.5rem; justify-content: center; margin-top: 0.5rem; }
+            .share-btn { padding: 0.35rem 0.6rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; text-decoration: none; color: white; display: inline-flex; align-items: center; gap: 0.3rem; border: none; cursor: pointer; font-family: inherit; }
+            .share-btn.copy { background: var(--muted); }
+            .share-btn.x { background: #000000; }
+            .share-btn.linkedin { background: #0a66c2; }
+            .share-btn.native { background: var(--accent); }
             .footer { margin-top: 2rem; font-size: 0.75rem; color: var(--muted); text-align: center; }
             .footer a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--border); }
 
@@ -123,6 +131,28 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
                   <div class="loading-msg">Accounts with years of history might take a few seconds to calculate first time.</div>
                 </div>
                 <img id="preview-img" class="preview-img" src={sampleUrl} alt="GitHub Streak Preview" />
+              </div>
+
+              <div id="share-section" class="share-section">
+                <label>Share your streak</label>
+                <div class="share-buttons">
+                  <button id="share-copy" class="share-btn copy" onclick="copyShareText(this)">
+                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg>
+                    Copy Link
+                  </button>
+                  <a id="share-x" class="share-btn x" href="#" target="_blank">
+                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865l8.875 11.633Z"/></svg>
+                    X
+                  </a>
+                  <a id="share-linkedin" class="share-btn linkedin" href="#" target="_blank" onclick="shareLinkedIn(event)">
+                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"/></svg>
+                    LinkedIn
+                  </a>
+                  <button id="share-native" class="share-btn native" style="display: none;">
+                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></svg>
+                    Share
+                  </button>
+                </div>
               </div>
 
               <label style={{ marginTop: '1.5rem', display: 'block' }}>Markdown</label>
@@ -207,6 +237,7 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
               errorBanner.style.display = 'none';
               loadingOverlay.style.display = 'flex';
               previewImg.style.opacity = '0';
+              document.getElementById('share-section').classList.remove('active');
 
               const baseUrl = window.location.origin;
               const baseCardUrl = \`\${baseUrl}/?user=\${user}&theme=\${theme}&v=\${version}\`;
@@ -246,6 +277,38 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
                   mdCode.textContent = markdown;
                   htmlCode.textContent = htmlStr;
                   generateBtn.textContent = 'Generate';
+
+                  const sharePageUrl = \`\${baseUrl}/share/\${user}?theme=\${theme}\`;
+                  const shareText = encodeURIComponent(\`Check out my GitHub Streak! 🔥\n\n\`);
+                  const shareXUrl = \`https://twitter.com/intent/tweet?text=\${shareText}&url=\${encodeURIComponent(sharePageUrl)}\`;
+                  const shareLinkedInUrl = \`https://www.linkedin.com/sharing/share-offsite/?url=\${encodeURIComponent(sharePageUrl)}\`;
+                  
+                  document.getElementById('share-x').href = shareXUrl;
+                  document.getElementById('share-linkedin').href = shareLinkedInUrl;
+                  
+                  // Store for copy button
+                  const fullShareText = \`Check out my GitHub Streak! 🔥 \${sharePageUrl}\`;
+                  const copyBtn = document.getElementById('share-copy');
+                  copyBtn.dataset.text = fullShareText;
+                  
+                  // Store for LinkedIn fallback copying
+                  document.getElementById('share-linkedin').dataset.text = fullShareText;
+                  
+                  const nativeBtn = document.getElementById('share-native');
+                  if (navigator.share) {
+                    nativeBtn.style.display = 'inline-flex';
+                    nativeBtn.onclick = () => {
+                      navigator.share({
+                        title: 'GitHub Streak',
+                        text: 'Check out my GitHub Streak! 🔥',
+                        url: sharePageUrl
+                      }).catch(console.error);
+                    };
+                  } else {
+                    nativeBtn.style.display = 'none';
+                  }
+                  
+                  document.getElementById('share-section').classList.add('active');
                 }
               } catch (err) {
                 errorBanner.innerHTML = \`Network error. Please try again or <a href="https://github.com/rahuldhole/github-streak/issues" target="_blank">create an issue</a>.\`;
@@ -302,11 +365,31 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
 
             function copy(id, btn) {
               const text = document.getElementById(id).textContent.trim();
+              executeCopy(text, btn);
+            }
+
+            function copyShareText(btn) {
+              const text = btn.dataset.text;
+              executeCopy(text, btn, 'Copied!');
+            }
+
+            function shareLinkedIn(e) {
+              const btn = e.currentTarget;
+              const text = btn.dataset.text;
+              if (window.isSecureContext && navigator.clipboard && navigator.clipboard.writeText) {
+                // Try to copy to clipboard so user can paste it on LinkedIn
+                navigator.clipboard.writeText(text).catch(() => {});
+              }
+              // Normal link behavior will open LinkedIn
+            }
+
+            function executeCopy(text, btn, successText = 'Copied!') {
               const original = btn.textContent;
-              
               const handleSuccess = () => {
-                btn.textContent = 'Copied!';
-                setTimeout(() => btn.textContent = original, 2000);
+                btn.textContent = successText;
+                setTimeout(() => {
+                  btn.innerHTML = original;
+                }, 2000);
               };
 
               const fallbackCopy = () => {

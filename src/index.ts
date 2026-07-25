@@ -3,7 +3,7 @@ import { getStore } from '@netlify/blobs'
 import { Bindings, Theme } from './types.ts'
 import { fetchGitHubData } from './github.ts'
 import { calculateStreakStats } from './logic.ts'
-import { renderSVG, renderLandingPage, renderErrorSVG } from './renderer.tsx'
+import { renderSVG, renderLandingPage, renderErrorSVG, renderSharePage } from './renderer.tsx'
 import { logEvent, GITHUB_USERNAME_REGEX, getSafeErrorMessage } from './utils.ts'
 import pkg from '../package.json' with { type: 'json' }
 
@@ -47,6 +47,21 @@ app.notFound((c) => {
   }
   c.header('Vary', 'Accept')
   return c.html('<h1>404 Not Found</h1>', 404)
+})
+
+app.get('/share/:username', (c) => {
+  const username = c.req.param('username')
+  const theme = (c.req.query('theme') || 'dark') as Theme
+  const url = new URL(c.req.url)
+  
+  if (!username || !GITHUB_USERNAME_REGEX.test(username)) {
+    return c.html('<h1>Invalid Username</h1>', 400)
+  }
+
+  logEvent({ name: 'page_view', data: { page: 'share', username } })
+  c.header('Vary', 'Accept')
+  c.header('Cache-Control', 'public, max-age=3600, s-maxage=3600')
+  return c.html(renderSharePage(url.origin, username, theme))
 })
 
 app.all('*', async (c) => {

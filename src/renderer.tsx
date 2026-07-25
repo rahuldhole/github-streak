@@ -4,6 +4,7 @@ import { StreakStats } from './logic.ts'
 import { GitHubStreakSVG } from './components/GitHubStreakSVG.tsx'
 import { ErrorSVG } from './components/ErrorSVG.tsx'
 import { LandingPage } from './components/LandingPage.tsx'
+import { SharePage } from './components/SharePage.tsx'
 
 /**
  * Renders the main GitHub Streak SVG card
@@ -32,4 +33,11 @@ export function renderErrorSVG(message: string) {
  */
 export function renderLandingPage(origin: string = '') {
   return <LandingPage origin={origin} />
+}
+
+/**
+ * Renders the social share page
+ */
+export function renderSharePage(origin: string, user: string, theme: string = 'dark') {
+  return <SharePage origin={origin} user={user} theme={theme} />
 }
