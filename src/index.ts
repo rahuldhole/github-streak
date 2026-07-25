@@ -3,7 +3,7 @@ import { getStore } from '@netlify/blobs'
 import { Bindings, Theme } from './types.ts'
 import { fetchGitHubData } from './github.ts'
 import { calculateStreakStats } from './logic.ts'
-import { renderSVG, renderLandingPage, renderErrorSVG, renderSharePage } from './renderer.tsx'
+import { renderSVG, renderLandingPage, renderErrorSVG, renderSharePage, renderOGImage } from './renderer.tsx'
 import { logEvent, GITHUB_USERNAME_REGEX, getSafeErrorMessage } from './utils.ts'
 import pkg from '../package.json' with { type: 'json' }
 
@@ -91,7 +91,13 @@ app.all('*', async (c) => {
     })
   }
 
-  const queryUser = c.req.query('user');
+  let queryUser = c.req.query('user');
+  let isOG = false;
+
+  if (c.req.path.startsWith('/og/')) {
+    queryUser = c.req.path.split('/og/')[1];
+    isOG = true;
+  }
 
   if (queryUser === undefined) {
     if (c.req.path === '/' || c.req.path === '') {
@@ -105,7 +111,7 @@ app.all('*', async (c) => {
     return c.notFound()
   }
 
-  const username = queryUser.trim()
+  const username = queryUser.split('?')[0].trim()
   const theme = (c.req.query('theme') || 'transparent') as Theme
   const type = c.req.query('type')
   const forceRefresh = c.req.query('no-cache') === 'true'
@@ -239,6 +245,17 @@ app.all('*', async (c) => {
     c.header('Vary', 'Accept')
     logEvent({ name: 'api_request', data: { username, theme } })
     return c.json({ username, ...currentBlob, total: aggregatedTotal, theme })
+  }
+
+  if (isOG) {
+    logEvent({ name: 'og_rendered', data: { username, theme, cacheHit: !isCurrentStale } })
+    const svg = renderOGImage(username, { ...currentBlob.stats, total: aggregatedTotal }, currentBlob.last7, currentBlob.maxCount, theme, lastUpdated)
+    return c.body(svg.toString(), 200, {
+      'Content-Type': 'image/svg+xml',
+      'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+      'Vary': 'Accept',
+      'X-Cache': isCurrentStale ? 'MISS' : 'HIT'
+    })
   }
 
   logEvent({ name: 'svg_rendered', data: { username, theme, cacheHit: !isCurrentStale } })

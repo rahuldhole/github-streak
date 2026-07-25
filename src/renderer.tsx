@@ -2,6 +2,7 @@
 import { GitHubContributionDay, Theme } from './types.ts'
 import { StreakStats } from './logic.ts'
 import { GitHubStreakSVG } from './components/GitHubStreakSVG.tsx'
+import { OGImageSVG } from './components/OGImageSVG.tsx'
 import { ErrorSVG } from './components/ErrorSVG.tsx'
 import { LandingPage } from './components/LandingPage.tsx'
 import { SharePage } from './components/SharePage.tsx'
@@ -40,4 +41,20 @@ export function renderLandingPage(origin: string = '') {
  */
 export function renderSharePage(origin: string, user: string, theme: string = 'dark') {
   return <SharePage origin={origin} user={user} theme={theme} />
+}
+
+/**
+ * Renders the OG image canvas SVG
+ */
+export function renderOGImage(username: string, stats: StreakStats, last7: GitHubContributionDay[], maxCount: number, theme: Theme = 'dark', lastUpdated?: string) {
+  return (
+    <OGImageSVG 
+      username={username}
+      stats={stats} 
+      last7={last7} 
+      maxCount={maxCount} 
+      theme={theme} 
+      lastUpdated={lastUpdated}
+    />
+  )
 }
