@@ -39,8 +39,8 @@ export function renderLandingPage(origin: string = '') {
 /**
  * Renders the social share page
  */
-export function renderSharePage(origin: string, user: string, theme: string = 'dark') {
-  return <SharePage origin={origin} user={user} theme={theme} />
+export function renderSharePage(origin: string, user: string, theme: string = 'dark', profile?: any) {
+  return <SharePage origin={origin} user={user} theme={theme} profile={profile} />
 }
 
 /**

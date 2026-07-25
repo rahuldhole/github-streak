@@ -49,20 +49,7 @@ app.notFound((c) => {
   return c.html('<h1>404 Not Found</h1>', 404)
 })
 
-app.get('/share/:username', (c) => {
-  const username = c.req.param('username')
-  const theme = (c.req.query('theme') || 'dark') as Theme
-  const url = new URL(c.req.url)
-  
-  if (!username || !GITHUB_USERNAME_REGEX.test(username)) {
-    return c.html('<h1>Invalid Username</h1>', 400)
-  }
 
-  logEvent({ name: 'page_view', data: { page: 'share', username } })
-  c.header('Vary', 'Accept')
-  c.header('Cache-Control', 'public, max-age=3600, s-maxage=3600')
-  return c.html(renderSharePage(url.origin, username, theme))
-})
 
 app.all('*', async (c) => {
   const url = new URL(c.req.url)
@@ -93,10 +80,14 @@ app.all('*', async (c) => {
 
   let queryUser = c.req.query('user');
   let isShareSVG = false;
+  let isSharePage = false;
 
   if (c.req.path.startsWith('/share-svg/')) {
     queryUser = c.req.path.split('/share-svg/')[1];
     isShareSVG = true;
+  } else if (c.req.path.startsWith('/share/')) {
+    queryUser = c.req.path.split('/share/')[1];
+    isSharePage = true;
   }
 
   if (queryUser === undefined) {
@@ -217,6 +208,16 @@ app.all('*', async (c) => {
         maxCount, 
         name: fresh.name,
         avatarUrl: fresh.avatarUrl,
+        bio: fresh.bio,
+        company: fresh.company,
+        location: fresh.location,
+        websiteUrl: fresh.websiteUrl,
+        twitterUsername: fresh.twitterUsername,
+        email: fresh.email,
+        followers: fresh.followers,
+        following: fresh.following,
+        repositories: fresh.repositories,
+        pinnedItems: fresh.pinnedItems,
         timestamp: Date.now(), 
         cacheVersion: activeVersion 
       }
@@ -253,6 +254,14 @@ app.all('*', async (c) => {
     c.header('Vary', 'Accept')
     logEvent({ name: 'api_request', data: { username, theme } })
     return c.json({ username, ...currentBlob, total: aggregatedTotal, theme })
+  }
+
+  if (isSharePage) {
+    logEvent({ name: 'page_view', data: { page: 'share', username } })
+    c.header('Vary', 'Accept')
+    c.header('Cache-Control', 'public, max-age=3600, s-maxage=3600')
+    const profile = { ...currentBlob, total: aggregatedTotal }
+    return c.html(renderSharePage(url.origin, username, theme, profile))
   }
 
   if (isShareSVG) {

@@ -43,7 +43,7 @@ describe("fetchGitHubData Logic", () => {
             } as any;
         });
 
-        const result = await fetchGitHubData("testuser", "testtoken", targetYear);
+        const result = await fetchGitHubData("testuser", "testtoken", true);
         
         // Total contributions should only be the ones in current targetYear (10 + 15 = 25)
         // Wait, for partialFetch, it sums all days returned by GraphQL (10 + 15 + 5 = 30)

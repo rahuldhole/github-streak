@@ -6,6 +6,36 @@ query($login:String!) {
   user(login:$login) {
     name
     avatarUrl
+    bio
+    company
+    location
+    websiteUrl
+    twitterUsername
+    email
+    followers {
+      totalCount
+    }
+    following {
+      totalCount
+    }
+    repositories(privacy: PUBLIC) {
+      totalCount
+    }
+    pinnedItems(first: 6) {
+      nodes {
+        ... on Repository {
+          name
+          description
+          url
+          stargazerCount
+          forkCount
+          primaryLanguage {
+            name
+            color
+          }
+        }
+      }
+    }
     contributionsCollection {
       contributionYears
       contributionCalendar {
@@ -27,6 +57,16 @@ export async function fetchGitHubData(username: string, token: string, partialFe
   contributionYears: number[],
   name?: string,
   avatarUrl?: string,
+  bio?: string,
+  company?: string,
+  location?: string,
+  websiteUrl?: string,
+  twitterUsername?: string,
+  email?: string,
+  followers?: number,
+  following?: number,
+  repositories?: number,
+  pinnedItems?: any[],
   rateLimit?: { remaining: number, resetAt: string } 
 }> {
   const headers = {
@@ -101,6 +141,16 @@ export async function fetchGitHubData(username: string, token: string, partialFe
       contributionYears: years,
       name: user.name,
       avatarUrl: avatarBase64,
+      bio: user.bio,
+      company: user.company,
+      location: user.location,
+      websiteUrl: user.websiteUrl,
+      twitterUsername: user.twitterUsername,
+      email: user.email,
+      followers: user.followers?.totalCount,
+      following: user.following?.totalCount,
+      repositories: user.repositories?.totalCount,
+      pinnedItems: user.pinnedItems?.nodes,
       rateLimit
     }
   }
@@ -114,6 +164,16 @@ export async function fetchGitHubData(username: string, token: string, partialFe
       contributionYears: [],
       name: user.name,
       avatarUrl: avatarBase64,
+      bio: user.bio,
+      company: user.company,
+      location: user.location,
+      websiteUrl: user.websiteUrl,
+      twitterUsername: user.twitterUsername,
+      email: user.email,
+      followers: user.followers?.totalCount,
+      following: user.following?.totalCount,
+      repositories: user.repositories?.totalCount,
+      pinnedItems: user.pinnedItems?.nodes,
       rateLimit
     }
   }
@@ -176,6 +236,16 @@ export async function fetchGitHubData(username: string, token: string, partialFe
     contributionYears: years,
     name: user.name,
     avatarUrl: avatarBase64,
+    bio: user.bio,
+    company: user.company,
+    location: user.location,
+    websiteUrl: user.websiteUrl,
+    twitterUsername: user.twitterUsername,
+    email: user.email,
+    followers: user.followers?.totalCount,
+    following: user.following?.totalCount,
+    repositories: user.repositories?.totalCount,
+    pinnedItems: user.pinnedItems?.nodes,
     rateLimit
   }
 }
