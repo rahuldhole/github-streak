@@ -4,5 +4,5 @@
 
 [[edge_functions]]
   path = "/*"
-  excludedPath = "/og.png"
+  excludedPath = ["/og.png", "/.netlify/images"]
   function = "server"
