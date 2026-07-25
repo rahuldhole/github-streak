@@ -24,20 +24,28 @@ export function ShareSVG({
 }) {
   const width = 1200
   const height = 630
+  const isLight = theme === 'light' || theme === 'transparent'
   const t = themes[theme] || themes.dark
 
   // Use a nice gradient for background
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color={theme === 'light' ? '#f8fafc' : '#020617'} />
-          <stop offset="100%" stop-color={theme === 'light' ? '#e2e8f0' : '#0f172a'} />
+        <linearGradient id="light-bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#f8fafc" />
+          <stop offset="100%" stop-color="#e2e8f0" />
         </linearGradient>
+        <radialGradient id="dark-bg-grad" cx="50%" cy="50%" r="65%">
+          <stop offset="0%" stop-color="#451a03" /> {/* Very deep smoldering amber */}
+          <stop offset="100%" stop-color="#050505" /> {/* Almost pure black */}
+        </radialGradient>
+        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="25" stdDeviation="30" flood-color="#000000" flood-opacity={isLight ? "0.15" : "0.75"} />
+        </filter>
       </defs>
       
       {/* Background */}
-      <rect width={width} height={height} fill="url(#bg-grad)"/>
+      <rect width={width} height={height} fill={isLight ? "url(#light-bg-grad)" : "url(#dark-bg-grad)"}/>
 
 
 
@@ -75,7 +83,7 @@ export function ShareSVG({
       </g>
 
       {/* Embed the standard widget, scaled up */}
-      <g transform="translate(180, 200) scale(2)">
+      <g transform="translate(180, 200) scale(2)" filter="url(#shadow)">
         <GitHubStreakSVG 
           stats={stats} 
           last7={last7} 
