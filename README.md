@@ -112,4 +112,4 @@ If you find this project useful, consider sponsoring the author to support furth
 ---
 # Contributing
 
-To contribute to this project, please follow the guidelines in the [CONTRIBUTING.md](CONTRIBUTING.md) file.
+To contribute to this project, please follow the guidelines in the [CONTRIBUTING.md](.github/CONTRIBUTING.md) file.
