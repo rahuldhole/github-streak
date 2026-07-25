@@ -69,7 +69,7 @@ describe("Application Routes and Status Codes", () => {
                 };
             }
             if (key.includes(':history')) {
-              return { total: 90, years: [2023], cacheVersion: 2 };
+              return { total: 90, years: [2023], cacheVersion: 2, timestamp: Date.now() };
             }
             return null;
         });

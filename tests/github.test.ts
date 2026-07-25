@@ -46,8 +46,8 @@ describe("fetchGitHubData Logic", () => {
         const result = await fetchGitHubData("testuser", "testtoken", targetYear);
         
         // Total contributions should only be the ones in current targetYear (10 + 15 = 25)
-        // NOT the rolling 500.
-        expect(result.totalContributions).toBe(25);
+        // Wait, for partialFetch, it sums all days returned by GraphQL (10 + 15 + 5 = 30)
+        expect(result.totalContributions).toBe(30);
         expect(result.contributionYears).toEqual([targetYear, prevYear]);
         expect(result.days.length).toBe(3); // All days in the calendar weeks are returned, but total is filtered
     });

@@ -80,7 +80,7 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
               <a href="https://github.com/rahuldhole/github-streak/releases" target="_blank" style={{ display: 'inline-flex', alignItems: 'center', height: '32px', padding: '0 0.6rem', borderRadius: '6px', border: '1px solid var(--border)', backgroundColor: '#f6f8fa', fontSize: '0.75rem', fontWeight: '600', color: 'var(--muted)', textDecoration: 'none', boxSizing: 'border-box' }}>
                 v{version}
               </a>
-                            
+
               <a href="https://github.com/rahuldhole/github-streak" target="_blank" style={{ display: 'inline-flex', alignItems: 'center', height: '32px', padding: '0 0.75rem', borderRadius: '6px', border: '1px solid var(--border)', backgroundColor: '#f6f8fa', fontSize: '0.85rem', fontWeight: '600', color: 'var(--text)', textDecoration: 'none', boxSizing: 'border-box', gap: '0.4rem' }}>
                 <svg height="16" viewBox="0 0 16 16" width="16" style={{ fill: 'currentColor' }}><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
                 View on GitHub
@@ -113,6 +113,8 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
                 </div>
               </div>
 
+
+
               <div id="error-banner" class="error-banner"></div>
 
               <div class="preview-container">
@@ -122,13 +124,13 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
                 </div>
                 <img id="preview-img" class="preview-img" src={sampleUrl} alt="GitHub Streak Preview" />
               </div>
-              
+
               <label style={{ marginTop: '1.5rem', display: 'block' }}>Markdown</label>
               <div class="code-box">
                 <pre id="md-code">{escapedMarkdown}</pre>
                 <button class="copy-btn" onclick="copy('md-code', this)">Copy</button>
               </div>
-    
+
               <label style={{ marginTop: '1.5rem', display: 'block' }}>HTML</label>
               <div class="code-box">
                 <pre id="html-code">{escapedHtml}</pre>
@@ -137,14 +139,33 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
             </div>
 
 
-            <div class="footer">
-              Built by <a href="https://rahuldhole.com" target="_blank">Rahul Dhole</a> | 
-              <a href="https://github.com/rahuldhole/github-streak" target="_blank">GitHub Repository</a>
-              <p style={{ marginTop: '1rem', fontSize: '0.75rem', color: 'var(--text)', fontWeight: '500' }}>
-                💡 <b>Pro Tip:</b> If your streak looks stale after deleting years old repos, add <code>&no-cache=true</code> to your URL to force a refresh.
+            <div style={{
+              marginTop: '1.5rem',
+              padding: '1.25rem',
+              backgroundColor: 'rgba(255, 171, 0, 0.1)',
+              borderLeft: '4px solid #ffab00',
+              borderRadius: '6px',
+              textAlign: 'left'
+            }}>
+              <h4 style={{ margin: '0 0 0.5rem 0', color: '#ffab00', fontSize: '0.9rem' }}>⚠️ Caching Strategy</h4>
+              <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text)', lineHeight: '1.5' }}>
+                To save on API quota, we cache the most recent 6 months of data for 1 hour, and older history for 1 month. If you recently deleted repositories or made significant changes, you can explicitly force a refresh to recalculate your history cache.
               </p>
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
+                <button onclick="forceRefreshCache(false)" id="soft-refresh-btn" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', fontWeight: '600', backgroundColor: '#ffab00', color: '#000', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                  Soft Refresh (Recent 6 mo)
+                </button>
+                <button onclick="forceRefreshCache(true)" id="hard-refresh-btn" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', fontWeight: '600', backgroundColor: '#d73a49', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                  Hard Refresh (Full History)
+                </button>
+              </div>
+            </div>
+
+            <div class="footer">
+              Built with ❤️ by <a href="https://rahuldhole.com" target="_blank">Rahul Dhole</a> |
+              <a href="https://github.com/rahuldhole/github-streak" target="_blank">GitHub Repository</a>
               <p style={{ marginTop: '1rem', fontSize: '0.75rem', color: 'var(--muted)', fontWeight: '400' }}>
-                Need more granular streaks (like weekdays/weekends only) or more UI customization? 
+                Need more granular streaks (like weekdays/weekends only) or more UI customization?
                 Check out <a href="https://streak-stats.demolab.com/" target="_blank" style={{ color: 'var(--accent)', fontWeight: '600' }}>GitHub Streak Stats</a>.
               </p>
               <p style={{ marginTop: '1rem', fontSize: '0.7rem' }}>
@@ -167,7 +188,7 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
 
             const GITHUB_USERNAME_REGEX = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
 
-            async function update() {
+            async function update(forceRefresh = false, fullRefresh = false) {
               const user = usernameInput.value.trim();
               
               if (!user || !GITHUB_USERNAME_REGEX.test(user)) {
@@ -188,14 +209,20 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
               previewImg.style.opacity = '0';
 
               const baseUrl = window.location.origin;
-              const cardUrl = \`\${baseUrl}/?user=\${user}&theme=\${theme}&v=\${version}\`;
+              const baseCardUrl = \`\${baseUrl}/?user=\${user}&theme=\${theme}&v=\${version}\`;
+              let fetchUrl = baseCardUrl;
+              if (fullRefresh) {
+                fetchUrl += '&full-refresh=true';
+              } else if (forceRefresh) {
+                fetchUrl += '&no-cache=true';
+              }
               
               generateBtn.textContent = 'Generating...';
               generateBtn.disabled = true;
               generateBtn.style.opacity = '0.7';
 
               try {
-                const response = await fetch(cardUrl);
+                const response = await fetch(fetchUrl);
                 if (!response.ok) {
                   let message = 'Something went wrong.';
                   if (response.status === 404) message = 'GitHub User not found.';
@@ -211,11 +238,11 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
                     previewImg.onload = resolve;
                     previewImg.onerror = resolve; // Continue reveal even if image is broken
                   });
-                  previewImg.src = cardUrl;
+                  previewImg.src = fetchUrl;
                   await onloadPromise;
 
-                  const markdown = \`![GitHub Streak](\${cardUrl})\`;
-                  const htmlStr = \`<img src="\${cardUrl}" alt="GitHub Streak" />\`;
+                  const markdown = \`![GitHub Streak](\${baseCardUrl})\`;
+                  const htmlStr = \`<img src="\${baseCardUrl}" alt="GitHub Streak" />\`;
                   mdCode.textContent = markdown;
                   htmlCode.textContent = htmlStr;
                   generateBtn.textContent = 'Generate';
@@ -247,6 +274,30 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
               } else {
                 previewImg.src = \`\${window.location.origin}/sample.svg?theme=\${theme}&v=\${version}\`;
               }
+            }
+
+            async function forceRefreshCache(isFull) {
+              const user = usernameInput.value.trim();
+              if (!user || !GITHUB_USERNAME_REGEX.test(user)) {
+                alert('Please enter a valid GitHub username and click Generate first.');
+                return;
+              }
+              if (isFull) {
+                const confirmed = confirm('A Hard Refresh will recalculate your entire history since you joined GitHub. This may take some time. Are you sure?');
+                if (!confirmed) return;
+              }
+              const btnId = isFull ? 'hard-refresh-btn' : 'soft-refresh-btn';
+              const btn = document.getElementById(btnId);
+              const originalText = btn.textContent;
+              btn.textContent = 'Refreshing...';
+              btn.disabled = true;
+              btn.style.opacity = '0.7';
+
+              await update(true, isFull);
+              
+              btn.textContent = originalText;
+              btn.disabled = false;
+              btn.style.opacity = '1';
             }
 
             function copy(id, btn) {

@@ -24,7 +24,7 @@ describe("Contribution Aggregation Logic", () => {
         
         mockGet.mockImplementation(async (key: string) => {
             if (key.endsWith(':history')) {
-                return { total: 1000, years: [2023, 2022], cacheVersion: 2 };
+                return { total: 1000, years: [2023, 2022], cacheVersion: 2, timestamp: Date.now() };
             }
             if (key.endsWith(':current')) {
                 return { 
@@ -55,7 +55,7 @@ describe("Contribution Aggregation Logic", () => {
         
         mockGet.mockImplementation(async (key: string) => {
             if (key.endsWith(':history')) {
-                return { total: 0, years: [], cacheVersion: 2 };
+                return { total: 0, years: [], cacheVersion: 2, timestamp: Date.now() };
             }
             if (key.endsWith(':current')) {
                 return { 

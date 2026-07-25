@@ -94,6 +94,7 @@ app.all('*', async (c) => {
   const theme = (c.req.query('theme') || 'transparent') as Theme
   const type = c.req.query('type')
   const forceRefresh = c.req.query('no-cache') === 'true'
+  const fullRefresh = c.req.query('full-refresh') === 'true'
 
   if (!username || !GITHUB_USERNAME_REGEX.test(username)) {
     c.header('Vary', 'Accept')
@@ -138,11 +139,15 @@ app.all('*', async (c) => {
   const activeVersion = Number(cacheStoreVersion || 0)
   const isVersionStale = storedVersion < activeVersion
 
+  const historyStoredVersion = Number(historyBlob?.cacheVersion || 0)
+  const isHistoryVersionStale = historyStoredVersion < activeVersion
+  const isHistoryStale = isHistoryVersionStale || !historyBlob || (Date.now() - (historyBlob.timestamp || 0) > 30 * 24 * 60 * 60 * 1000)
+
   const isCurrentStale = isVersionStale || !currentBlob || (Date.now() - currentBlob.timestamp > 3600000)
   
   // High-Level Availability Guard
   // Only proceed to GitHub fetch if NOT rate-limited AND NOT quota-exhausted
-  if ((isCurrentStale || forceRefresh || !historyBlob) && !isIpRateLimited) {
+  if ((isCurrentStale || forceRefresh || fullRefresh || isHistoryStale) && !isIpRateLimited) {
     const token = c.env.GITHUB_TOKEN
     if (!token) return c.body(renderErrorSVG('Config Error').toString(), 200, { 'Content-Type': 'image/svg+xml' });
 
@@ -152,31 +157,36 @@ app.all('*', async (c) => {
         logEvent({ name: 'warn_quota_low', data: { username } })
     } else {
         try {
-      // TIERED FETCH: If we have history AND the version is current, only fetch the current year
-      const targetYear = (historyBlob && !forceRefresh && !isVersionStale) ? currentYear : undefined
-      const fresh = await fetchGitHubData(username, token, targetYear)
+      // TIERED FETCH: If we have history AND the version is current AND not older than a month, only do a partial fetch
+      const partialFetch = (!isHistoryStale && !fullRefresh) ? true : false
+      const fresh = await fetchGitHubData(username, token, partialFetch)
       
       if (fresh.rateLimit) {
         githubRateLimitRemaining = fresh.rateLimit.remaining
         githubRateLimitResetAt = new Date(fresh.rateLimit.resetAt).getTime()
       }
 
-      const currentYearTotal = fresh.days
-        .filter(d => d.date.startsWith(currentYear.toString()))
+      const sixMonthsAgo = new Date()
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
+      const sixMonthsAgoStr = sixMonthsAgo.toISOString().split('T')[0]
+
+      const recentTotal = fresh.days
+        .filter(d => d.date >= sixMonthsAgoStr)
         .reduce((sum, d) => sum + d.contributionCount, 0)
 
-      // If we did a full fetch (no targetYear set), calculate and update history
-      if (!targetYear) {
-        const histTotal = fresh.totalContributions - currentYearTotal
+      // If we did a full fetch, calculate and update history
+      if (!partialFetch) {
+        const histTotal = fresh.totalContributions - recentTotal
         historyBlob = { 
           total: histTotal, 
           years: fresh.contributionYears.filter(y => y !== currentYear),
-          cacheVersion: activeVersion
+          cacheVersion: activeVersion,
+          timestamp: Date.now()
         }
         await streakStore.setJSON(historyKey, historyBlob).catch(() => {})
       }
 
-      const stats = calculateStreakStats(fresh.days, currentYearTotal, fresh.contributionYears)
+      const stats = calculateStreakStats(fresh.days, recentTotal, fresh.contributionYears)
       const last7 = fresh.days.slice(-7)
       const maxCount = Math.max(...last7.map(d => d.contributionCount), 1)
 

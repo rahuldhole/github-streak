@@ -106,7 +106,7 @@ describe("Cache Versioning Logic", () => {
                 last7: [],
                 maxCount: 1
             }; 
-            if (key.includes(':history')) return { total: 100, years: [2023], cacheVersion: 2 };
+            if (key.includes(':history')) return { total: 100, years: [2023], cacheVersion: 2, timestamp: Date.now() };
             return null;
         });
 
