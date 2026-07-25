@@ -102,11 +102,11 @@ describe("Cache Versioning Logic", () => {
             if (key.includes(':current')) return { 
                 stats: { total: 10, current: {}, max: {} }, 
                 timestamp: 0, // Force timestamp staleness
-                cacheVersion: 2,
+                cacheVersion: 4,
                 last7: [],
                 maxCount: 1
             }; 
-            if (key.includes(':history')) return { total: 100, years: [2023], cacheVersion: 2, timestamp: Date.now() };
+            if (key.includes(':history')) return { total: 100, years: [2023], cacheVersion: 4, timestamp: Date.now() };
             return null;
         });
 

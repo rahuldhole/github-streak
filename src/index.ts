@@ -3,7 +3,7 @@ import { getStore } from '@netlify/blobs'
 import { Bindings, Theme } from './types.ts'
 import { fetchGitHubData } from './github.ts'
 import { calculateStreakStats } from './logic.ts'
-import { renderSVG, renderLandingPage, renderErrorSVG, renderSharePage, renderOGImage } from './renderer.tsx'
+import { renderSVG, renderLandingPage, renderErrorSVG, renderSharePage, renderShareSVG } from './renderer.tsx'
 import { logEvent, GITHUB_USERNAME_REGEX, getSafeErrorMessage } from './utils.ts'
 import pkg from '../package.json' with { type: 'json' }
 
@@ -92,9 +92,13 @@ app.all('*', async (c) => {
   }
 
   let queryUser = c.req.query('user');
+  let isShareSVG = false;
   let isOG = false;
 
-  if (c.req.path.startsWith('/og/')) {
+  if (c.req.path.startsWith('/share-svg/')) {
+    queryUser = c.req.path.split('/share-svg/')[1];
+    isShareSVG = true;
+  } else if (c.req.path.startsWith('/og/')) {
     queryUser = c.req.path.split('/og/')[1];
     isOG = true;
   }
@@ -211,7 +215,15 @@ app.all('*', async (c) => {
       const last7 = fresh.days.slice(-7)
       const maxCount = Math.max(...last7.map(d => d.contributionCount), 1)
 
-      currentBlob = { stats, last7, maxCount, timestamp: Date.now(), cacheVersion: activeVersion }
+      currentBlob = { 
+        stats, 
+        last7, 
+        maxCount, 
+        name: fresh.name,
+        avatarUrl: fresh.avatarUrl,
+        timestamp: Date.now(), 
+        cacheVersion: activeVersion 
+      }
       await streakStore.setJSON(currentKey, currentBlob).catch(() => {})
         } catch (error: any) {
           if (currentBlob) {
@@ -248,8 +260,23 @@ app.all('*', async (c) => {
   }
 
   if (isOG) {
-    logEvent({ name: 'og_rendered', data: { username, theme, cacheHit: !isCurrentStale } })
-    const svg = renderOGImage(username, { ...currentBlob.stats, total: aggregatedTotal }, currentBlob.last7, currentBlob.maxCount, theme, lastUpdated)
+    const svgUrl = `${url.origin}/share-svg/${username}?theme=${theme}`
+    const netlifyImgUrl = `${url.origin}/.netlify/images?url=${encodeURIComponent(svgUrl)}&fm=png&w=1200&h=630&fit=cover`
+    return c.redirect(netlifyImgUrl, 302)
+  }
+
+  if (isShareSVG) {
+    logEvent({ name: 'share_svg_rendered', data: { username, theme, cacheHit: !isCurrentStale } })
+    const svg = renderShareSVG(
+      username, 
+      currentBlob.name,
+      currentBlob.avatarUrl,
+      { ...currentBlob.stats, total: aggregatedTotal }, 
+      currentBlob.last7, 
+      currentBlob.maxCount, 
+      theme, 
+      lastUpdated
+    )
     return c.body(svg.toString(), 200, {
       'Content-Type': 'image/svg+xml',
       'Cache-Control': 'public, max-age=3600, s-maxage=3600',

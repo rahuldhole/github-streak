@@ -287,12 +287,12 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
                   document.getElementById('share-linkedin').href = shareLinkedInUrl;
                   
                   // Store for copy button
-                  const fullShareText = \`Check out my GitHub Streak! 🔥 \${sharePageUrl}\`;
                   const copyBtn = document.getElementById('share-copy');
-                  copyBtn.dataset.text = fullShareText;
+                  copyBtn.dataset.text = sharePageUrl;
                   
                   // Store for LinkedIn fallback copying
-                  document.getElementById('share-linkedin').dataset.text = fullShareText;
+                  const linkedInText = \`Check out my GitHub Streak! 🔥 \${sharePageUrl}\`;
+                  document.getElementById('share-linkedin').dataset.text = linkedInText;
                   
                   const nativeBtn = document.getElementById('share-native');
                   if (navigator.share) {

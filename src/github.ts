@@ -4,6 +4,8 @@ import { logEvent } from './utils.ts'
 const GITHUB_GRAPHQL_QUERY = `
 query($login:String!) {
   user(login:$login) {
+    name
+    avatarUrl
     contributionsCollection {
       contributionYears
       contributionCalendar {
@@ -23,6 +25,8 @@ export async function fetchGitHubData(username: string, token: string, partialFe
   days: GitHubContributionDay[], 
   totalContributions: number, 
   contributionYears: number[],
+  name?: string,
+  avatarUrl?: string,
   rateLimit?: { remaining: number, resetAt: string } 
 }> {
   const headers = {
@@ -56,6 +60,27 @@ export async function fetchGitHubData(username: string, token: string, partialFe
   const user = json.data.user
   const currentCalendar = user.contributionsCollection.contributionCalendar
   const years: number[] = user.contributionsCollection.contributionYears
+  
+  let avatarBase64 = user.avatarUrl
+  if (user.avatarUrl) {
+    try {
+      const imgRes = await fetch(user.avatarUrl + "&s=80")
+      if (imgRes.ok) {
+        const buffer = await imgRes.arrayBuffer()
+        const bytes = new Uint8Array(buffer)
+        let binary = ''
+        for (let i = 0; i < bytes.byteLength; i++) {
+          binary += String.fromCharCode(bytes[i])
+        }
+        const base64 = btoa(binary)
+        const contentType = imgRes.headers.get('content-type') || 'image/png'
+        avatarBase64 = `data:${contentType};base64,${base64}`
+      }
+    } catch (e) {
+      // Ignore and keep original url
+    }
+  }
+
 
   // Extract rate limit from headers
   const remaining = res.headers.get("X-RateLimit-Remaining")
@@ -74,6 +99,8 @@ export async function fetchGitHubData(username: string, token: string, partialFe
       days: allDays,
       totalContributions: rollingTotal,
       contributionYears: years,
+      name: user.name,
+      avatarUrl: avatarBase64,
       rateLimit
     }
   }
@@ -85,6 +112,8 @@ export async function fetchGitHubData(username: string, token: string, partialFe
       days: allDays,
       totalContributions: rollingTotal,
       contributionYears: [],
+      name: user.name,
+      avatarUrl: avatarBase64,
       rateLimit
     }
   }
@@ -145,6 +174,8 @@ export async function fetchGitHubData(username: string, token: string, partialFe
     days: currentCalendar.weeks.flatMap((w: any) => w.contributionDays),
     totalContributions: allTimeTotal,
     contributionYears: years,
+    name: user.name,
+    avatarUrl: avatarBase64,
     rateLimit
   }
 }

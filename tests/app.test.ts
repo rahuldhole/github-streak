@@ -65,11 +65,11 @@ describe("Application Routes and Status Codes", () => {
                     ], 
                     maxCount: 2, 
                     timestamp: Date.now(),
-                    cacheVersion: 2
+                    cacheVersion: 4
                 };
             }
             if (key.includes(':history')) {
-              return { total: 90, years: [2023], cacheVersion: 2, timestamp: Date.now() };
+              return { total: 90, years: [2023], cacheVersion: 4, timestamp: Date.now() };
             }
             return null;
         });

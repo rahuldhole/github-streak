@@ -4,8 +4,8 @@ import { html } from 'hono/html'
 export function SharePage({ origin, user, theme }: { origin: string, user: string, theme: string }) {
   const title = `${user}'s GitHub Streak`
   const description = `Check out ${user}'s GitHub contribution streak! Generated with GitHub Streak Widget.`
-  const imageUrl = `${origin}/?user=${user}&theme=${theme}`
-  const ogImageUrl = `${origin}/.netlify/images?url=${encodeURIComponent(`/og/${user}?theme=${theme}`)}&fm=png&w=1200&h=630&fit=cover`
+  const imageUrl = `${origin}/share-svg/${user}?theme=${theme}`
+  const ogImageUrl = `${origin}/og/${user}?theme=${theme}`
   const pageUrl = `${origin}/share/${user}`
 
   return (
@@ -50,7 +50,11 @@ export function SharePage({ origin, user, theme }: { origin: string, user: strin
             <p>Check out this awesome contribution streak!</p>
             
             <div class="preview-container">
-              <img class="preview-img" src={imageUrl} alt={`${user}'s GitHub Streak`} />
+              <img 
+                src={imageUrl} 
+                alt={`${user}'s GitHub Streak`} 
+                class="preview-img"
+              />
             </div>
 
             <a href="/" class="btn">Create Your Own Widget</a>
