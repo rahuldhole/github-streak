@@ -4,13 +4,12 @@ import { Bindings, Theme } from './types.ts'
 import { fetchGitHubData } from './github.ts'
 import { calculateStreakStats } from './logic.ts'
 import { renderSVG, renderLandingPage, renderErrorSVG } from './renderer.tsx'
+import { logEvent, GITHUB_USERNAME_REGEX, getSafeErrorMessage } from './utils.ts'
 import pkg from '../package.json' with { type: 'json' }
 
 const cacheStoreVersion = pkg.cacheStoreVersion
 
 export const app = new Hono<{ Bindings: Bindings }>()
-
-export const GITHUB_USERNAME_REGEX = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i
 
 const ipRateLimit = new Map<string, { count: number, reset: number }>()
 const RATE_LIMIT_WINDOW = 60 * 1000 
@@ -19,19 +18,11 @@ const MAX_REQUESTS_PER_WINDOW = 30
 let githubRateLimitRemaining = 5000
 let githubRateLimitResetAt = 0
 
-// Safe error sanitization
-const getSafeErrorMessage = (err: any) => {
-  const msg = err.message || ''
-  if (msg.includes('not found')) return 'User Not Found'
-  if (msg.includes('401') || msg.includes('403')) return 'GitHub Auth Error'
-  if (msg.includes('rate limit')) return 'GitHub Rate Limit'
-  return 'System Error'
-}
-
 // Global error handler
 app.onError((err, c) => {
-  console.error('App Error:', err)
+  logEvent({ name: 'error', data: { type: 'app_error', error: err.toString() } })
   const safeMessage = getSafeErrorMessage(err)
+  logEvent({ name: 'error', data: { message: safeMessage } })
   
   if (c.req.query('user') !== undefined) {
     c.header('Vary', 'Accept')
@@ -46,6 +37,7 @@ app.onError((err, c) => {
 })
 
 app.notFound((c) => {
+  logEvent({ name: 'not_found', data: { path: c.req.path } })
   if (c.req.query('user') !== undefined) {
     c.header('Vary', 'Accept')
     return c.body(renderErrorSVG('Path Not Found').toString(), 200, {
@@ -88,6 +80,7 @@ app.all('*', async (c) => {
 
   if (queryUser === undefined) {
     if (c.req.path === '/' || c.req.path === '') {
+      logEvent({ name: 'page_view', data: { page: 'landing' } })
       c.header('Vary', 'Accept')
       c.header('Cache-Control', 'public, max-age=3600, s-maxage=3600')
       c.header('Netlify-CDN-Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=3600')
@@ -118,6 +111,7 @@ app.all('*', async (c) => {
   if (userLimit && now < userLimit.reset) {
     if (userLimit.count >= MAX_REQUESTS_PER_WINDOW) {
       isIpRateLimited = true
+      logEvent({ name: 'rate_limited', data: { type: 'ip' } })
     } else {
       userLimit.count++
     }
@@ -137,7 +131,7 @@ app.all('*', async (c) => {
     historyBlob = await streakStore.get(historyKey, { type: 'json' })
     currentBlob = await streakStore.get(currentKey, { type: 'json' })
   } catch (e) {
-    console.error('Blob fetch failed:', e)
+    logEvent({ name: 'error', data: { type: 'blob_fetch_failed', error: (e as any).toString() } })
   }
 
   const storedVersion = Number(currentBlob?.cacheVersion || 0)
@@ -155,7 +149,7 @@ app.all('*', async (c) => {
     // Quota Guard: If we are critically low on GitHub quota (or exhausted), strictly serve stale data
     const isQuotaExhausted = githubRateLimitRemaining === 0 && Date.now() < githubRateLimitResetAt
     if ((githubRateLimitRemaining < 20 || isQuotaExhausted) && currentBlob) {
-        console.warn('Quota critically low or exhausted, serving stale data for:', username)
+        logEvent({ name: 'warn_quota_low', data: { username } })
     } else {
         try {
       // TIERED FETCH: If we have history AND the version is current, only fetch the current year
@@ -218,9 +212,11 @@ app.all('*', async (c) => {
 
   if (type === 'json') {
     c.header('Vary', 'Accept')
+    logEvent({ name: 'api_request', data: { username, theme } })
     return c.json({ username, ...currentBlob, total: aggregatedTotal, theme })
   }
 
+  logEvent({ name: 'svg_rendered', data: { username, theme, cacheHit: !isCurrentStale } })
   const svg = renderSVG({ ...currentBlob.stats, total: aggregatedTotal }, currentBlob.last7, currentBlob.maxCount, theme, lastUpdated)
   return c.body(svg.toString(), 200, {
     'Content-Type': 'image/svg+xml',

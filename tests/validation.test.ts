@@ -1,5 +1,5 @@
 import { expect, test, describe } from "bun:test";
-import { GITHUB_USERNAME_REGEX } from "../src/index.ts";
+import { GITHUB_USERNAME_REGEX } from "../src/utils.ts";
 
 describe("GitHub Username Validation", () => {
   test("Valid usernames", () => {

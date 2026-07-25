@@ -1,4 +1,5 @@
 import { GitHubContributionDay } from './types.ts'
+import { logEvent } from './utils.ts'
 
 const GITHUB_GRAPHQL_QUERY = `
 query($login:String!) {
@@ -41,11 +42,14 @@ export async function fetchGitHubData(username: string, token: string, targetYea
   })
 
   if (!res.ok) {
-    throw new Error(`GitHub API error: ${res.statusText}`)
+    const errorText = `GitHub API error: ${res.statusText}`
+    logEvent({ name: 'error', data: { type: 'github_api_error', error: errorText, username } })
+    throw new Error(errorText)
   }
 
   const json = (await res.json()) as any
   if (!json.data?.user) {
+    logEvent({ name: 'error', data: { type: 'github_user_not_found', username } })
     throw new Error(`User ${username} not found`)
   }
 
@@ -120,7 +124,11 @@ export async function fetchGitHubData(username: string, token: string, targetYea
           variables: { login: username }
         })
       }).then(async res => {
-        if (!res.ok) throw new Error(`GitHub batch API error: ${res.statusText}`)
+        if (!res.ok) {
+          const errorText = `GitHub batch API error: ${res.statusText}`
+          logEvent({ name: 'error', data: { type: 'github_batch_api_error', error: errorText, username } })
+          throw new Error(errorText)
+        }
         const json = (await res.json()) as any
         return json.data?.user || {}
       })
