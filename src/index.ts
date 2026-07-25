@@ -110,7 +110,7 @@ app.all('*', async (c) => {
     })
   }
 
-  const ip = c.req.header('x-forwarded-for') || c.req.header('cf-connecting-ip') || 'unknown'
+  const ip = c.req.header('x-forwarded-for') || 'unknown'
   const now = Date.now()
   const userLimit = ipRateLimit.get(ip)
   let isIpRateLimited = false
