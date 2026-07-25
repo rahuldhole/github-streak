@@ -114,7 +114,7 @@ export default async (req: Request, context: Context) => {
     await ensureInit()
 
     // Fetch the share SVG from our own edge function
-    const siteUrl = process.env.URL || url.origin
+    const siteUrl = process.env.DEPLOY_PRIME_URL || url.origin
     const svgUrl = `${siteUrl}/share-svg/${encodeURIComponent(username)}?theme=${encodeURIComponent(theme)}`
     const svgRes = await fetch(svgUrl)
 
@@ -156,7 +156,7 @@ export default async (req: Request, context: Context) => {
     console.error('OG image generation failed:', err)
 
     // Fallback: redirect to static OG image
-    const siteUrl = process.env.URL || url.origin
+    const siteUrl = process.env.DEPLOY_PRIME_URL || url.origin
     return new Response(null, {
       status: 302,
       headers: { Location: `${siteUrl}/og.png` },
