@@ -1,4 +1,5 @@
 # 🔥 Github Streak
+[![Netlify Status](https://api.netlify.com/api/v1/badges/2fd5c23e-c5ec-48a7-9d10-1fa1a789ce35/deploy-status)](https://app.netlify.com/projects/github-streak/deploys)
 
 A Duolingo-inspired GitHub activity streak widget that visualizes your coding consistency in real-time.
 
