@@ -5,7 +5,7 @@ export function SharePage({ origin, user, theme }: { origin: string, user: strin
   const title = `${user}'s GitHub Streak`
   const description = `Check out ${user}'s GitHub contribution streak! Generated with GitHub Streak Widget.`
   const imageUrl = `${origin}/share-svg/${user}?theme=${theme}`
-  const ogImageUrl = `${origin}/og/${user}?theme=${theme}`
+  const ogImageUrl = `${origin}/.netlify/images?url=${encodeURIComponent(`/share-svg/${user}?theme=${theme}`)}&fm=png&w=1200&h=630&fit=cover`
   const pageUrl = `${origin}/share/${user}`
 
   return (
