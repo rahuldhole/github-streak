@@ -278,7 +278,7 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
                   htmlCode.textContent = htmlStr;
                   generateBtn.textContent = 'Generate';
 
-                  const sharePageUrl = \`\${baseUrl}/profile/\${theme}/\${user}\`;
+                  const sharePageUrl = \`\${baseUrl}/profile/\${user}/\${theme}\`;
                   const shareText = encodeURIComponent(\`Check out my GitHub Streak! 🔥\n\n\`);
                   const shareXUrl = \`https://twitter.com/intent/tweet?text=\${shareText}&url=\${encodeURIComponent(sharePageUrl)}\`;
                   const shareLinkedInUrl = \`https://www.linkedin.com/sharing/share-offsite/?url=\${encodeURIComponent(sharePageUrl)}\`;

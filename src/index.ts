@@ -90,8 +90,8 @@ app.all('*', async (c) => {
     const profilePath = c.req.path.split('/profile/')[1];
     const parts = profilePath.split('/');
     if (parts.length > 1) {
-      pathTheme = parts[0];
-      queryUser = parts[1];
+      queryUser = parts[0];
+      pathTheme = parts[1];
     } else {
       queryUser = parts[0];
     }

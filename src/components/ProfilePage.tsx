@@ -7,7 +7,7 @@ export function ProfilePage({ origin, user, theme, profile }: { origin: string, 
   const description = profile?.bio || `Check out ${name}'s GitHub contribution streak and portfolio! Generated with GitHub Streak Widget.`
   const imageUrl = `${origin}/?user=${user}&theme=${theme}`
   const ogImageUrl = `${origin}/og/${user}?theme=${theme}`
-  const pageUrl = `${origin}/profile/${theme}/${user}`
+  const pageUrl = `${origin}/profile/${user}/${theme}`
 
   // Ensure website URL has scheme
   let websiteUrl = profile?.websiteUrl;
