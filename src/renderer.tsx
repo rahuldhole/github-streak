@@ -2,10 +2,10 @@
 import { GitHubContributionDay, Theme } from './types.ts'
 import { StreakStats } from './logic.ts'
 import { GitHubStreakSVG } from './components/GitHubStreakSVG.tsx'
-import { ShareSVG } from './components/ShareSVG.tsx'
+import { ProfileSVG } from './components/ProfileSVG.tsx'
 import { ErrorSVG } from './components/ErrorSVG.tsx'
 import { LandingPage } from './components/LandingPage.tsx'
-import { SharePage } from './components/SharePage.tsx'
+import { ProfilePage } from './components/ProfilePage.tsx'
 
 /**
  * Renders the main GitHub Streak SVG card
@@ -39,14 +39,14 @@ export function renderLandingPage(origin: string = '') {
 /**
  * Renders the social share page
  */
-export function renderSharePage(origin: string, user: string, theme: string = 'dark', profile?: any) {
-  return <SharePage origin={origin} user={user} theme={theme} profile={profile} />
+export function renderProfilePage(origin: string, user: string, theme: string = 'dark', profile?: any) {
+  return <ProfilePage origin={origin} user={user} theme={theme} profile={profile} />
 }
 
 /**
  * Renders the OG image canvas SVG
  */
-export function renderShareSVG(
+export function renderProfileSVG(
   username: string, 
   name: string | undefined,
   avatarUrl: string | undefined,
@@ -57,7 +57,7 @@ export function renderShareSVG(
   lastUpdated?: string
 ) {
   return (
-    <ShareSVG 
+    <ProfileSVG 
       username={username}
       name={name}
       avatarUrl={avatarUrl}

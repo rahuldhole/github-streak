@@ -115,7 +115,7 @@ export default async (req: Request, context: Context) => {
 
     // Fetch the share SVG from our own edge function
     const siteUrl = url.origin
-    const svgUrl = `${siteUrl}/share-svg/${encodeURIComponent(username)}?theme=${encodeURIComponent(theme)}`
+    const svgUrl = `${siteUrl}/profile-svg/${encodeURIComponent(username)}?theme=${encodeURIComponent(theme)}`
     const svgRes = await fetch(svgUrl)
 
     if (!svgRes.ok) {

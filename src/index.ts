@@ -3,7 +3,7 @@ import { getStore } from '@netlify/blobs'
 import { Bindings, Theme } from './types.ts'
 import { fetchGitHubData } from './github.ts'
 import { calculateStreakStats } from './logic.ts'
-import { renderSVG, renderLandingPage, renderErrorSVG, renderSharePage, renderShareSVG } from './renderer.tsx'
+import { renderSVG, renderLandingPage, renderErrorSVG, renderProfilePage, renderProfileSVG } from './renderer.tsx'
 import { logEvent, GITHUB_USERNAME_REGEX, getSafeErrorMessage } from './utils.ts'
 import pkg from '../package.json' with { type: 'json' }
 
@@ -79,15 +79,15 @@ app.all('*', async (c) => {
   }
 
   let queryUser = c.req.query('user');
-  let isShareSVG = false;
-  let isSharePage = false;
+  let isProfileSVG = false;
+  let isProfilePage = false;
 
-  if (c.req.path.startsWith('/share-svg/')) {
-    queryUser = c.req.path.split('/share-svg/')[1];
-    isShareSVG = true;
-  } else if (c.req.path.startsWith('/share/')) {
-    queryUser = c.req.path.split('/share/')[1];
-    isSharePage = true;
+  if (c.req.path.startsWith('/profile-svg/')) {
+    queryUser = c.req.path.split('/profile-svg/')[1];
+    isProfileSVG = true;
+  } else if (c.req.path.startsWith('/profile/')) {
+    queryUser = c.req.path.split('/profile/')[1];
+    isProfilePage = true;
   }
 
   if (queryUser === undefined) {
@@ -256,17 +256,17 @@ app.all('*', async (c) => {
     return c.json({ username, ...currentBlob, total: aggregatedTotal, theme })
   }
 
-  if (isSharePage) {
-    logEvent({ name: 'page_view', data: { page: 'share', username } })
+  if (isProfilePage) {
+    logEvent({ name: 'page_view', data: { page: 'profile', username } })
     c.header('Vary', 'Accept')
     c.header('Cache-Control', 'public, max-age=3600, s-maxage=3600')
-    const profile = { ...currentBlob, total: aggregatedTotal }
-    return c.html(renderSharePage(url.origin, username, theme, profile))
+    const profileData = { ...currentBlob, total: aggregatedTotal }
+    return c.html(renderProfilePage(url.origin, username, theme, profileData))
   }
 
-  if (isShareSVG) {
-    logEvent({ name: 'share_svg_rendered', data: { username, theme, cacheHit: !isCurrentStale } })
-    const svg = renderShareSVG(
+  if (isProfileSVG) {
+    logEvent({ name: 'profile_svg_rendered', data: { username, theme, cacheHit: !isCurrentStale } })
+    const svg = renderProfileSVG(
       username, 
       currentBlob.name,
       currentBlob.avatarUrl,

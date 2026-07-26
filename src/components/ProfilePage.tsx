@@ -1,13 +1,13 @@
 /** @jsxImportSource hono/jsx */
 import { html } from 'hono/html'
 
-export function SharePage({ origin, user, theme, profile }: { origin: string, user: string, theme: string, profile?: any }) {
+export function ProfilePage({ origin, user, theme, profile }: { origin: string, user: string, theme: string, profile?: any }) {
   const name = profile?.name || user;
   const title = `${name}'s GitHub Portfolio`
   const description = profile?.bio || `Check out ${name}'s GitHub contribution streak and portfolio! Generated with GitHub Streak Widget.`
   const imageUrl = `${origin}/?user=${user}&theme=${theme}`
   const ogImageUrl = `${origin}/og/${user}?theme=${theme}`
-  const pageUrl = `${origin}/share/${user}`
+  const pageUrl = `${origin}/profile/${user}`
 
   // Ensure website URL has scheme
   let websiteUrl = profile?.websiteUrl;

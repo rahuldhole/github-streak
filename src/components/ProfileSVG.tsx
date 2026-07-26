@@ -3,7 +3,7 @@ import { GitHubStreakSVG, themes } from './GitHubStreakSVG.tsx'
 import { GitHubContributionDay, Theme } from '../types.ts'
 import { StreakStats } from '../logic.ts'
 
-export function ShareSVG({ 
+export function ProfileSVG({ 
   username,
   name,
   avatarUrl,
