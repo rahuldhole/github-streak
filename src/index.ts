@@ -79,6 +79,7 @@ app.all('*', async (c) => {
   }
 
   let queryUser = c.req.query('user');
+  let pathTheme: string | undefined;
   let isProfileSVG = false;
   let isProfilePage = false;
 
@@ -86,7 +87,14 @@ app.all('*', async (c) => {
     queryUser = c.req.path.split('/profile-svg/')[1];
     isProfileSVG = true;
   } else if (c.req.path.startsWith('/profile/')) {
-    queryUser = c.req.path.split('/profile/')[1];
+    const profilePath = c.req.path.split('/profile/')[1];
+    const parts = profilePath.split('/');
+    if (parts.length > 1) {
+      pathTheme = parts[0];
+      queryUser = parts[1];
+    } else {
+      queryUser = parts[0];
+    }
     isProfilePage = true;
   }
 
@@ -103,7 +111,7 @@ app.all('*', async (c) => {
   }
 
   const username = queryUser.split('?')[0].trim()
-  const theme = (c.req.query('theme') || 'transparent') as Theme
+  const theme = (pathTheme || c.req.query('theme') || 'transparent') as Theme
   const type = c.req.query('type')
   const forceRefresh = c.req.query('no-cache') === 'true'
   const fullRefresh = c.req.query('full-refresh') === 'true'
