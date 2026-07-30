@@ -13,9 +13,6 @@ import pkg from '../package.json' with { type: 'json' }
 const cacheStoreVersion = pkg.cacheStoreVersion
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import * as fs from "node:fs/promises";
-import * as path from "node:path";
-import { fileURLToPath } from "node:url";
 import { z } from "zod";
 
 export const app = new Hono<{ Bindings: Bindings }>()
@@ -67,27 +64,103 @@ app.all('/mcp', async (c) => {
       capabilities: { tools: {} }
     });
 
-    mcpServer.tool("save_ai_template",
-      "Save an AI-designed SVG template for the GitHub Streak app.",
+    // Tool 1: Get the template guide with all available variables
+    mcpServer.tool("get_template_guide",
+      "Get the complete guide for designing custom GitHub Streak SVG widgets. Returns all available template variables, theme CSS custom properties, and an example template. Call this FIRST before designing any widget.",
+      {},
+      async () => {
+        const guide = `# GitHub Streak Custom Widget Template Guide
+
+## Template Variables
+These mustache-style variables (e.g. {{variableName}}) are replaced with real data at render time:
+
+### Stats Variables
+- {{currentStreak}} — Current streak count (e.g. "42")
+- {{currentStreakDate}} — Date range of current streak (e.g. "Jan 1 - Feb 12")
+- {{personalBest}} — Longest streak count (e.g. "99")
+- {{personalBestDate}} — Date range of longest streak (e.g. "10/05/23 - 17/08/23")
+- {{totalContribs}} — Total contributions, compact format (e.g. "1.3K")
+- {{totalContribsDate}} — Year range (e.g. "2015 - 2024")
+- {{lastUpdated}} — Timestamp string (e.g. "Last Updated: 2024-03-07")
+
+### Last 7 Days Variables (i = 0 to 6, where 0 is oldest)
+- {{day0Count}} ... {{day6Count}} — Contribution count for that day
+- {{day0Label}} ... {{day6Label}} — Day label ("M", "T", "W", etc.)
+- {{day0Level}} ... {{day6Level}} — Intensity level 0-4 (for CSS var mapping)
+- {{day0Color}} ... {{day6Color}} — Direct hex color for that day's intensity
+- {{day0TextColor}} ... {{day6TextColor}} — Contrasting text color
+
+### Theme Variables
+- {{theme.bg}}, {{theme.border}}, {{theme.text}}, {{theme.textMuted}}, {{theme.accent}}
+
+### Pre-built Heat Strip
+- {{heatStrip}} — A pre-rendered SVG group of 7 contribution rectangles
+
+## CSS Custom Properties Convention
+Define these in your SVG <style> block for level-based coloring:
+  --l0: empty/no contributions color
+  --l1: low contributions color
+  --l2: medium contributions color
+  --l3: high contributions color
+  --l4: max contributions color
+  --text-l0 through --text-l4: contrasting text colors for each level
+
+Use them with level variables: fill="var(--l{{day0Level}})"
+
+## Available Themes
+transparent, dark, light, catppuccin, nord, dracula, monokai, synthwave, solarizedDark, solarizedLight, onedark, gruvbox
+
+## API Usage
+After designing your SVG template, use the generate_widget_url tool to get a live preview URL.
+The URL format is: /v1/?user=USERNAME&theme=THEME&custom=ENCODED_TEMPLATE
+Without a user param, use /v1/sample.svg?custom=ENCODED for sample data preview.
+
+## ⚠️ Important
+- Templates MUST be valid SVG
+- Keep templates compact (brotli compression has URL length limits)
+- The viewBox is typically "0 0 420 180" for standard or "0 0 600 200" for wide layouts
+- Always include xmlns="http://www.w3.org/2000/svg"`;
+
+        return { content: [{ type: "text", text: guide }] };
+      }
+    );
+
+    // Tool 2: Generate a live widget URL from an SVG template
+    mcpServer.tool("generate_widget_url",
+      "Takes a custom SVG template string, brotli-compresses it, and returns a ready-to-use widget URL. WARNING: If no username is provided, the URL will use sample data instead of real GitHub data.",
       {
-        svgContent: z.string().describe("The raw SVG content of the template."),
-        templateName: z.string().describe("The name of the template (e.g., 'custom-card.svg').")
+        svgTemplate: z.string().describe("The raw SVG template string with {{variables}} placeholders."),
+        username: z.string().optional().describe("GitHub username for live data. If omitted, sample data is used."),
+        theme: z.string().optional().describe("Theme name (e.g. 'dark', 'catppuccin'). Defaults to 'dark'."),
+        baseUrl: z.string().optional().describe("Base URL of the deployed app (e.g. 'https://github-streak.netlify.app'). Defaults to 'https://github-streak.netlify.app'.")
       },
-      async ({ svgContent, templateName }) => {
+      async ({ svgTemplate, username, theme, baseUrl }) => {
         try {
-          const templatesPath = path.join(process.cwd(), 'src/ai-templates.json');
-          let templates: Record<string, string> = {};
-          try {
-            const fileContent = await fs.readFile(templatesPath, "utf-8");
-            templates = JSON.parse(fileContent);
-          } catch (err: any) {
-            if (err.code !== "ENOENT") throw err;
+          const compressed = brotliCompressSync(Buffer.from(svgTemplate));
+          const encoded = compressed.toString('base64url');
+          const host = baseUrl || 'https://github-streak.netlify.app';
+          const selectedTheme = theme || 'dark';
+
+          let previewUrl: string;
+          let warning = '';
+
+          if (username) {
+            previewUrl = `${host}/v1/?user=${encodeURIComponent(username)}&theme=${selectedTheme}&custom=${encoded}`;
+          } else {
+            previewUrl = `${host}/v1/sample.svg?theme=${selectedTheme}&custom=${encoded}`;
+            warning = '⚠️ No username provided — this URL uses SAMPLE DATA. Add a user parameter for real GitHub contribution data.';
           }
-          templates[templateName] = svgContent;
-          await fs.writeFile(templatesPath, JSON.stringify(templates, null, 2));
-          return { content: [{ type: "text", text: `Successfully saved template: ${templateName}` }] };
+
+          const result = [
+            `## Generated Widget URL\n\n${previewUrl}`,
+            `\n## Embed in GitHub README\n\n\`\`\`markdown\n![GitHub Streak](${previewUrl})\n\`\`\``,
+            warning ? `\n## Warning\n${warning}` : '',
+            `\n## Encoded Template (base64url)\nLength: ${encoded.length} chars\n${encoded.substring(0, 100)}...`
+          ].filter(Boolean).join('\n');
+
+          return { content: [{ type: "text", text: result }] };
         } catch (error: any) {
-          return { content: [{ type: "text", text: `Error saving template: ${error.message}` }], isError: true };
+          return { content: [{ type: "text", text: `Error compressing template: ${error.message}` }], isError: true };
         }
       }
     );
