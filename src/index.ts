@@ -288,6 +288,17 @@ app.post('/api/compress', async (c) => {
   }
 })
 
+app.post('/api/decompress', async (c) => {
+  try {
+    const base64Url = await c.req.text()
+    if (!base64Url) return c.json({ error: 'No content' }, 400)
+    const decompressed = brotliDecompressSync(Buffer.from(base64Url, 'base64url')).toString()
+    return c.json({ decompressed })
+  } catch (err: any) {
+    return c.json({ error: err.message }, 500)
+  }
+})
+
 const handleSampleSVG = (c: any) => {
   const mockStats = { 
     current: { count: 42, start: '2024-01-01', end: '2024-02-12' }, 

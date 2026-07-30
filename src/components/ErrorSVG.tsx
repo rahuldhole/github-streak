@@ -7,7 +7,7 @@ export function ErrorSVG({ message }: { message: string }) {
         ${message}
       </text>
       <text x="210" y="110" text-anchor="middle" fill="#94A3B8" font-family="sans-serif" font-size="12">
-        Temporarily Unavailable
+        Check '?user=' field in the URL | Temporarily Unavailable
       </text>
     </svg>
   `

@@ -1398,6 +1398,10 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
               .controls { padding: 0.5rem; }
             }
             .CodeMirror { flex: 1; height: 100%; font-family: monospace; font-size: 14px; }
+            .tactile-btn { transition: transform 0.1s; }
+            .tactile-btn:active { transform: scale(0.85); }
+            @keyframes spin { 100% { transform: rotate(360deg); } }
+            .spin-anim { animation: spin 0.5s ease-in-out; }
             `}
           </style>
           <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css" />
@@ -1451,38 +1455,72 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
               <textarea id="editor" style={{ display: 'none' }}>{templates.default}</textarea>
             </div>
             <div class="preview-panel">
-              <div class="sandbox-area">
+              <div style={{ margin: '1.5rem 2rem 0 2rem', background: '#e1e4e8', padding: '0.5rem', borderRadius: '8px 8px 0 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '6px', padding: '0 8px' }}>
+                  <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ff5f56' }}></div>
+                  <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ffbd2e' }}></div>
+                  <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#27c93f' }}></div>
+                </div>
+                <button onclick="triggerReload(this)" style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.1rem', padding: '0 0.2rem', color: '#586069', display: 'flex', alignItems: 'center' }} title="Reload Preview">↻</button>
+                <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <input type="text" id="custom-url" placeholder="Paste your generated URL here..." oninput="handleUrlPaste(event)" onclick="this.select()" style={{ width: '100%', padding: '0.4rem 2rem 0.4rem 0.8rem', border: '1px solid #d1d5da', borderRadius: '6px', boxSizing: 'border-box', fontFamily: 'monospace', fontSize: '0.75rem', background: '#ffffff', color: '#24292e', outline: 'none' }} />
+                  <button class="tactile-btn" onclick="clearCustomUrl()" style={{ position: 'absolute', right: '4px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#959da5', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Clear">✖</button>
+                </div>
+                <button class="copy-btn tactile-btn" onclick="copyIcon(this)" style={{ background: '#ffffff', border: '1px solid #d1d5da', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, fontSize: '0.9rem' }} title="Copy URL">📋</button>
+              </div>
+              <div class="sandbox-area" style={{ paddingTop: '1rem', borderLeft: '1px solid #e1e4e8', borderRight: '1px solid #e1e4e8', borderBottom: '1px solid #e1e4e8', margin: '0 2rem 1.5rem 2rem', borderRadius: '0 0 8px 8px', backgroundColor: '#ffffff', width: 'auto' }}>
                 <iframe id="preview" style={{ border: 'none', width: '100%', height: '500px', minHeight: '300px', background: 'transparent', resize: 'vertical', display: 'block' }} sandbox="allow-scripts allow-same-origin"></iframe>
               </div>
               
               <div class="bottom-area">
-                <div style={{ marginBottom: '1rem', fontSize: '0.8rem', color: 'var(--muted)', alignSelf: 'flex-start', width: '100%', maxWidth: '600px' }}>
-                  <p>Available variables:</p>
-                  <ul style={{ margin: '0.5rem 0', paddingLeft: '1rem' }}>
-                    <li><code>{"{{currentStreak}}"}</code>, <code>{"{{currentStreakDate}}"}</code></li>
-                    <li><code>{"{{personalBest}}"}</code>, <code>{"{{personalBestDate}}"}</code></li>
-                    <li><code>{"{{totalContribs}}"}</code>, <code>{"{{totalContribsDate}}"}</code></li>
-                    <li><code>{"{{heatStrip}}"}</code> - Default generated activity squares</li>
-                    <li><code>{"{{lastUpdated}}"}</code> - Render date label</li>
-                    <li><code>{"{{day0Count}}"}</code>, <code>{"{{day0Color}}"}</code>, <code>{"{{day0TextColor}}"}</code> (0 to 6)</li>
-                  </ul>
+                <div style={{ width: '100%', maxWidth: '800px', textAlign: 'left' }}>
+                  <h2 style={{ fontSize: '1.2rem', marginTop: 0 }}>Usage Guide</h2>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--muted)', lineHeight: '1.5' }}>
+                    This editor allows you to fully customize your GitHub Streak SVG by modifying the raw markup. 
+                    The backend processes your template and dynamically substitutes placeholders with your live GitHub data.
+                  </p>
+                  
+                  <h3 style={{ fontSize: '1rem', marginTop: '1.5rem' }}>Available Variables</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontSize: '0.85rem' }}>
+                    <div style={{ background: '#f6f8fa', padding: '1rem', borderRadius: '6px', border: '1px solid var(--border)' }}>
+                      <strong>Statistics</strong>
+                      <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.2rem', color: 'var(--muted)', lineHeight: '1.6' }}>
+                        <li><code>{"{{currentStreak}}"}</code> - Current streak length</li>
+                        <li><code>{"{{currentStreakDate}}"}</code> - Current streak date range</li>
+                        <li><code>{"{{personalBest}}"}</code> - Longest streak length</li>
+                        <li><code>{"{{personalBestDate}}"}</code> - Longest streak date range</li>
+                        <li><code>{"{{totalContribs}}"}</code> - Total lifetime contributions</li>
+                        <li><code>{"{{totalContribsDate}}"}</code> - Total contribution date range</li>
+                      </ul>
+                    </div>
+                    <div style={{ background: '#f6f8fa', padding: '1rem', borderRadius: '6px', border: '1px solid var(--border)' }}>
+                      <strong>Visuals & Dates</strong>
+                      <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.2rem', color: 'var(--muted)', lineHeight: '1.6' }}>
+                        <li><code>{"{{heatStrip}}"}</code> - Renders default 7-day activity boxes</li>
+                        <li><code>{"{{lastUpdated}}"}</code> - Date the SVG was generated</li>
+                        <li><code>{"{{dayXCount}}"}</code> - Contrib count for day X (0-6)</li>
+                        <li><code>{"{{dayXLevel}}"}</code> - Heat level for day X (0-4)</li>
+                        <li><code>{"{{dayXLabel}}"}</code> - Day of week label (e.g. Mon)</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <h3 style={{ fontSize: '1rem', marginTop: '1.5rem' }}>How to Embed</h3>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: '1.5' }}>
+                    Once you're happy with your design, copy the <strong>Markdown</strong> or <strong>HTML</strong> snippet below and paste it into your <code>README.md</code>. 
+                    Alternatively, keep your <strong>Custom URL</strong> safe. Whenever you paste that URL back into the browser bar above, it will instantly load your custom SVG back into the editor!
+                  </p>
                 </div>
                 
-                <div class="url-box" style={{ marginTop: '1rem' }}>
+                <div class="url-box" style={{ marginTop: '2rem', width: '100%', maxWidth: '800px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Your Custom URL</label>
-                    <button class="copy-btn" onclick="copyCode('custom-url', this, true)">Copy</button>
-                  </div>
-                  <input type="text" id="custom-url" readonly onclick="this.select()" style={{ marginBottom: '1.5rem' }} />
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Markdown</label>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Markdown Snippet</label>
                     <button class="copy-btn" onclick="copyCode('md-code', this, true)">Copy</button>
                   </div>
-                  <input type="text" class="code-block" id="md-code" readonly onclick="this.select()" />
+                  <input type="text" class="code-block" id="md-code" readonly onclick="this.select()" style={{ marginBottom: '1.5rem' }} />
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>HTML</label>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>HTML Snippet</label>
                     <button class="copy-btn" onclick="copyCode('html-code', this, true)">Copy</button>
                   </div>
                   <input type="text" class="code-block" id="html-code" readonly onclick="this.select()" />
@@ -1542,7 +1580,7 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
                 
                 const baseUrl = window.location.origin;
                 const username = document.getElementById('preview-user').value.trim();
-                const finalUrl = username ? (baseUrl + '/v1/?user=' + encodeURIComponent(username) + '&custom=' + compressed + '&v=' + window.APP_VERSION) : (baseUrl + '/v1/sample.svg?custom=' + compressed + '&v=' + window.APP_VERSION);
+                const finalUrl = (username && username !== 'YOUR_USERNAME') ? (baseUrl + '/v1/?user=' + encodeURIComponent(username) + '&custom=' + compressed + '&v=' + window.APP_VERSION) : (baseUrl + '/v1/sample.svg?custom=' + compressed + '&v=' + window.APP_VERSION);
                 const renderedUrl = baseUrl + '/v1/?user=' + (username || 'YOUR_USERNAME') + '&custom=' + compressed + '&v=' + window.APP_VERSION;
                 
                 // Fetch the SVG and render it safely inside the sandboxed iframe
@@ -1592,6 +1630,51 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
               }
             }
 
+            function clearCustomUrl() {
+              document.getElementById('custom-url').value = '';
+            }
+
+            function triggerReload(btn) {
+              btn.classList.remove('spin-anim');
+              void btn.offsetWidth;
+              btn.classList.add('spin-anim');
+              updatePreview();
+            }
+
+            function copyIcon(btn) {
+              const el = document.getElementById('custom-url');
+              navigator.clipboard.writeText(el.value);
+              btn.textContent = '✅';
+              setTimeout(() => btn.textContent = '📋', 1500);
+            }
+
+            async function handleUrlPaste(e) {
+              const urlStr = e.target.value.trim();
+              if (!urlStr) return;
+              try {
+                const url = new URL(urlStr);
+                const customParam = url.searchParams.get('custom');
+                if (customParam) {
+                  const res = await fetch('/api/decompress', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: customParam
+                  });
+                  if (res.ok) {
+                    const data = await res.json();
+                    if (data.decompressed && editorInstance) {
+                      editorInstance.setValue(data.decompressed);
+                    }
+                  }
+                }
+                const userParam = url.searchParams.get('user');
+                if (userParam) {
+                  document.getElementById('preview-user').value = userParam;
+                }
+              } catch (err) {
+                // Not a valid URL, ignore
+              }
+            }
 
             function copyCode(id, btn, isInput = false) {
               const el = document.getElementById(id);
