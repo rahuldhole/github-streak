@@ -3,7 +3,10 @@ import { getStore } from '@netlify/blobs'
 import { Bindings, Theme } from './types.ts'
 import { fetchGitHubData } from './github.ts'
 import { calculateStreakStats } from './logic.ts'
-import { renderSVG, renderLandingPage, renderErrorSVG, renderProfilePage, renderProfileSVG } from './renderer.tsx'
+import { renderSVG, renderLandingPage, renderErrorSVG, renderProfilePage, renderProfileSVG, renderCustomizePage } from './renderer.tsx'
+import { renderCustomTemplate } from './components/CustomTemplateRenderer.ts'
+import { brotliCompressSync, brotliDecompressSync } from 'node:zlib'
+import { Buffer } from 'node:buffer'
 import { logEvent, GITHUB_USERNAME_REGEX, getSafeErrorMessage } from './utils.ts'
 import pkg from '../package.json' with { type: 'json' }
 
@@ -244,6 +247,7 @@ function returnErrorSVG(c: any, msg: string) {
 }
 
 // Routes
+
 app.get('/', (c) => {
   const queryUser = c.req.query('user')
   if (queryUser) {
@@ -257,7 +261,34 @@ app.get('/', (c) => {
   return c.html(renderLandingPage(url.origin))
 })
 
-app.get('/sample.svg', (c) => {
+app.get('/v1/', (c) => {
+  const queryUser = c.req.query('user')
+  if (queryUser) {
+    return handleSVG(c, queryUser, c.req.query('theme') as Theme, false, 'v1')
+  }
+  return c.json({ error: 'Missing user parameter' }, 400)
+})
+
+app.get('/customize', (c) => {
+  logEvent({ name: 'page_view', data: { page: 'customize' } })
+  c.header('Cache-Control', 'public, max-age=3600, s-maxage=3600')
+  const url = new URL(c.req.url)
+  return c.html(renderCustomizePage(url.origin))
+})
+
+app.post('/api/compress', async (c) => {
+  try {
+    const text = await c.req.text()
+    if (!text) return c.json({ error: 'No content' }, 400)
+    const compressed = brotliCompressSync(Buffer.from(text))
+    const base64Url = compressed.toString('base64url')
+    return c.json({ compressed: base64Url })
+  } catch (err: any) {
+    return c.json({ error: err.message }, 500)
+  }
+})
+
+const handleSampleSVG = (c: any) => {
   const mockStats = { 
     current: { count: 42, start: '2024-01-01', end: '2024-02-12' }, 
     max: { count: 99, start: '2023-05-10', end: '2023-08-17' }, 
@@ -273,14 +304,31 @@ app.get('/sample.svg', (c) => {
     { contributionCount: 7, date: '2024-03-06' },
     { contributionCount: 3, date: '2024-03-07' }
   ]
-  const svg = renderSVG(mockStats as any, mockLast7 as any, 10, (c.req.query('theme') || 'dark') as Theme, 'Sample Data')
+  const theme = (c.req.query('theme') || 'dark') as Theme
+  const custom = c.req.query('custom')
+  let svgStr = ''
+  
+  if (custom) {
+    try {
+      const templateStr = brotliDecompressSync(Buffer.from(custom, 'base64url')).toString()
+      svgStr = renderCustomTemplate(templateStr, mockStats as any, mockLast7 as any, 10, theme, 'Sample Data')
+    } catch (e) {
+      svgStr = renderErrorSVG('Invalid custom template').toString()
+    }
+  } else {
+    svgStr = renderSVG(mockStats as any, mockLast7 as any, 10, theme, 'Sample Data').toString()
+  }
+
   c.header('Vary', 'Accept')
-  return c.body(svg.toString(), 200, { 
+  return c.body(svgStr, 200, { 
     'Content-Type': 'image/svg+xml', 
     'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400',
     'Netlify-CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400'
   })
-})
+}
+
+app.get('/sample.svg', handleSampleSVG)
+app.get('/v1/sample.svg', handleSampleSVG)
 
 app.get('/profile-svg/:user', (c) => {
   return handleSVG(c, c.req.param('user'), c.req.query('theme') as Theme, true)
@@ -321,7 +369,7 @@ async function handleProfilePage(c: any, userParam: string, themeParam: Theme) {
   return c.html(renderProfilePage(url.origin, username as string, theme, profileData))
 }
 
-async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfileSVG: boolean) {
+async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfileSVG: boolean, apiVersion?: string) {
   const theme = (themeParam || 'transparent') as Theme
   const forceRefresh = c.req.query('no-cache') === 'true'
   const fullRefresh = c.req.query('full-refresh') === 'true'
@@ -363,8 +411,23 @@ async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfile
   }
 
   logEvent({ name: 'svg_rendered', data: { username, theme, cacheHit: !isCurrentStale } })
-  const svg = renderSVG({ ...currentBlob.stats, total: aggregatedTotal }, currentBlob.last7, currentBlob.maxCount, theme, lastUpdated)
-  return c.body(svg.toString(), 200, {
+  const custom = c.req.query('custom')
+  let svgStr = ''
+  
+  // Custom templates are strictly tied to /v1/ and its corresponding apiVersion handler,
+  // preventing legacy breaks if variables change in future versions.
+  if (custom && !isProfileSVG && (apiVersion === 'v1' || c.req.path.startsWith('/v1/'))) {
+    try {
+      const templateStr = brotliDecompressSync(Buffer.from(custom, 'base64url')).toString()
+      svgStr = renderCustomTemplate(templateStr, { ...currentBlob.stats, total: aggregatedTotal }, currentBlob.last7, currentBlob.maxCount, theme, lastUpdated)
+    } catch (e) {
+      svgStr = renderErrorSVG('Invalid custom template').toString()
+    }
+  } else {
+    svgStr = renderSVG({ ...currentBlob.stats, total: aggregatedTotal }, currentBlob.last7, currentBlob.maxCount, theme, lastUpdated).toString()
+  }
+
+  return c.body(svgStr, 200, {
     'Content-Type': 'image/svg+xml',
     'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400',
     'Netlify-CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',

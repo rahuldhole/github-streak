@@ -76,6 +76,7 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
               .generate-btn { width: 100%; }
               .card { padding: 1rem; border-radius: 8px; }
               .themes button { font-size: 0.75rem; padding: 0.4rem; }
+              .desktop-only { display: none; }
             }
             `}
           </style>
@@ -88,6 +89,7 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
               <a href="https://github.com/rahuldhole/github-streak/releases" target="_blank" style={{ display: 'inline-flex', alignItems: 'center', height: '32px', padding: '0 0.6rem', borderRadius: '6px', border: '1px solid var(--border)', backgroundColor: '#f6f8fa', fontSize: '0.75rem', fontWeight: '600', color: 'var(--muted)', textDecoration: 'none', boxSizing: 'border-box' }}>
                 v{version}
               </a>
+              
 
               <a href="https://github.com/rahuldhole/github-streak" target="_blank" style={{ display: 'inline-flex', alignItems: 'center', height: '32px', padding: '0 0.75rem', borderRadius: '6px', border: '1px solid var(--border)', backgroundColor: '#f6f8fa', fontSize: '0.85rem', fontWeight: '600', color: 'var(--text)', textDecoration: 'none', boxSizing: 'border-box', gap: '0.4rem' }}>
                 <svg height="16" viewBox="0 0 16 16" width="16" style={{ fill: 'currentColor' }}><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
@@ -114,10 +116,14 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
 
               <div class="form-group">
                 <label>Theme</label>
-                <div class="themes">
+                <div class="themes" style={{ alignItems: 'center' }}>
                   <button onclick="setTheme('transparent')" id="theme-transparent">Transparent</button>
                   <button onclick="setTheme('light')" id="theme-light">Light</button>
                   <button onclick="setTheme('dark')" id="theme-dark" class="active">Dark</button>
+                  <a href="/customize" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--border)', backgroundColor: 'white', fontSize: '0.8rem', color: 'var(--text)', textDecoration: 'none', boxSizing: 'border-box', gap: '0.4rem', flex: '1', minWidth: '80px' }}>
+                    <svg height="14" viewBox="0 0 16 16" width="14" style={{ fill: 'currentColor' }}><path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61Zm1.414 1.06a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354l-1.086-1.086ZM11.189 6.25 9.75 4.811 2.96 11.602a.25.25 0 0 0-.064.108l-.637 2.227 2.227-.636a.25.25 0 0 0 .108-.064L11.19 6.25Z"></path></svg>
+                    <span>Customize</span>
+                  </a>
                 </div>
               </div>
 

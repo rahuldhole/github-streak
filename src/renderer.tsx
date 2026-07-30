@@ -6,6 +6,7 @@ import { ProfileSVG } from './components/ProfileSVG.tsx'
 import { ErrorSVG } from './components/ErrorSVG.tsx'
 import { LandingPage } from './components/LandingPage.tsx'
 import { ProfilePage } from './components/ProfilePage.tsx'
+import { CustomizePage } from './components/CustomizePage.tsx'
 
 /**
  * Renders the main GitHub Streak SVG card
@@ -26,6 +27,13 @@ export function renderErrorSVG(message: string) {
  */
 export function renderLandingPage(origin: string = '') {
   return <LandingPage origin={origin} />
+}
+
+/**
+ * Renders the customize editor page
+ */
+export function renderCustomizePage(origin: string = '') {
+  return <CustomizePage origin={origin} />
 }
 
 /**
