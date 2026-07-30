@@ -1540,6 +1540,46 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
                     Once you're happy with your design, copy the <strong>Markdown</strong> or <strong>HTML</strong> snippet from above and paste it into your <code>README.md</code>. 
                     Alternatively, keep your <strong>Custom URL</strong> safe. Whenever you paste that URL back into the browser bar above, it will instantly load your custom SVG back into the editor!
                   </p>
+
+                  <div id="mcp" style={{ marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
+                      <span style={{ fontSize: '1.4rem' }}>🤖</span>
+                      <h3 style={{ fontSize: '1.2rem', margin: 0, fontWeight: 700 }}>Connect via Model Context Protocol (MCP)</h3>
+                    </div>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: '1.5', margin: '0 0 1.25rem 0' }}>
+                      Connect your AI assistant (Claude Desktop, Cursor, VS Code, Windsurf, Roo Code, etc.) directly to GitHub Streak to generate and iterate on custom SVG templates using natural language.
+                    </p>
+
+                    <div style={{ background: '#f6f8fa', borderRadius: '8px', border: '1px solid var(--border)', padding: '1.25rem', marginBottom: '1.25rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <strong style={{ fontSize: '0.85rem', color: 'var(--text)' }}>MCP Server URL (SSE)</strong>
+                        <button class="copy-btn tactile-btn" onclick="copyCode('mcp-url', this, true)" style={{ position: 'static' }}>Copy URL</button>
+                      </div>
+                      <input type="text" class="code-block" id="mcp-url" value={origin ? `${origin}/mcp` : '/mcp'} readonly onclick="this.select()" style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '6px', boxSizing: 'border-box', fontFamily: 'monospace', fontSize: '0.85rem', background: '#ffffff', color: '#24292e' }} />
+                    </div>
+
+                    <div style={{ background: '#f6f8fa', borderRadius: '8px', border: '1px solid var(--border)', padding: '1.25rem', marginBottom: '1.25rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <strong style={{ fontSize: '0.85rem', color: 'var(--text)' }}>Configuration (Claude Desktop / Cursor / Continue)</strong>
+                        <button class="copy-btn tactile-btn" onclick="copyCode('mcp-json-code', this, false)" style={{ position: 'static' }}>Copy JSON</button>
+                      </div>
+                      <pre id="mcp-json-code" style={{ margin: 0, padding: '0.75rem', background: '#ffffff', borderRadius: '6px', border: '1px solid var(--border)', fontFamily: 'monospace', fontSize: '0.8rem', color: '#24292e', overflowX: 'auto' }}>{`{
+  "mcpServers": {
+    "github-streak": {
+      "url": "${origin || 'http://localhost:8888'}/mcp"
+    }
+  }
+}`}</pre>
+                    </div>
+
+                    <div style={{ background: '#f6f8fa', borderRadius: '8px', border: '1px solid var(--border)', padding: '1.25rem' }}>
+                      <strong style={{ fontSize: '0.85rem', color: 'var(--text)', display: 'block', marginBottom: '0.5rem' }}>Provided MCP Tools</strong>
+                      <ul style={{ margin: 0, paddingLeft: '1.2rem', color: 'var(--muted)', fontSize: '0.85rem', lineHeight: '1.6' }}>
+                        <li><code>get_template_guide</code> — Returns template variables, theme keys, and design guidelines for AI prompts.</li>
+                        <li><code>generate_widget_url</code> — Accepts a custom SVG template string and returns a live, compressed widget URL with interactive preview.</li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1552,6 +1592,22 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
             let editorInstance;
             
             document.addEventListener('DOMContentLoaded', () => {
+              const mcpUrlInput = document.getElementById('mcp-url');
+              if (mcpUrlInput && (!mcpUrlInput.value || mcpUrlInput.value.startsWith('/'))) {
+                mcpUrlInput.value = window.location.origin + '/mcp';
+              }
+              const mcpJsonCode = document.getElementById('mcp-json-code');
+              if (mcpJsonCode && mcpJsonCode.textContent.includes('http://localhost:8888')) {
+                mcpJsonCode.textContent = mcpJsonCode.textContent.replace('http://localhost:8888', window.location.origin);
+              }
+
+              if (window.location.hash === '#mcp') {
+                const mcpEl = document.getElementById('mcp');
+                if (mcpEl) {
+                  setTimeout(() => mcpEl.scrollIntoView({ behavior: 'smooth' }), 150);
+                }
+              }
+
               const textArea = document.getElementById('editor');
               editorInstance = CodeMirror.fromTextArea(textArea, {
                 mode: "xml",
