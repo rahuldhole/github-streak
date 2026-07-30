@@ -86,7 +86,7 @@ app.all('/mcp', async (c) => {
     <p id="loading" class="loading">Waiting for SVG preview...</p>
     <img id="preview" style="display: none;" alt="SVG Preview" />
   </div>
-  <script type="module">
+  <script>
     function handleMessage(event) {
       try {
         const msg = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
@@ -104,7 +104,8 @@ app.all('/mcp', async (c) => {
         }
 
         const content = result?.content || [];
-        for (const c of content) {
+        for (let i = 0; i < content.length; i++) {
+          const c = content[i];
           if (c.type === 'image' && c.data) {
             const img = document.getElementById('preview');
             img.src = 'data:' + (c.mimeType || 'image/svg+xml') + ';base64,' + c.data;
@@ -113,7 +114,9 @@ app.all('/mcp', async (c) => {
             return;
           }
         }
-      } catch(e) {}
+      } catch(e) {
+        document.getElementById('loading').innerText = "Error parsing message: " + e.message;
+      }
     }
     window.addEventListener('message', handleMessage);
 
