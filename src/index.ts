@@ -12,7 +12,355 @@ import pkg from '../package.json' with { type: 'json' }
 
 const cacheStoreVersion = pkg.cacheStoreVersion
 
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
+import { registerAppTool, registerAppResource, RESOURCE_MIME_TYPE } from "@modelcontextprotocol/ext-apps/server";
+
 export const app = new Hono<{ Bindings: Bindings }>()
+
+class HonoSSEServerTransport {
+  public controller?: ReadableStreamDefaultController;
+  public sessionId: string;
+  
+  onclose?: () => void;
+  onerror?: (error: Error) => void;
+  onmessage?: (message: any) => void;
+
+  constructor(sessionId: string) {
+    this.sessionId = sessionId;
+  }
+  
+  async start() {}
+  
+  async send(message: any) {
+    if (!this.controller) return;
+    const encoder = new TextEncoder();
+    this.controller.enqueue(encoder.encode(`event: message\ndata: ${JSON.stringify(message)}\n\n`));
+  }
+  
+  async close() {
+    if (this.controller) {
+      try { this.controller.close(); } catch (e) {}
+    }
+    this.onclose?.();
+  }
+}
+
+const activeTransports = new Map<string, HonoSSEServerTransport>();
+
+app.all('/mcp', async (c) => {
+  const req = c.req.raw;
+  const url = new URL(req.url);
+  const sessionId = req.headers.get('mcp-session-id') || url.searchParams.get("sessionId");
+
+  if (req.method === 'GET') {
+    // Establish new SSE connection
+    const newSessionId = crypto.randomUUID();
+    const transport = new HonoSSEServerTransport(newSessionId);
+    
+    const WIDGET_RESOURCE_URI = "ui://github-streak/svg-preview";
+
+    const mcpServer = new McpServer({
+      name: "github-streak-mcp",
+      version: pkg.version
+    }, {
+      capabilities: { tools: {}, resources: {} }
+    });
+
+    const widgetHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SVG Preview Tool</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: transparent; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: system-ui, sans-serif; }
+    #widget { max-width: 100%; text-align: center; }
+    #widget img { max-width: 100%; height: auto; border-radius: 8px; }
+    .loading { color: #6c7086; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div id="widget">
+    <p id="loading" class="loading">Waiting for SVG preview...</p>
+    <img id="preview" style="display: none;" alt="SVG Preview" />
+  </div>
+  <script type="module">
+    let initReqId = 1;
+
+    function sendRequest(method, params) {
+      const id = initReqId++;
+      window.parent.postMessage({ jsonrpc: '2.0', id, method, params }, '*');
+      return id;
+    }
+
+    function sendNotification(method, params) {
+      window.parent.postMessage({ jsonrpc: '2.0', method, params }, '*');
+    }
+
+    function handleToolResult(result) {
+      if (!result) return;
+      const structured = result.structuredContent || result;
+      const url = structured?.previewUrl || structured?.url || (typeof result === 'string' && result.startsWith('http') ? result : null);
+
+      const img = document.getElementById('preview');
+      const loading = document.getElementById('loading');
+
+      if (url) {
+        img.src = url;
+        img.style.display = 'inline-block';
+        if (loading) loading.style.display = 'none';
+        return;
+      }
+
+      const content = result.content || [];
+      for (let i = 0; i < content.length; i++) {
+        const c = content[i];
+        if (c.type === 'image' && c.data) {
+          img.src = 'data:' + (c.mimeType || 'image/svg+xml') + ';base64,' + c.data;
+          img.style.display = 'inline-block';
+          if (loading) loading.style.display = 'none';
+          return;
+        }
+      }
+    }
+
+    window.addEventListener('message', (event) => {
+      try {
+        const msg = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+        if (!msg || typeof msg !== 'object') return;
+
+        // 1. Handle initialize response from host -> send initialized notification to complete handshake
+        if (msg.id === 1 && msg.result) {
+          sendNotification('ui/notifications/initialized');
+        }
+
+        // 2. Handle standard MCP Apps tool result notification
+        if (msg.method === 'ui/notifications/tool-result') {
+          handleToolResult(msg.params);
+        }
+
+        // 3. Fallback for custom or legacy host messages
+        if (!msg.method && (msg.params?.result || msg.result || msg.structuredContent || msg.content)) {
+          const result = msg?.params?.result || msg?.result || msg;
+          handleToolResult(result);
+        }
+      } catch (e) {
+        console.error('[ext-apps] Error handling message:', e);
+      }
+    });
+
+    // Start MCP Apps initialization handshake
+    if (window.parent !== window) {
+      sendRequest('ui/initialize', {
+        protocolVersion: '2025-11-21',
+        appInfo: { name: 'SVG Preview Tool', version: '1.0.0' },
+        appCapabilities: {}
+      });
+    }
+  </script>
+</body>
+</html>`;
+
+    registerAppResource(
+      mcpServer,
+      "SVG Preview Tool",
+      WIDGET_RESOURCE_URI,
+      { description: "Interactive SVG widget preview" },
+      async () => ({
+        contents: [{
+          uri: WIDGET_RESOURCE_URI,
+          mimeType: RESOURCE_MIME_TYPE,
+          text: widgetHtml,
+          _meta: {
+            ui: {
+              csp: {
+                resourceDomains: [url.origin]
+              },
+              domain: url.hostname
+            }
+          }
+        }]
+      })
+    );
+
+    // Tool 1: Get the template guide with all available variables
+    mcpServer.tool("get_template_guide",
+      "Get the complete guide for designing custom GitHub Streak SVG widgets. Returns all available template variables, theme CSS custom properties, and an example template. Call this FIRST before designing any widget.",
+      {},
+      async () => {
+        const guide = `# GitHub Streak Custom Widget Template Guide
+
+## 🎨 AI Designer Instructions
+1. **Be Creative & Advanced**: If the user hasn't specified a design, default to creating an **advanced, animated, and visually stunning SVG**. Use CSS animations, gradients, glassmorphism, or modern UI trends.
+2. **Suggest Designs**: Always suggest 2-3 new, wildly different design ideas (e.g. cyber-punk, minimalist retro, data-dashboard) to the user after you present your widget.
+
+## Template Variables
+These mustache-style variables (e.g. {{variableName}}) are replaced with real data at render time:
+
+### Stats Variables
+- {{currentStreak}} — Current streak count (e.g. "42")
+- {{currentStreakDate}} — Date range of current streak (e.g. "Jan 1 - Feb 12")
+- {{personalBest}} — Longest streak count (e.g. "99")
+- {{personalBestDate}} — Date range of longest streak (e.g. "10/05/23 - 17/08/23")
+- {{totalContribs}} — Total contributions, compact format (e.g. "1.3K")
+- {{totalContribsDate}} — Year range (e.g. "2015 - 2024")
+- {{lastUpdated}} — Timestamp string (e.g. "Last Updated: 2024-03-07")
+
+### Last 7 Days Variables (i = 0 to 6, where 0 is oldest)
+- {{day0Count}} ... {{day6Count}} — Contribution count for that day
+- {{day0Label}} ... {{day6Label}} — Day label ("M", "T", "W", etc.)
+- {{day0Level}} ... {{day6Level}} — Intensity level 0-4 (for CSS var mapping)
+- {{day0Color}} ... {{day6Color}} — Direct hex color for that day's intensity
+- {{day0TextColor}} ... {{day6TextColor}} — Contrasting text color
+
+### Theme Variables
+- {{theme.bg}}, {{theme.border}}, {{theme.text}}, {{theme.textMuted}}, {{theme.accent}}
+
+### Pre-built Heat Strip
+- {{heatStrip}} — A pre-rendered SVG group of 7 contribution rectangles
+
+## CSS Custom Properties Convention
+Define these in your SVG <style> block for level-based coloring:
+  --l0: empty/no contributions color
+  --l1: low contributions color
+  --l2: medium contributions color
+  --l3: high contributions color
+  --l4: max contributions color
+  --text-l0 through --text-l4: contrasting text colors for each level
+
+Use them with level variables: fill="var(--l{{day0Level}})"
+
+## Available Themes
+transparent, dark, light, catppuccin, nord, dracula, monokai, synthwave, solarizedDark, solarizedLight, onedark, gruvbox
+
+## API Usage
+After designing your SVG template, use the generate_widget_url tool to get a live preview URL.
+The URL format is: /v1/?user=USERNAME&theme=THEME&custom=ENCODED_TEMPLATE
+Without a user param, use /v1/sample.svg?custom=ENCODED for sample data preview.
+
+## ⚠️ Important
+- Templates MUST be valid SVG
+- Keep templates compact (brotli compression has URL length limits)
+- The viewBox is typically "0 0 420 180" for standard or "0 0 600 200" for wide layouts
+- Always include xmlns="http://www.w3.org/2000/svg"`;
+
+        return { content: [{ type: "text", text: guide }] };
+      }
+    );
+
+    // Tool 2: Generate a live widget URL from an SVG template
+    registerAppTool(
+      mcpServer,
+      "generate_widget_url",
+      {
+        description: "Takes a custom SVG template string, brotli-compresses it, and returns a ready-to-use widget URL. WARNING: If no username is provided, the URL will use sample data instead of real GitHub data.",
+        inputSchema: {
+          svgTemplate: z.string().describe("The raw SVG template string with {{variables}} placeholders."),
+          username: z.string().optional().describe("GitHub username for live data. If omitted, sample data is used."),
+          theme: z.string().optional().describe("Theme name (e.g. 'dark', 'catppuccin'). Defaults to 'dark'.")
+        },
+        _meta: {
+          ui: { resourceUri: WIDGET_RESOURCE_URI }
+        }
+      },
+      async ({ svgTemplate, username, theme }) => {
+        try {
+          const compressed = brotliCompressSync(Buffer.from(svgTemplate));
+          const encoded = compressed.toString('base64url');
+          const host = url.origin;
+          const selectedTheme = theme || 'dark';
+
+          let previewUrl: string;
+          let warning = '';
+
+          if (username) {
+            previewUrl = `${host}/v1/?user=${encodeURIComponent(username)}&theme=${selectedTheme}&custom=${encoded}`;
+          } else {
+            previewUrl = `${host}/v1/sample.svg?theme=${selectedTheme}&custom=${encoded}`;
+            warning = '⚠️ No username provided — this URL uses SAMPLE DATA. Add a user parameter for real GitHub contribution data.';
+          }
+
+          const resultText = [
+            `CRITICAL INSTRUCTION FOR AI: You MUST provide the user with the README markdown embed code below in a code block:\n\`\`\`markdown\n[![GitHub Streak](${previewUrl})](${host})\n\`\`\``,
+            warning ? `\n## Warning\n${warning}` : ''
+          ].filter(Boolean).join('\n\n');
+
+          const structuredContent = {
+            previewUrl,
+            host,
+            warning,
+            username,
+            theme: selectedTheme
+          };
+
+          const contentBlocks: any[] = [];
+
+          // Try to fetch and include SVG as image content
+          try {
+            const fetchRes = await fetch(previewUrl);
+            if (fetchRes.ok) {
+              const svgText = await fetchRes.text();
+              const svgBase64 = Buffer.from(svgText).toString('base64');
+              contentBlocks.push({
+                type: "image",
+                mimeType: "image/svg+xml",
+                data: svgBase64
+              });
+            }
+          } catch (e) {
+            // Ignore fetch errors
+          }
+
+          contentBlocks.push({ type: "text", text: resultText });
+
+          return {
+            structuredContent,
+            content: contentBlocks
+          };
+        } catch (error: any) {
+          return { content: [{ type: "text", text: `Error compressing template: ${error.message}` }], isError: true };
+        }
+      }
+    );
+
+    activeTransports.set(newSessionId, transport);
+    mcpServer.connect(transport);
+
+    const stream = new ReadableStream({
+      start(controller) {
+        transport.controller = controller;
+        const encoder = new TextEncoder();
+        controller.enqueue(encoder.encode(`event: endpoint\ndata: /mcp?sessionId=${newSessionId}\n\n`));
+      },
+      cancel() {
+        activeTransports.delete(newSessionId);
+        transport.close();
+      }
+    });
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive'
+      }
+    });
+  } else if (req.method === 'POST') {
+    if (!sessionId || !activeTransports.has(sessionId)) {
+      return c.json({ error: 'Session not found.' }, 404);
+    }
+    const transport = activeTransports.get(sessionId)!;
+    const body = await req.json();
+    if (transport.onmessage) {
+      transport.onmessage(body);
+    }
+    return c.text('Accepted', 202);
+  }
+
+  return c.json({ error: 'Method not allowed' }, 405);
+})
 
 const ipRateLimit = new Map<string, { count: number, reset: number }>()
 const RATE_LIMIT_WINDOW = 60 * 1000 
