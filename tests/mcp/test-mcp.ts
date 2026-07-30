@@ -54,16 +54,11 @@ async function test() {
   assert(noUserText.includes("sample.svg"), "URL without user should point to sample.svg");
   assert(noUserText.includes("SAMPLE DATA"), "Should warn about sample data");
 
-  // Verify ChatGPT UI meta is present
-  const uiBlock = (noUserResult.content as any[]).find((c: any) => c._meta?.ui?.resourceUri);
-  assert(!!uiBlock, "Should have a content block with _meta.ui.resourceUri");
-  assert(uiBlock._meta.ui.resourceUri === "ui://mcp-app/github-streak-widget", "resourceUri should be ui://mcp-app/github-streak-widget");
-
   // Verify structuredContent is present
   assert(!!(noUserResult as any).structuredContent, "Should have structuredContent");
   assert((noUserResult as any).structuredContent.previewUrl?.includes("sample.svg"), "structuredContent.previewUrl should contain sample.svg");
 
-  console.log("   ✅ Sample URL generated with warning + ChatGPT UI meta\n");
+  console.log("   ✅ Sample URL generated with warning + structuredContent\n");
 
   // --- Test 4: Call generate_widget_url with username ---
   console.log("🔗 Calling generate_widget_url (with username)...");
@@ -86,6 +81,23 @@ async function test() {
   assert(imageBlock.mimeType === "image/svg+xml", "Image mimeType should be image/svg+xml");
 
   console.log("   ✅ Live URL generated with username + image preview\n");
+
+  // --- Test 5: List resources to verify ui:// resource is registered ---
+  console.log("📦 Listing resources...");
+  const { resources } = await client.listResources();
+  const widgetResource = resources.find(r => r.uri.startsWith("ui://"));
+  assert(!!widgetResource, "Should have a ui:// resource registered");
+  assert(widgetResource!.uri === "ui://github-streak/widget", "Resource URI should be ui://github-streak/widget");
+  console.log(`   ✅ Found ui:// resource: ${widgetResource!.uri}\n`);
+
+  // --- Test 6: Read the ui:// resource to verify it returns HTML ---
+  console.log("📄 Reading ui:// resource...");
+  const resourceResult = await client.readResource({ uri: "ui://github-streak/widget" });
+  const htmlContent = (resourceResult.contents[0] as any)?.text || "";
+  assert(htmlContent.includes("<!DOCTYPE html>"), "Resource should return HTML");
+  assert(htmlContent.includes("postMessage"), "Resource HTML should use postMessage bridge");
+  assert(htmlContent.includes("renderWidget"), "Resource HTML should have renderWidget function");
+  console.log(`   ✅ ui:// resource returns HTML (${htmlContent.length} chars)\n`);
 
   // --- Done ---
   await client.close();

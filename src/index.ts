@@ -57,12 +57,97 @@ app.all('/mcp', async (c) => {
     const newSessionId = crypto.randomUUID();
     const transport = new HonoSSEServerTransport(newSessionId);
     
+    const WIDGET_RESOURCE_URI = "ui://github-streak/widget";
+
     const mcpServer = new McpServer({
       name: "github-streak-mcp",
       version: pkg.version
     }, {
-      capabilities: { tools: {} }
+      capabilities: { tools: {}, resources: {} }
     });
+
+    // Register the UI resource that ChatGPT/Claude/etc will render in an iframe
+    mcpServer.resource(
+      "github-streak-widget",
+      WIDGET_RESOURCE_URI,
+      { mimeType: "text/html" },
+      async () => ({
+        contents: [{
+          uri: WIDGET_RESOURCE_URI,
+          mimeType: "text/html",
+          text: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Streak Widget</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: transparent; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: system-ui, sans-serif; }
+    #widget { max-width: 100%; text-align: center; }
+    #widget img { max-width: 100%; height: auto; border-radius: 8px; }
+    #embed-code { margin-top: 12px; padding: 8px 12px; background: #1e1e2e; color: #cdd6f4; border-radius: 6px; font-size: 11px; word-break: break-all; font-family: monospace; text-align: left; }
+    #embed-code::before { content: 'README embed:'; display: block; color: #6c7086; margin-bottom: 4px; font-size: 10px; }
+    .warning { color: #fab387; font-size: 12px; margin-top: 8px; }
+    .loading { color: #6c7086; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div id="widget">
+    <p class="loading">Loading widget preview...</p>
+  </div>
+  <script type="module">
+    // MCP Apps bridge: listen for tool result via postMessage
+    function handleMessage(event) {
+      try {
+        const msg = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+        // Handle both ui/toolResult and direct structured content
+        const result = msg?.params?.result || msg?.result || msg;
+        const structured = result?.structuredContent || result;
+        if (structured?.previewUrl) {
+          renderWidget(structured);
+        }
+        // Also check content array for text with URLs
+        const content = result?.content || [];
+        for (const c of content) {
+          if (c.type === 'image' && c.data) {
+            const imgEl = document.createElement('img');
+            imgEl.src = 'data:' + (c.mimeType || 'image/svg+xml') + ';base64,' + c.data;
+            document.getElementById('widget').innerHTML = '';
+            document.getElementById('widget').appendChild(imgEl);
+            return;
+          }
+        }
+      } catch(e) { /* ignore non-MCP messages */ }
+    }
+    window.addEventListener('message', handleMessage);
+
+    function renderWidget(data) {
+      const widget = document.getElementById('widget');
+      let html = '<img src="' + data.previewUrl + '" alt="GitHub Streak Widget" />';
+      if (data.warning) {
+        html += '<p class="warning">' + data.warning + '</p>';
+      }
+      const embedUrl = data.previewUrl;
+      const host = data.host || '';
+      html += '<div id="embed-code">[![GitHub Streak](' + embedUrl + ')](' + host + ')</div>';
+      widget.innerHTML = html;
+    }
+
+    // Send ui/initialize to host
+    if (window.parent !== window) {
+      window.parent.postMessage(JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'ui/initialize',
+        params: { name: 'GitHub Streak Widget', version: '1.0.0' }
+      }), '*');
+    }
+  </script>
+</body>
+</html>`
+        }]
+      })
+    );
 
     // Tool 1: Get the template guide with all available variables
     mcpServer.tool("get_template_guide",
@@ -130,6 +215,7 @@ Without a user param, use /v1/sample.svg?custom=ENCODED for sample data preview.
     );
 
     // Tool 2: Generate a live widget URL from an SVG template
+    // _meta.ui.resourceUri in annotations tells ChatGPT/Claude to fetch the ui:// resource and render it
     mcpServer.tool("generate_widget_url",
       "Takes a custom SVG template string, brotli-compresses it, and returns a ready-to-use widget URL. WARNING: If no username is provided, the URL will use sample data instead of real GitHub data.",
       {
@@ -167,52 +253,33 @@ Without a user param, use /v1/sample.svg?custom=ENCODED for sample data preview.
             theme: selectedTheme
           };
 
+          const contentBlocks: any[] = [];
+
+          // Try to fetch and include SVG as image content
           try {
             const fetchRes = await fetch(previewUrl);
             if (fetchRes.ok) {
               const svgText = await fetchRes.text();
               const svgBase64 = Buffer.from(svgText).toString('base64');
-              return {
-                structuredContent,
-                content: [
-                  {
-                    type: "text",
-                    text: `<img src="${previewUrl}" alt="Widget Preview" style="max-width:100%" />`,
-                    _meta: {
-                      ui: {
-                        resourceUri: "ui://mcp-app/github-streak-widget"
-                      },
-                      "openai/outputTemplate": "ui://mcp-app/github-streak-widget"
-                    }
-                  },
-                  {
-                    type: "image",
-                    mimeType: "image/svg+xml",
-                    data: svgBase64
-                  },
-                  { type: "text", text: resultText }
-                ]
-              };
+              contentBlocks.push({
+                type: "image",
+                mimeType: "image/svg+xml",
+                data: svgBase64
+              });
             }
           } catch (e) {
-            // Ignore fetch errors and fallback
+            // Ignore fetch errors
           }
+
+          contentBlocks.push({ type: "text", text: resultText });
 
           return {
             structuredContent,
-            content: [
-              {
-                type: "text",
-                text: `<img src="${previewUrl}" alt="Widget Preview" style="max-width:100%" />`,
-                _meta: {
-                  ui: {
-                    resourceUri: "ui://mcp-app/github-streak-widget"
-                  },
-                  "openai/outputTemplate": "ui://mcp-app/github-streak-widget"
-                }
-              },
-              { type: "text", text: resultText }
-            ]
+            content: contentBlocks,
+            _meta: {
+              ui: { resourceUri: WIDGET_RESOURCE_URI },
+              "openai/outputTemplate": WIDGET_RESOURCE_URI
+            }
           };
         } catch (error: any) {
           return { content: [{ type: "text", text: `Error compressing template: ${error.message}` }], isError: true };
