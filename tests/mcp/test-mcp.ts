@@ -87,16 +87,17 @@ async function test() {
   const { resources } = await client.listResources();
   const widgetResource = resources.find(r => r.uri.startsWith("ui://"));
   assert(!!widgetResource, "Should have a ui:// resource registered");
-  assert(widgetResource!.uri === "ui://github-streak/widget", "Resource URI should be ui://github-streak/widget");
+  assert(widgetResource!.uri === "ui://github-streak/svg-preview", "Resource URI should be ui://github-streak/svg-preview");
   console.log(`   ✅ Found ui:// resource: ${widgetResource!.uri}\n`);
 
   // --- Test 6: Read the ui:// resource to verify it returns HTML ---
   console.log("📄 Reading ui:// resource...");
-  const resourceResult = await client.readResource({ uri: "ui://github-streak/widget" });
+  const resourceResult = await client.readResource({ uri: "ui://github-streak/svg-preview" });
   const htmlContent = (resourceResult.contents[0] as any)?.text || "";
   assert(htmlContent.includes("<!DOCTYPE html>"), "Resource should return HTML");
   assert(htmlContent.includes("postMessage"), "Resource HTML should use postMessage bridge");
-  assert(htmlContent.includes("renderWidget"), "Resource HTML should have renderWidget function");
+  assert(htmlContent.includes("getElementById('preview')"), "Resource HTML should reuse the preview img element");
+  assert(htmlContent.includes("getElementById('loading').style.display"), "Resource HTML should hide the loading element");
   console.log(`   ✅ ui:// resource returns HTML (${htmlContent.length} chars)\n`);
 
   // --- Done ---
