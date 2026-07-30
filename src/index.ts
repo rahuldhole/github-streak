@@ -144,7 +144,20 @@ app.all('/mcp', async (c) => {
         contents: [{
           uri: WIDGET_RESOURCE_URI,
           mimeType: RESOURCE_MIME_TYPE,
-          text: widgetHtml
+          text: widgetHtml,
+          _meta: {
+            ui: {
+              csp: {
+                resourceDomains: [
+                  "https://mcp--github-streak.netlify.app",
+                  "https://github-streak.netlify.app",
+                  "http://localhost:8888",
+                  "http://localhost:3999"
+                ]
+              },
+              domain: "github-streak-widget"
+            }
+          }
         }]
       })
     );
