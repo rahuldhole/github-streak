@@ -13,7 +13,6 @@ import pkg from '../package.json' with { type: 'json' }
 const cacheStoreVersion = pkg.cacheStoreVersion
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -21,72 +20,113 @@ import { z } from "zod";
 
 export const app = new Hono<{ Bindings: Bindings }>()
 
-const mcpSessions = new Map<string, WebStandardStreamableHTTPServerTransport>();
-
-function setupMcpServer() {
-  const mcpServer = new McpServer({ name: "github-streak-svg-designer", version: pkg.version });
+class HonoSSEServerTransport {
+  public controller?: ReadableStreamDefaultController;
+  public sessionId: string;
   
-  mcpServer.registerTool("save_ai_template",
-    {
-      description: "Save an AI-designed SVG template for the GitHub Streak app.",
-      inputSchema: {
-        name: z.string(),
-        svgContent: z.string(),
-      }
-    },
-    async ({ name, svgContent }) => {
-      try {
-        const templatesFile = path.join(process.cwd(), "src", "ai-templates.json");
-        let currentTemplates: Record<string, string> = {};
-        try {
-          const fileContent = await fs.readFile(templatesFile, "utf-8");
-          currentTemplates = JSON.parse(fileContent);
-        } catch (err: any) {
-          if (err.code !== "ENOENT") throw err;
-        }
-        currentTemplates[name] = svgContent;
-        await fs.writeFile(templatesFile, JSON.stringify(currentTemplates, null, 2), "utf-8");
-        return { content: [{ type: "text", text: `Successfully saved AI template '${name}'!` }] };
-      } catch (error: any) {
-        return { content: [{ type: "text", text: `Error: ${error.message}` }], isError: true };
-      }
-    }
-  );
+  onclose?: () => void;
+  onerror?: (error: Error) => void;
+  onmessage?: (message: any) => void;
 
-  const transport = new WebStandardStreamableHTTPServerTransport({
-    sessionIdGenerator: () => crypto.randomUUID(),
-    onsessioninitialized: (sessionId) => {
-      mcpSessions.set(sessionId, transport);
-    },
-    onsessionclosed: (sessionId) => {
-      mcpSessions.delete(sessionId);
-    }
-  });
+  constructor(sessionId: string) {
+    this.sessionId = sessionId;
+  }
   
-  mcpServer.connect(transport).catch(console.error);
-  return transport;
+  async start() {}
+  
+  async send(message: any) {
+    if (!this.controller) return;
+    const encoder = new TextEncoder();
+    this.controller.enqueue(encoder.encode(`event: message\ndata: ${JSON.stringify(message)}\n\n`));
+  }
+  
+  async close() {
+    if (this.controller) {
+      try { this.controller.close(); } catch (e) {}
+    }
+    this.onclose?.();
+  }
 }
 
-app.all('/mcp', async (c) => {
-  if (process.env.NODE_ENV === 'production') {
-    return c.text('Not found', 404);
-  }
+const activeTransports = new Map<string, HonoSSEServerTransport>();
 
+app.all('/mcp', async (c) => {
   const req = c.req.raw;
   const url = new URL(req.url);
-  const sessionId = url.searchParams.get("sessionId");
+  const sessionId = req.headers.get('mcp-session-id') || url.searchParams.get("sessionId");
 
-  if (req.method === "GET") {
-    const transport = setupMcpServer();
-    return transport.handleRequest(req);
-  } else if (req.method === "POST") {
-    if (!sessionId || !mcpSessions.has(sessionId)) {
-      return c.text('Session not found', 400);
+  if (req.method === 'GET') {
+    // Establish new SSE connection
+    const newSessionId = crypto.randomUUID();
+    const transport = new HonoSSEServerTransport(newSessionId);
+    
+    const mcpServer = new McpServer({
+      name: "github-streak-mcp",
+      version: pkg.version
+    }, {
+      capabilities: { tools: {} }
+    });
+
+    mcpServer.tool("save_ai_template",
+      "Save an AI-designed SVG template for the GitHub Streak app.",
+      {
+        svgContent: z.string().describe("The raw SVG content of the template."),
+        templateName: z.string().describe("The name of the template (e.g., 'custom-card.svg').")
+      },
+      async ({ svgContent, templateName }) => {
+        try {
+          const templatesPath = path.join(process.cwd(), 'src/ai-templates.json');
+          let templates: Record<string, string> = {};
+          try {
+            const fileContent = await fs.readFile(templatesPath, "utf-8");
+            templates = JSON.parse(fileContent);
+          } catch (err: any) {
+            if (err.code !== "ENOENT") throw err;
+          }
+          templates[templateName] = svgContent;
+          await fs.writeFile(templatesPath, JSON.stringify(templates, null, 2));
+          return { content: [{ type: "text", text: `Successfully saved template: ${templateName}` }] };
+        } catch (error: any) {
+          return { content: [{ type: "text", text: `Error saving template: ${error.message}` }], isError: true };
+        }
+      }
+    );
+
+    activeTransports.set(newSessionId, transport);
+    mcpServer.connect(transport);
+
+    const stream = new ReadableStream({
+      start(controller) {
+        transport.controller = controller;
+        const encoder = new TextEncoder();
+        controller.enqueue(encoder.encode(`event: endpoint\ndata: /mcp?sessionId=${newSessionId}\n\n`));
+      },
+      cancel() {
+        activeTransports.delete(newSessionId);
+        transport.close();
+      }
+    });
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive'
+      }
+    });
+  } else if (req.method === 'POST') {
+    if (!sessionId || !activeTransports.has(sessionId)) {
+      return c.json({ error: 'Session not found.' }, 404);
     }
-    return mcpSessions.get(sessionId)!.handleRequest(req);
-  } else {
-    return c.text('Method not allowed', 405);
+    const transport = activeTransports.get(sessionId)!;
+    const body = await req.json();
+    if (transport.onmessage) {
+      transport.onmessage(body);
+    }
+    return c.text('Accepted', 202);
   }
+
+  return c.json({ error: 'Method not allowed' }, 405);
 })
 
 const ipRateLimit = new Map<string, { count: number, reset: number }>()
