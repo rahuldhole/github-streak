@@ -1422,7 +1422,13 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
                   </h1>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <select id="template-select" class="theme-select" onchange="loadTemplate()">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: '1' }}>
+                    <svg height="16" viewBox="0 0 16 16" version="1.1" width="16" aria-hidden="true" fill="currentColor">
+                      <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path>
+                    </svg>
+                    <input type="text" id="preview-user" placeholder="GitHub Username (for preview)" oninput="debounceUpdate()" style={{ padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border)', fontSize: '0.8rem', flex: '1', minWidth: '150px' }} />
+                  </div>
+                  <select id="template-select" class="theme-select" onchange="loadTemplate()">
                   <optgroup label="Standard Themes">
                     <option value="default">Default</option>
                     <option value="catppuccin">Catppuccin</option>
@@ -1449,7 +1455,6 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
                     <option value="tripleColumnPulse">📊 Triple Column Pulse</option>
                   </optgroup>
                 </select>
-                <input type="text" id="preview-user" placeholder="GitHub Username (for preview)" oninput="debounceUpdate()" style={{ padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border)', fontSize: '0.8rem', flex: '1', minWidth: '150px' }} />
                 </div>
               </div>
               <textarea id="editor" style={{ display: 'none' }}>{templates.default}</textarea>
@@ -1473,6 +1478,21 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
               </div>
               
               <div class="bottom-area">
+                <div class="url-box" style={{ width: '100%', maxWidth: '800px', background: '#f6f8fa', padding: '1.5rem', borderRadius: '8px', border: '1px solid var(--border)', marginBottom: '2rem' }}>
+                  <h2 style={{ fontSize: '1.2rem', marginTop: 0, marginBottom: '1.5rem' }}>Embed Options</h2>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Markdown Snippet</label>
+                    <button class="copy-btn tactile-btn" onclick="copyCode('md-code', this, true)">Copy</button>
+                  </div>
+                  <input type="text" class="code-block" id="md-code" readonly onclick="this.select()" style={{ marginBottom: '1.5rem', background: '#ffffff', width: '100%', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: '6px', boxSizing: 'border-box', fontFamily: 'monospace', fontSize: '0.8rem', color: '#24292e' }} />
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>HTML Snippet</label>
+                    <button class="copy-btn tactile-btn" onclick="copyCode('html-code', this, true)">Copy</button>
+                  </div>
+                  <input type="text" class="code-block" id="html-code" readonly onclick="this.select()" style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: '6px', boxSizing: 'border-box', fontFamily: 'monospace', fontSize: '0.8rem', background: '#ffffff', color: '#24292e' }} />
+                </div>
+
                 <div style={{ width: '100%', maxWidth: '800px', textAlign: 'left' }}>
                   <h2 style={{ fontSize: '1.2rem', marginTop: 0 }}>Usage Guide</h2>
                   <p style={{ fontSize: '0.9rem', color: 'var(--muted)', lineHeight: '1.5' }}>
@@ -1507,23 +1527,9 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
 
                   <h3 style={{ fontSize: '1rem', marginTop: '1.5rem' }}>How to Embed</h3>
                   <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: '1.5' }}>
-                    Once you're happy with your design, copy the <strong>Markdown</strong> or <strong>HTML</strong> snippet below and paste it into your <code>README.md</code>. 
+                    Once you're happy with your design, copy the <strong>Markdown</strong> or <strong>HTML</strong> snippet from above and paste it into your <code>README.md</code>. 
                     Alternatively, keep your <strong>Custom URL</strong> safe. Whenever you paste that URL back into the browser bar above, it will instantly load your custom SVG back into the editor!
                   </p>
-                </div>
-                
-                <div class="url-box" style={{ marginTop: '2rem', width: '100%', maxWidth: '800px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Markdown Snippet</label>
-                    <button class="copy-btn" onclick="copyCode('md-code', this, true)">Copy</button>
-                  </div>
-                  <input type="text" class="code-block" id="md-code" readonly onclick="this.select()" style={{ marginBottom: '1.5rem' }} />
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>HTML Snippet</label>
-                    <button class="copy-btn" onclick="copyCode('html-code', this, true)">Copy</button>
-                  </div>
-                  <input type="text" class="code-block" id="html-code" readonly onclick="this.select()" />
                 </div>
               </div>
             </div>
