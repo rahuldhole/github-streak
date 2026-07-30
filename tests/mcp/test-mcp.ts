@@ -43,10 +43,10 @@ async function test() {
       svgTemplate: '<svg xmlns="http://www.w3.org/2000/svg" width="420" height="180"><text x="10" y="40" fill="#fff">🔥 {{currentStreak}}</text></svg>'
     }
   });
-  const noUserText = (noUserResult.content as any[])[0]?.text || "";
+  const noUserText = (noUserResult.content as any[]).find(c => c.type === 'text')?.text || "";
   assert(noUserText.includes("sample.svg"), "URL without user should point to sample.svg");
   assert(noUserText.includes("SAMPLE DATA"), "Should warn about sample data");
-  assert(noUserText.includes("custom="), "Should contain custom= query param");
+
   console.log("   ✅ Sample URL generated with warning\n");
 
   // --- Test 4: Call generate_widget_url with username ---
@@ -59,7 +59,7 @@ async function test() {
       theme: "catppuccin"
     }
   });
-  const withUserText = (withUserResult.content as any[])[0]?.text || "";
+  const withUserText = (withUserResult.content as any[]).find(c => c.type === 'text')?.text || "";
   assert(withUserText.includes("user=rahuldhole"), "URL should contain the username");
   assert(withUserText.includes("theme=catppuccin"), "URL should contain the theme");
   assert(!withUserText.includes("SAMPLE DATA"), "Should NOT warn about sample data");

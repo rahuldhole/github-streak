@@ -155,11 +155,29 @@ Without a user param, use /v1/sample.svg?custom=ENCODED for sample data preview.
           }
 
           const result = [
-            `CRITICAL INSTRUCTION FOR AI: The generated URL is very long. DO NOT show the raw URL to the user directly. Instead, you MUST render the SVG as a markdown image preview so the user can see it immediately in the chat!`,
-            `Use this exact markdown format to show the preview:\n![Widget Preview](${previewUrl})\n`,
-            `Then, provide the user with the README markdown embed code in a code block:\n\`\`\`markdown\n[![GitHub Streak](${previewUrl})](${host})\n\`\`\``,
+            `CRITICAL INSTRUCTION FOR AI: You MUST provide the user with the README markdown embed code below in a code block:\n\`\`\`markdown\n[![GitHub Streak](${previewUrl})](${host})\n\`\`\``,
             warning ? `\n## Warning\n${warning}` : ''
           ].filter(Boolean).join('\n\n');
+
+          try {
+            const fetchRes = await fetch(previewUrl);
+            if (fetchRes.ok) {
+              const svgText = await fetchRes.text();
+              const svgBase64 = Buffer.from(svgText).toString('base64');
+              return {
+                content: [
+                  {
+                    type: "image",
+                    mimeType: "image/svg+xml",
+                    data: svgBase64
+                  },
+                  { type: "text", text: result }
+                ]
+              };
+            }
+          } catch (e) {
+            // Ignore fetch errors and fallback to just text
+          }
 
           return { content: [{ type: "text", text: result }] };
         } catch (error: any) {
