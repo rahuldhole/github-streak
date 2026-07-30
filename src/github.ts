@@ -51,7 +51,25 @@ query($login:String!) {
   }
 }`
 
-export async function fetchGitHubData(username: string, token: string, partialFetch?: boolean): Promise<{ 
+const MINIMAL_STREAK_QUERY = `
+query($login:String!) {
+  user(login:$login) {
+    contributionsCollection {
+      contributionYears
+      contributionCalendar {
+        totalContributions
+        weeks {
+          contributionDays {
+            date
+            contributionCount
+          }
+        }
+      }
+    }
+  }
+}`
+
+export async function fetchGitHubData(username: string, token: string, partialFetch?: boolean, needsProfileData: boolean = true): Promise<{ 
   days: GitHubContributionDay[], 
   totalContributions: number, 
   contributionYears: number[],
@@ -80,7 +98,7 @@ export async function fetchGitHubData(username: string, token: string, partialFe
     method: "POST",
     headers,
     body: JSON.stringify({
-      query: GITHUB_GRAPHQL_QUERY,
+      query: needsProfileData ? GITHUB_GRAPHQL_QUERY : MINIMAL_STREAK_QUERY,
       variables: { login: username }
     })
   })
@@ -101,21 +119,19 @@ export async function fetchGitHubData(username: string, token: string, partialFe
   const currentCalendar = user.contributionsCollection.contributionCalendar
   const years: number[] = user.contributionsCollection.contributionYears
   
-  let avatarBase64 = user.avatarUrl
+  // Create avatar fetch promise if we have an avatar URL and need it
+  let avatarPromise: Promise<string | undefined> = Promise.resolve(user.avatarUrl);
   if (user.avatarUrl) {
-    try {
-      const imgRes = await fetch(user.avatarUrl + "&s=80")
+    avatarPromise = fetch(user.avatarUrl + "&s=80").then(async imgRes => {
       if (imgRes.ok) {
         const buffer = await imgRes.arrayBuffer()
         const base64 = Buffer.from(buffer).toString('base64')
         const contentType = imgRes.headers.get('content-type') || 'image/png'
-        avatarBase64 = `data:${contentType};base64,${base64}`
+        return `data:${contentType};base64,${base64}`
       }
-    } catch (e) {
-      // Ignore and keep original url
-    }
+      return user.avatarUrl
+    }).catch(() => user.avatarUrl)
   }
-
 
   // Extract rate limit from headers
   const remaining = res.headers.get("X-RateLimit-Remaining")
@@ -126,37 +142,17 @@ export async function fetchGitHubData(username: string, token: string, partialFe
   } : undefined
 
   // LIGHT MODE: If we only need the recent streak data (optimized fetch)
-  if (partialFetch) {
+  if (partialFetch || years.length === 0) {
     const allDays = currentCalendar.weeks?.flatMap((w: any) => w.contributionDays) || []
     const rollingTotal = allDays.reduce((sum: number, d: any) => sum + d.contributionCount, 0)
+    
+    // Wait for the avatar base64 if needed, in parallel with any other processing we could do
+    const avatarBase64 = await avatarPromise;
 
     return {
       days: allDays,
       totalContributions: rollingTotal,
-      contributionYears: years,
-      name: user.name,
-      avatarUrl: avatarBase64,
-      bio: user.bio,
-      company: user.company,
-      location: user.location,
-      websiteUrl: user.websiteUrl,
-      twitterUsername: user.twitterUsername,
-      email: user.email,
-      followers: user.followers?.totalCount,
-      following: user.following?.totalCount,
-      repositories: user.repositories?.totalCount,
-      pinnedItems: user.pinnedItems?.nodes,
-      rateLimit
-    }
-  }
-
-  if (years.length === 0) {
-    const allDays = currentCalendar.weeks?.flatMap((w: any) => w.contributionDays) || []
-    const rollingTotal = allDays.reduce((sum: number, d: any) => sum + d.contributionCount, 0)
-    return {
-      days: allDays,
-      totalContributions: rollingTotal,
-      contributionYears: [],
+      contributionYears: partialFetch ? years : [],
       name: user.name,
       avatarUrl: avatarBase64,
       bio: user.bio,
@@ -195,9 +191,10 @@ export async function fetchGitHubData(username: string, token: string, partialFe
     }
   `
 
-  // Fetch all chunks in parallel
-  const chunkResults = await Promise.all(
-    chunks.map(chunk =>
+  // Fetch all chunks and avatar in parallel
+  const [avatarBase64, ...chunkResults] = await Promise.all([
+    avatarPromise,
+    ...chunks.map(chunk =>
       fetch("https://api.github.com/graphql", {
         method: "POST",
         headers,
@@ -215,7 +212,7 @@ export async function fetchGitHubData(username: string, token: string, partialFe
         return json.data?.user || {}
       })
     )
-  )
+  ])
 
   // Sum totals across all chunks
   const allTimeTotal = chunkResults.reduce((total: number, chunkData: any) => {
@@ -230,7 +227,7 @@ export async function fetchGitHubData(username: string, token: string, partialFe
     totalContributions: allTimeTotal,
     contributionYears: years,
     name: user.name,
-    avatarUrl: avatarBase64,
+    avatarUrl: avatarBase64 as string | undefined,
     bio: user.bio,
     company: user.company,
     location: user.location,

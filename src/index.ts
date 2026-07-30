@@ -58,14 +58,15 @@ async function refreshUserData(
   currentKey: string, 
   activeVersion: number, 
   isHistoryStale: boolean, 
-  fullRefresh: boolean
+  fullRefresh: boolean,
+  needsProfileData: boolean = true
 ) {
   const token = c.env.GITHUB_TOKEN
   if (!token) throw new Error('Config Error');
   const currentYear = new Date().getFullYear()
 
   const partialFetch = (!isHistoryStale && !fullRefresh) ? true : false
-  const fresh = await fetchGitHubData(username, token, partialFetch)
+  const fresh = await fetchGitHubData(username, token, partialFetch, needsProfileData)
   
   if (fresh.rateLimit) {
     githubRateLimitRemaining = fresh.rateLimit.remaining
@@ -125,7 +126,7 @@ async function refreshUserData(
 }
 
 // Extract the data fetch logic
-async function getStreakData(c: any, queryUser: string, forceRefresh: boolean, fullRefresh: boolean) {
+async function getStreakData(c: any, queryUser: string, forceRefresh: boolean, fullRefresh: boolean, needsProfileData: boolean = true) {
   const username = queryUser.split('?')[0].trim()
   
   if (!username || !GITHUB_USERNAME_REGEX.test(username)) {
@@ -180,19 +181,19 @@ async function getStreakData(c: any, queryUser: string, forceRefresh: boolean, f
             // Background SWR execution
             if (c.executionCtx?.waitUntil) {
                 c.executionCtx.waitUntil(
-                    refreshUserData(c, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh).catch((err: any) => {
+                    refreshUserData(c, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh, needsProfileData).catch((err: any) => {
                       logEvent({ name: 'error', data: { type: 'background_refresh_failed', username, error: getSafeErrorMessage(err) } })
                     })
                 )
             } else {
-                refreshUserData(c, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh).catch((err: any) => {
+                refreshUserData(c, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh, needsProfileData).catch((err: any) => {
                   logEvent({ name: 'error', data: { type: 'background_refresh_failed', username, error: getSafeErrorMessage(err) } })
                 })
             }
         } else {
             // Synchronous cold start fetch
             try {
-                const refreshed = await refreshUserData(c, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh)
+                const refreshed = await refreshUserData(c, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh, needsProfileData)
                 newCurrentBlob = refreshed.newCurrentBlob
                 if (refreshed.newHistoryBlob) newHistoryBlob = refreshed.newHistoryBlob
             } catch (error: any) {
@@ -286,7 +287,7 @@ async function handleProfilePage(c: any, userParam: string, themeParam: Theme) {
   const fullRefresh = c.req.query('full-refresh') === 'true'
   const type = c.req.query('type')
 
-  const data = await getStreakData(c, userParam, forceRefresh, fullRefresh)
+  const data = await getStreakData(c, userParam, forceRefresh, fullRefresh, true)
   if (data.error) {
     if (type === 'json') return c.json({ error: data.error })
     return returnErrorSVG(c, data.error)
@@ -314,7 +315,7 @@ async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfile
   const fullRefresh = c.req.query('full-refresh') === 'true'
   const type = c.req.query('type')
 
-  const data = await getStreakData(c, userParam, forceRefresh, fullRefresh)
+  const data = await getStreakData(c, userParam, forceRefresh, fullRefresh, isProfileSVG)
   if (data.error) {
     if (type === 'json') return c.json({ error: data.error })
     return returnErrorSVG(c, data.error)
