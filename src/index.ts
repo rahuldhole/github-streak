@@ -148,14 +148,9 @@ app.all('/mcp', async (c) => {
           _meta: {
             ui: {
               csp: {
-                resourceDomains: [
-                  "https://mcp--github-streak.netlify.app",
-                  "https://github-streak.netlify.app",
-                  "http://localhost:8888",
-                  "http://localhost:3999"
-                ]
+                resourceDomains: [url.origin]
               },
-              domain: "github-streak-widget"
+              domain: url.hostname
             }
           }
         }]
