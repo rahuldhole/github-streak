@@ -51,6 +51,79 @@ app.notFound((c) => {
   return c.html('<h1>404 Not Found</h1>', 404)
 })
 
+async function refreshUserData(
+  c: any, 
+  username: string, 
+  historyKey: string, 
+  currentKey: string, 
+  activeVersion: number, 
+  isHistoryStale: boolean, 
+  fullRefresh: boolean
+) {
+  const token = c.env.GITHUB_TOKEN
+  if (!token) throw new Error('Config Error');
+  const currentYear = new Date().getFullYear()
+
+  const partialFetch = (!isHistoryStale && !fullRefresh) ? true : false
+  const fresh = await fetchGitHubData(username, token, partialFetch)
+  
+  if (fresh.rateLimit) {
+    githubRateLimitRemaining = fresh.rateLimit.remaining
+    githubRateLimitResetAt = new Date(fresh.rateLimit.resetAt).getTime()
+  }
+
+  const sixMonthsAgo = new Date()
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
+  const sixMonthsAgoStr = sixMonthsAgo.toISOString().split('T')[0]
+
+  const recentTotal = fresh.days
+    .filter((d: any) => d.date >= sixMonthsAgoStr)
+    .reduce((sum: number, d: any) => sum + d.contributionCount, 0)
+
+  let newHistoryBlob: any = null
+  if (!partialFetch) {
+    const histTotal = fresh.totalContributions - recentTotal
+    newHistoryBlob = { 
+      total: histTotal, 
+      years: fresh.contributionYears.filter((y: number) => y !== currentYear),
+      cacheVersion: activeVersion,
+      timestamp: Date.now()
+    }
+  }
+
+  const stats = calculateStreakStats(fresh.days, recentTotal, fresh.contributionYears)
+  const last7 = fresh.days.slice(-7)
+  const maxCount = Math.max(...last7.map((d: any) => d.contributionCount), 1)
+
+  const newCurrentBlob = { 
+    stats, 
+    last7, 
+    maxCount, 
+    name: fresh.name,
+    avatarUrl: fresh.avatarUrl,
+    bio: fresh.bio,
+    company: fresh.company,
+    location: fresh.location,
+    websiteUrl: fresh.websiteUrl,
+    twitterUsername: fresh.twitterUsername,
+    email: fresh.email,
+    followers: fresh.followers,
+    following: fresh.following,
+    repositories: fresh.repositories,
+    pinnedItems: fresh.pinnedItems,
+    timestamp: Date.now(), 
+    cacheVersion: activeVersion 
+  }
+  
+  const streakStore = getStore('streak-data')
+  await Promise.all([
+    newHistoryBlob ? streakStore.setJSON(historyKey, newHistoryBlob) : Promise.resolve(),
+    streakStore.setJSON(currentKey, newCurrentBlob)
+  ]).catch(() => {})
+
+  return { newCurrentBlob, newHistoryBlob }
+}
+
 // Extract the data fetch logic
 async function getStreakData(c: any, queryUser: string, forceRefresh: boolean, fullRefresh: boolean) {
   const username = queryUser.split('?')[0].trim()
@@ -78,7 +151,6 @@ async function getStreakData(c: any, queryUser: string, forceRefresh: boolean, f
   const streakStore = getStore('streak-data')
   const historyKey = `${username}:history`
   const currentKey = `${username}:current`
-  const currentYear = new Date().getFullYear()
 
   // Parallelize Netlify Blob Reads
   const [historyBlob, currentBlob] = await Promise.all([
@@ -100,78 +172,34 @@ async function getStreakData(c: any, queryUser: string, forceRefresh: boolean, f
   let newCurrentBlob = currentBlob;
 
   if ((isCurrentStale || forceRefresh || fullRefresh || isHistoryStale) && !isIpRateLimited) {
-    const token = c.env.GITHUB_TOKEN
-    if (!token) return { error: 'Config Error' };
-
     const isQuotaExhausted = githubRateLimitRemaining === 0 && Date.now() < githubRateLimitResetAt
     if ((githubRateLimitRemaining < 20 || isQuotaExhausted) && newCurrentBlob) {
         logEvent({ name: 'warn_quota_low', data: { username } })
     } else {
-        try {
-          const partialFetch = (!isHistoryStale && !fullRefresh) ? true : false
-          const fresh = await fetchGitHubData(username, token, partialFetch)
-          
-          if (fresh.rateLimit) {
-            githubRateLimitRemaining = fresh.rateLimit.remaining
-            githubRateLimitResetAt = new Date(fresh.rateLimit.resetAt).getTime()
-          }
-
-          const sixMonthsAgo = new Date()
-          sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
-          const sixMonthsAgoStr = sixMonthsAgo.toISOString().split('T')[0]
-
-          const recentTotal = fresh.days
-            .filter((d: any) => d.date >= sixMonthsAgoStr)
-            .reduce((sum: number, d: any) => sum + d.contributionCount, 0)
-
-          if (!partialFetch) {
-            const histTotal = fresh.totalContributions - recentTotal
-            newHistoryBlob = { 
-              total: histTotal, 
-              years: fresh.contributionYears.filter((y: number) => y !== currentYear),
-              cacheVersion: activeVersion,
-              timestamp: Date.now()
+        if (newCurrentBlob && !forceRefresh && !fullRefresh) {
+            // Background SWR execution
+            if (c.executionCtx?.waitUntil) {
+                c.executionCtx.waitUntil(
+                    refreshUserData(c, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh).catch((err: any) => {
+                      logEvent({ name: 'error', data: { type: 'background_refresh_failed', username, error: getSafeErrorMessage(err) } })
+                    })
+                )
+            } else {
+                refreshUserData(c, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh).catch((err: any) => {
+                  logEvent({ name: 'error', data: { type: 'background_refresh_failed', username, error: getSafeErrorMessage(err) } })
+                })
             }
-          }
-
-          const stats = calculateStreakStats(fresh.days, recentTotal, fresh.contributionYears)
-          const last7 = fresh.days.slice(-7)
-          const maxCount = Math.max(...last7.map((d: any) => d.contributionCount), 1)
-
-          newCurrentBlob = { 
-            stats, 
-            last7, 
-            maxCount, 
-            name: fresh.name,
-            avatarUrl: fresh.avatarUrl,
-            bio: fresh.bio,
-            company: fresh.company,
-            location: fresh.location,
-            websiteUrl: fresh.websiteUrl,
-            twitterUsername: fresh.twitterUsername,
-            email: fresh.email,
-            followers: fresh.followers,
-            following: fresh.following,
-            repositories: fresh.repositories,
-            pinnedItems: fresh.pinnedItems,
-            timestamp: Date.now(), 
-            cacheVersion: activeVersion 
-          }
-          
-          // Background Blob writes
-          const savePromise = Promise.all([
-            newHistoryBlob ? streakStore.setJSON(historyKey, newHistoryBlob) : Promise.resolve(),
-            streakStore.setJSON(currentKey, newCurrentBlob)
-          ]).catch(() => {})
-
-          if (c.executionCtx?.waitUntil) {
-            c.executionCtx.waitUntil(savePromise)
-          }
-
-        } catch (error: any) {
-          if (!newCurrentBlob) {
-            return { error: getSafeErrorMessage(error) };
-          }
+        } else {
+            // Synchronous cold start fetch
+            try {
+                const refreshed = await refreshUserData(c, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh)
+                newCurrentBlob = refreshed.newCurrentBlob
+                if (refreshed.newHistoryBlob) newHistoryBlob = refreshed.newHistoryBlob
+            } catch (error: any) {
+                if (!newCurrentBlob) {
+                    return { error: getSafeErrorMessage(error) };
+                }
+            }
         }
     }
   }
@@ -317,7 +345,7 @@ async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfile
       'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400',
       'Netlify-CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
       'Vary': 'Accept',
-      'X-Cache': isCurrentStale ? 'MISS' : 'HIT'
+      'X-Cache': isCurrentStale ? 'STALE' : 'HIT'
     })
   }
 
@@ -328,7 +356,7 @@ async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfile
     'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400',
     'Netlify-CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
     'Vary': 'Accept',
-    'X-Cache': isCurrentStale ? 'MISS' : 'HIT'
+    'X-Cache': isCurrentStale ? 'STALE' : 'HIT'
   })
 }
 

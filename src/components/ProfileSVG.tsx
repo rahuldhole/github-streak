@@ -63,7 +63,12 @@ export function ProfileSVG({
             <image href={avatarUrl} x="0" y="0" width="80" height="80" clip-path="url(#avatar-clip)" />
           </g>
         ) : (
-          <circle cx="0" cy="0" r="40" fill={t.border} />
+          <g transform="translate(-40, -40)">
+            <circle cx="40" cy="40" r="40" fill={t.border} />
+            <text x="40" y="48" font-family="sans-serif" font-size="28" font-weight="bold" fill={t.text} text-anchor="middle">
+              {username.charAt(0).toUpperCase()}
+            </text>
+          </g>
         )}
 
         {/* Name */}
