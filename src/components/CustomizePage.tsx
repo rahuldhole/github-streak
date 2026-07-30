@@ -520,6 +520,844 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
     <text x="347" y="30" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="bold" fill="var(--text-l{{day6Level}})">{{day6Count}}</text>
   </g>
   <text x="395" y="170" text-anchor="end" font-size="8" fill="#a89984">{{lastUpdated}}</text>
+</svg>`,
+    animatedGradient: `<svg width="600" height="200" viewBox="0 0 600 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    :root { --l0: #1e1e2e88; --l1: #89b4fa; --l2: #cba6f7; --l3: #f38ba8; --l4: #fab387; --text-l0: #bac2de; --text-l1: #11111b; --text-l2: #11111b; --text-l3: #11111b; --text-l4: #11111b; }
+    .label { font: bold 12px sans-serif; fill: #bac2de; text-transform: uppercase; letter-spacing: 1px; }
+    .stat { font: bold 28px sans-serif; fill: #ffffff; }
+    .date { font: 11px sans-serif; fill: #a6adc8; }
+    @keyframes gradientBG {
+      0% { stop-color: #ff7eb3; }
+      50% { stop-color: #ff758c; }
+      100% { stop-color: #ff7eb3; }
+    }
+    @keyframes gradientBG2 {
+      0% { stop-color: #8fd3f4; }
+      50% { stop-color: #84fab0; }
+      100% { stop-color: #8fd3f4; }
+    }
+    .anim-stop-1 { animation: gradientBG 4s ease infinite; }
+    .anim-stop-2 { animation: gradientBG2 4s ease infinite; }
+  </style>
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff7eb3" class="anim-stop-1" />
+      <stop offset="100%" stop-color="#8fd3f4" class="anim-stop-2" />
+    </linearGradient>
+  </defs>
+  <rect width="600" height="200" rx="20" fill="url(#bg-grad)"/>
+  <rect x="2" y="2" width="596" height="196" rx="18" fill="#11111B" opacity="0.9"/>
+  
+  <g transform="translate(40, 50)">
+    <text class="label">Current Streak</text>
+    <text y="36" class="stat">{{currentStreak}}</text>
+    <text y="58" class="date">{{currentStreakDate}}</text>
+  </g>
+  <g transform="translate(240, 50)">
+    <text class="label">Personal Best</text>
+    <text y="36" class="stat">{{personalBest}}</text>
+    <text y="58" class="date">{{personalBestDate}}</text>
+  </g>
+  <g transform="translate(440, 50)">
+    <text class="label">Total Contribs</text>
+    <text y="36" class="stat">{{totalContribs}}+</text>
+    <text y="58" class="date">{{totalContribsDate}}</text>
+  </g>
+  
+  <g transform="translate(40, 130)">
+    <rect x="0" width="60" height="40" rx="8" fill="var(--l{{day0Level}})"/>
+    <text x="30" y="11" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#a6adc8" opacity="0.9">{{day0Label}}</text>
+    <text x="30" y="30" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="bold" fill="var(--text-l{{day0Level}})">{{day0Count}}</text>
+    
+    <rect x="75" width="60" height="40" rx="8" fill="var(--l{{day1Level}})"/>
+    <text x="105" y="11" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#a6adc8" opacity="0.9">{{day1Label}}</text>
+    <text x="105" y="30" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="bold" fill="var(--text-l{{day1Level}})">{{day1Count}}</text>
+    
+    <rect x="150" width="60" height="40" rx="8" fill="var(--l{{day2Level}})"/>
+    <text x="180" y="11" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#a6adc8" opacity="0.9">{{day2Label}}</text>
+    <text x="180" y="30" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="bold" fill="var(--text-l{{day2Level}})">{{day2Count}}</text>
+    
+    <rect x="225" width="60" height="40" rx="8" fill="var(--l{{day3Level}})"/>
+    <text x="255" y="11" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#a6adc8" opacity="0.9">{{day3Label}}</text>
+    <text x="255" y="30" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="bold" fill="var(--text-l{{day3Level}})">{{day3Count}}</text>
+    
+    <rect x="300" width="60" height="40" rx="8" fill="var(--l{{day4Level}})"/>
+    <text x="330" y="11" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#a6adc8" opacity="0.9">{{day4Label}}</text>
+    <text x="330" y="30" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="bold" fill="var(--text-l{{day4Level}})">{{day4Count}}</text>
+    
+    <rect x="375" width="60" height="40" rx="8" fill="var(--l{{day5Level}})"/>
+    <text x="405" y="11" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#a6adc8" opacity="0.9">{{day5Label}}</text>
+    <text x="405" y="30" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="bold" fill="var(--text-l{{day5Level}})">{{day5Count}}</text>
+    
+    <rect x="450" width="60" height="40" rx="8" fill="var(--l{{day6Level}})"/>
+    <text x="480" y="11" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#a6adc8" opacity="0.9">{{day6Label}}</text>
+    <text x="480" y="30" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="bold" fill="var(--text-l{{day6Level}})">{{day6Count}}</text>
+  </g>
+  
+  <text x="580" y="185" text-anchor="end" font-size="9" fill="#6c7086" opacity="0.8">{{lastUpdated}}</text>
+</svg>`,
+    compactMinimal: `<svg width="300" height="120" viewBox="0 0 300 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    :root { --l0: #ebedf0; --l1: #9be9a8; --l2: #40c463; --l3: #30a14e; --l4: #216e39; --text-l0: #24292e; --text-l1: #24292e; --text-l2: #ffffff; --text-l3: #ffffff; --text-l4: #ffffff; }
+    .stat { font: bold 20px sans-serif; fill: #24292e; }
+    .icon { font-size: 16px; }
+  </style>
+  <rect width="300" height="120" rx="8" fill="#ffffff" stroke="#e1e4e8"/>
+  
+  <g transform="translate(20, 30)">
+    <text class="icon">🔥</text>
+    <text x="25" y="4" class="stat">{{currentStreak}}</text>
+  </g>
+  <g transform="translate(115, 30)">
+    <text class="icon">🏆</text>
+    <text x="25" y="4" class="stat">{{personalBest}}</text>
+  </g>
+  <g transform="translate(210, 30)">
+    <text class="icon">✨</text>
+    <text x="25" y="4" class="stat">{{totalContribs}}</text>
+  </g>
+  
+  <g transform="translate(20, 65)">
+    <rect x="0" width="30" height="30" rx="4" fill="var(--l{{day0Level}})"/>
+    <text x="15" y="16" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="bold" fill="var(--text-l{{day0Level}})">{{day0Count}}</text>
+    
+    <rect x="38" width="30" height="30" rx="4" fill="var(--l{{day1Level}})"/>
+    <text x="53" y="16" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="bold" fill="var(--text-l{{day1Level}})">{{day1Count}}</text>
+    
+    <rect x="76" width="30" height="30" rx="4" fill="var(--l{{day2Level}})"/>
+    <text x="91" y="16" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="bold" fill="var(--text-l{{day2Level}})">{{day2Count}}</text>
+    
+    <rect x="114" width="30" height="30" rx="4" fill="var(--l{{day3Level}})"/>
+    <text x="129" y="16" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="bold" fill="var(--text-l{{day3Level}})">{{day3Count}}</text>
+    
+    <rect x="152" width="30" height="30" rx="4" fill="var(--l{{day4Level}})"/>
+    <text x="167" y="16" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="bold" fill="var(--text-l{{day4Level}})">{{day4Count}}</text>
+    
+    <rect x="190" width="30" height="30" rx="4" fill="var(--l{{day5Level}})"/>
+    <text x="205" y="16" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="bold" fill="var(--text-l{{day5Level}})">{{day5Count}}</text>
+    
+    <rect x="228" width="30" height="30" rx="4" fill="var(--l{{day6Level}})"/>
+    <text x="243" y="16" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="bold" fill="var(--text-l{{day6Level}})">{{day6Count}}</text>
+  </g>
+  <text x="290" y="115" text-anchor="end" font-size="7" fill="#aaaaaa">{{lastUpdated}}</text>
+</svg>`,
+    verticalCard: `<svg width="240" height="420" viewBox="0 0 240 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    :root { --l0: #161b22; --l1: #0e4429; --l2: #006d32; --l3: #26a641; --l4: #39d353; --text-l0: #c9d1d9; --text-l1: #ffffff; --text-l2: #ffffff; --text-l3: #000000; --text-l4: #000000; }
+    .label { font: bold 11px sans-serif; fill: #8b949e; text-transform: uppercase; letter-spacing: 1px; }
+    .stat { font: bold 26px sans-serif; fill: #c9d1d9; }
+    .date { font: 10px sans-serif; fill: #8b949e; }
+  </style>
+  <rect width="240" height="420" rx="16" fill="#0d1117" stroke="#30363d" stroke-width="2"/>
+  
+  <g transform="translate(25, 40)">
+    <text class="label">Current Streak</text>
+    <text y="32" class="stat">🔥 {{currentStreak}}</text>
+    <text y="50" class="date">{{currentStreakDate}}</text>
+  </g>
+  <g transform="translate(25, 120)">
+    <text class="label">Personal Best</text>
+    <text y="32" class="stat">🏆 {{personalBest}}</text>
+    <text y="50" class="date">{{personalBestDate}}</text>
+  </g>
+  <g transform="translate(25, 200)">
+    <text class="label">Total Contribs</text>
+    <text y="32" class="stat">✨ {{totalContribs}}+</text>
+    <text y="50" class="date">{{totalContribsDate}}</text>
+  </g>
+  
+  <g transform="translate(15, 280)">
+    <rect x="0" y="0" width="26" height="80" rx="4" fill="var(--l{{day0Level}})"/>
+    <text x="13" y="15" text-anchor="middle" font-size="9" fill="#8b949e">{{day0Label}}</text>
+    <text x="13" y="45" text-anchor="middle" font-size="11" font-weight="bold" fill="var(--text-l{{day0Level}})">{{day0Count}}</text>
+    
+    <rect x="30" y="0" width="26" height="80" rx="4" fill="var(--l{{day1Level}})"/>
+    <text x="43" y="15" text-anchor="middle" font-size="9" fill="#8b949e">{{day1Label}}</text>
+    <text x="43" y="45" text-anchor="middle" font-size="11" font-weight="bold" fill="var(--text-l{{day1Level}})">{{day1Count}}</text>
+    
+    <rect x="60" y="0" width="26" height="80" rx="4" fill="var(--l{{day2Level}})"/>
+    <text x="73" y="15" text-anchor="middle" font-size="9" fill="#8b949e">{{day2Label}}</text>
+    <text x="73" y="45" text-anchor="middle" font-size="11" font-weight="bold" fill="var(--text-l{{day2Level}})">{{day2Count}}</text>
+    
+    <rect x="90" y="0" width="26" height="80" rx="4" fill="var(--l{{day3Level}})"/>
+    <text x="103" y="15" text-anchor="middle" font-size="9" fill="#8b949e">{{day3Label}}</text>
+    <text x="103" y="45" text-anchor="middle" font-size="11" font-weight="bold" fill="var(--text-l{{day3Level}})">{{day3Count}}</text>
+    
+    <rect x="120" y="0" width="26" height="80" rx="4" fill="var(--l{{day4Level}})"/>
+    <text x="133" y="15" text-anchor="middle" font-size="9" fill="#8b949e">{{day4Label}}</text>
+    <text x="133" y="45" text-anchor="middle" font-size="11" font-weight="bold" fill="var(--text-l{{day4Level}})">{{day4Count}}</text>
+    
+    <rect x="150" y="0" width="26" height="80" rx="4" fill="var(--l{{day5Level}})"/>
+    <text x="163" y="15" text-anchor="middle" font-size="9" fill="#8b949e">{{day5Label}}</text>
+    <text x="163" y="45" text-anchor="middle" font-size="11" font-weight="bold" fill="var(--text-l{{day5Level}})">{{day5Count}}</text>
+    
+    <rect x="180" y="0" width="26" height="80" rx="4" fill="var(--l{{day6Level}})"/>
+    <text x="193" y="15" text-anchor="middle" font-size="9" fill="#8b949e">{{day6Label}}</text>
+    <text x="193" y="45" text-anchor="middle" font-size="11" font-weight="bold" fill="var(--text-l{{day6Level}})">{{day6Count}}</text>
+  </g>
+  
+  <text x="215" y="400" text-anchor="end" font-size="8" fill="#8b949e" opacity="0.6">{{lastUpdated}}</text>
+</svg>`,
+    glassmorphism: `<svg width="450" height="200" viewBox="0 0 450 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    :root { --l0: rgba(255,255,255,0.1); --l1: rgba(255,255,255,0.3); --l2: rgba(255,255,255,0.5); --l3: rgba(255,255,255,0.7); --l4: rgba(255,255,255,1); --text-l0: #ffffff; --text-l1: #ffffff; --text-l2: #000000; --text-l3: #000000; --text-l4: #000000; }
+    .label { font: bold 10px sans-serif; fill: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 1px; }
+    .stat { font: bold 26px sans-serif; fill: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .date { font: 10px sans-serif; fill: rgba(255,255,255,0.6); }
+    .glass-rect { fill: rgba(255, 255, 255, 0.1); stroke: rgba(255, 255, 255, 0.2); stroke-width: 1.5; backdrop-filter: blur(10px); }
+  </style>
+  <defs>
+    <linearGradient id="bg-grad-glass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4158D0" />
+      <stop offset="46%" stop-color="#C850C0" />
+      <stop offset="100%" stop-color="#FFCC70" />
+    </linearGradient>
+  </defs>
+  <rect width="450" height="200" rx="20" fill="url(#bg-grad-glass)"/>
+  
+  <rect x="15" y="15" width="420" height="170" rx="16" class="glass-rect"/>
+  
+  <g transform="translate(35, 50)">
+    <text class="label">Current Streak</text>
+    <text y="30" class="stat">{{currentStreak}}</text>
+    <text y="48" class="date">{{currentStreakDate}}</text>
+  </g>
+  <g transform="translate(175, 50)">
+    <text class="label">Personal Best</text>
+    <text y="30" class="stat">{{personalBest}}</text>
+    <text y="48" class="date">{{personalBestDate}}</text>
+  </g>
+  <g transform="translate(315, 50)">
+    <text class="label">Total Contribs</text>
+    <text y="30" class="stat">{{totalContribs}}+</text>
+    <text y="48" class="date">{{totalContribsDate}}</text>
+  </g>
+  
+  <g transform="translate(35, 120)">
+    <rect x="0" width="48" height="45" rx="8" fill="var(--l{{day0Level}})"/>
+    <text x="24" y="14" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.8)">{{day0Label}}</text>
+    <text x="24" y="32" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day0Level}})">{{day0Count}}</text>
+    
+    <rect x="55" width="48" height="45" rx="8" fill="var(--l{{day1Level}})"/>
+    <text x="79" y="14" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.8)">{{day1Label}}</text>
+    <text x="79" y="32" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day1Level}})">{{day1Count}}</text>
+    
+    <rect x="110" width="48" height="45" rx="8" fill="var(--l{{day2Level}})"/>
+    <text x="134" y="14" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.8)">{{day2Label}}</text>
+    <text x="134" y="32" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day2Level}})">{{day2Count}}</text>
+    
+    <rect x="165" width="48" height="45" rx="8" fill="var(--l{{day3Level}})"/>
+    <text x="189" y="14" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.8)">{{day3Label}}</text>
+    <text x="189" y="32" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day3Level}})">{{day3Count}}</text>
+    
+    <rect x="220" width="48" height="45" rx="8" fill="var(--l{{day4Level}})"/>
+    <text x="244" y="14" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.8)">{{day4Label}}</text>
+    <text x="244" y="32" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day4Level}})">{{day4Count}}</text>
+    
+    <rect x="275" width="48" height="45" rx="8" fill="var(--l{{day5Level}})"/>
+    <text x="299" y="14" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.8)">{{day5Label}}</text>
+    <text x="299" y="32" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day5Level}})">{{day5Count}}</text>
+    
+    <rect x="330" width="48" height="45" rx="8" fill="var(--l{{day6Level}})"/>
+    <text x="354" y="14" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.8)">{{day6Label}}</text>
+    <text x="354" y="32" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day6Level}})">{{day6Count}}</text>
+  </g>
+  <text x="425" y="192" text-anchor="end" font-size="8" fill="rgba(255,255,255,0.4)">{{lastUpdated}}</text>
+</svg>`,
+    neonPulse: `<svg width="480" height="200" viewBox="0 0 480 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    :root { --l0: #0a0a1a; --l1: #1a0a3a; --l2: #3a1a6a; --l3: #6a2aaa; --l4: #aa3aff; --text-l0: #666688; --text-l1: #aa88ff; --text-l2: #ddbbff; --text-l3: #ffffff; --text-l4: #ffffff; }
+    @keyframes neonGlow {
+      0%, 100% { filter: drop-shadow(0 0 4px #aa3aff) drop-shadow(0 0 8px #6a2aaa); }
+      50% { filter: drop-shadow(0 0 8px #aa3aff) drop-shadow(0 0 20px #6a2aaa) drop-shadow(0 0 30px #3a1a6a); }
+    }
+    @keyframes textPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    @keyframes borderPulse {
+      0%, 100% { stroke-opacity: 0.6; }
+      50% { stroke-opacity: 1; }
+    }
+    .card { animation: neonGlow 3s ease-in-out infinite; }
+    .label { font: bold 10px sans-serif; fill: #aa88ff; text-transform: uppercase; letter-spacing: 2px; animation: textPulse 3s ease-in-out infinite; }
+    .stat { font: bold 28px sans-serif; fill: #ffffff; }
+    .date { font: 10px sans-serif; fill: #666688; }
+    .neon-border { stroke: #aa3aff; stroke-width: 2; animation: borderPulse 3s ease-in-out infinite; }
+    .day-tile { rx: 6; }
+  </style>
+  <rect width="480" height="200" rx="16" fill="#0a0a1a" class="card"/>
+  <rect x="1" y="1" width="478" height="198" rx="15" fill="none" class="neon-border"/>
+  
+  <line x1="160" y1="20" x2="160" y2="90" stroke="#aa3aff" stroke-width="1" opacity="0.3"/>
+  <line x1="320" y1="20" x2="320" y2="90" stroke="#aa3aff" stroke-width="1" opacity="0.3"/>
+  
+  <g transform="translate(30, 40)">
+    <text class="label">Current Streak</text>
+    <text y="32" class="stat">{{currentStreak}}</text>
+    <text y="52" class="date">{{currentStreakDate}}</text>
+  </g>
+  <g transform="translate(190, 40)">
+    <text class="label">Personal Best</text>
+    <text y="32" class="stat">{{personalBest}}</text>
+    <text y="52" class="date">{{personalBestDate}}</text>
+  </g>
+  <g transform="translate(350, 40)">
+    <text class="label">Total</text>
+    <text y="32" class="stat">{{totalContribs}}+</text>
+    <text y="52" class="date">{{totalContribsDate}}</text>
+  </g>
+  
+  <g transform="translate(30, 120)">
+    <rect x="0" width="52" height="48" class="day-tile" fill="var(--l{{day0Level}})"/>
+    <text x="26" y="14" text-anchor="middle" font-size="9" fill="#666688">{{day0Label}}</text>
+    <text x="26" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day0Level}})">{{day0Count}}</text>
+    
+    <rect x="60" width="52" height="48" class="day-tile" fill="var(--l{{day1Level}})"/>
+    <text x="86" y="14" text-anchor="middle" font-size="9" fill="#666688">{{day1Label}}</text>
+    <text x="86" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day1Level}})">{{day1Count}}</text>
+    
+    <rect x="120" width="52" height="48" class="day-tile" fill="var(--l{{day2Level}})"/>
+    <text x="146" y="14" text-anchor="middle" font-size="9" fill="#666688">{{day2Label}}</text>
+    <text x="146" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day2Level}})">{{day2Count}}</text>
+    
+    <rect x="180" width="52" height="48" class="day-tile" fill="var(--l{{day3Level}})"/>
+    <text x="206" y="14" text-anchor="middle" font-size="9" fill="#666688">{{day3Label}}</text>
+    <text x="206" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day3Level}})">{{day3Count}}</text>
+    
+    <rect x="240" width="52" height="48" class="day-tile" fill="var(--l{{day4Level}})"/>
+    <text x="266" y="14" text-anchor="middle" font-size="9" fill="#666688">{{day4Label}}</text>
+    <text x="266" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day4Level}})">{{day4Count}}</text>
+    
+    <rect x="300" width="52" height="48" class="day-tile" fill="var(--l{{day5Level}})"/>
+    <text x="326" y="14" text-anchor="middle" font-size="9" fill="#666688">{{day5Label}}</text>
+    <text x="326" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day5Level}})">{{day5Count}}</text>
+    
+    <rect x="360" width="52" height="48" class="day-tile" fill="var(--l{{day6Level}})"/>
+    <text x="386" y="14" text-anchor="middle" font-size="9" fill="#666688">{{day6Label}}</text>
+    <text x="386" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day6Level}})">{{day6Count}}</text>
+  </g>
+  
+  <text x="460" y="190" text-anchor="end" font-size="8" fill="#444466">{{lastUpdated}}</text>
+</svg>`,
+    auroraBorealis: `<svg width="500" height="220" viewBox="0 0 500 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    :root { --l0: #0f1729; --l1: #1a3a4a; --l2: #2a6a5a; --l3: #4aaa7a; --l4: #6aeaaa; --text-l0: #4a6a7a; --text-l1: #8ababa; --text-l2: #cceedd; --text-l3: #ffffff; --text-l4: #0f1729; }
+    @keyframes auroraShift1 {
+      0%   { stop-color: #00c9a7; stop-opacity: 0.4; }
+      33%  { stop-color: #845ec2; stop-opacity: 0.6; }
+      66%  { stop-color: #0081cf; stop-opacity: 0.5; }
+      100% { stop-color: #00c9a7; stop-opacity: 0.4; }
+    }
+    @keyframes auroraShift2 {
+      0%   { stop-color: #ff6f91; stop-opacity: 0.3; }
+      33%  { stop-color: #00c9a7; stop-opacity: 0.5; }
+      66%  { stop-color: #845ec2; stop-opacity: 0.4; }
+      100% { stop-color: #ff6f91; stop-opacity: 0.3; }
+    }
+    @keyframes auroraShift3 {
+      0%   { stop-color: #0081cf; stop-opacity: 0.2; }
+      33%  { stop-color: #ff6f91; stop-opacity: 0.3; }
+      66%  { stop-color: #00c9a7; stop-opacity: 0.4; }
+      100% { stop-color: #0081cf; stop-opacity: 0.2; }
+    }
+    .aurora-1 { animation: auroraShift1 8s ease-in-out infinite; }
+    .aurora-2 { animation: auroraShift2 8s ease-in-out infinite; }
+    .aurora-3 { animation: auroraShift3 8s ease-in-out infinite; }
+    .label { font: bold 11px sans-serif; fill: #6aeaaa; text-transform: uppercase; letter-spacing: 1.5px; }
+    .stat { font: bold 26px sans-serif; fill: #e0f8f0; }
+    .date { font: 10px sans-serif; fill: #4a6a7a; }
+  </style>
+  <defs>
+    <linearGradient id="aurora-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" class="aurora-1" />
+      <stop offset="50%" class="aurora-2" />
+      <stop offset="100%" class="aurora-3" />
+    </linearGradient>
+  </defs>
+  <rect width="500" height="220" rx="20" fill="#0a0f1e"/>
+  <rect width="500" height="220" rx="20" fill="url(#aurora-bg)"/>
+  <rect x="1" y="1" width="498" height="218" rx="19" fill="none" stroke="#2a4a5a" stroke-width="1"/>
+  
+  <g transform="translate(35, 45)">
+    <text class="label">Current Streak</text>
+    <text y="34" class="stat">🔥 {{currentStreak}}</text>
+    <text y="54" class="date">{{currentStreakDate}}</text>
+  </g>
+  <g transform="translate(200, 45)">
+    <text class="label">Personal Best</text>
+    <text y="34" class="stat">🏆 {{personalBest}}</text>
+    <text y="54" class="date">{{personalBestDate}}</text>
+  </g>
+  <g transform="translate(370, 45)">
+    <text class="label">Total</text>
+    <text y="34" class="stat">✨ {{totalContribs}}+</text>
+    <text y="54" class="date">{{totalContribsDate}}</text>
+  </g>
+  
+  <g transform="translate(35, 130)">
+    <rect x="0" width="56" height="52" rx="10" fill="var(--l{{day0Level}})" opacity="0.9"/>
+    <text x="28" y="16" text-anchor="middle" font-size="9" fill="#4a6a7a">{{day0Label}}</text>
+    <text x="28" y="38" text-anchor="middle" font-size="13" font-weight="bold" fill="var(--text-l{{day0Level}})">{{day0Count}}</text>
+    
+    <rect x="64" width="56" height="52" rx="10" fill="var(--l{{day1Level}})" opacity="0.9"/>
+    <text x="92" y="16" text-anchor="middle" font-size="9" fill="#4a6a7a">{{day1Label}}</text>
+    <text x="92" y="38" text-anchor="middle" font-size="13" font-weight="bold" fill="var(--text-l{{day1Level}})">{{day1Count}}</text>
+    
+    <rect x="128" width="56" height="52" rx="10" fill="var(--l{{day2Level}})" opacity="0.9"/>
+    <text x="156" y="16" text-anchor="middle" font-size="9" fill="#4a6a7a">{{day2Label}}</text>
+    <text x="156" y="38" text-anchor="middle" font-size="13" font-weight="bold" fill="var(--text-l{{day2Level}})">{{day2Count}}</text>
+    
+    <rect x="192" width="56" height="52" rx="10" fill="var(--l{{day3Level}})" opacity="0.9"/>
+    <text x="220" y="16" text-anchor="middle" font-size="9" fill="#4a6a7a">{{day3Label}}</text>
+    <text x="220" y="38" text-anchor="middle" font-size="13" font-weight="bold" fill="var(--text-l{{day3Level}})">{{day3Count}}</text>
+    
+    <rect x="256" width="56" height="52" rx="10" fill="var(--l{{day4Level}})" opacity="0.9"/>
+    <text x="284" y="16" text-anchor="middle" font-size="9" fill="#4a6a7a">{{day4Label}}</text>
+    <text x="284" y="38" text-anchor="middle" font-size="13" font-weight="bold" fill="var(--text-l{{day4Level}})">{{day4Count}}</text>
+    
+    <rect x="320" width="56" height="52" rx="10" fill="var(--l{{day5Level}})" opacity="0.9"/>
+    <text x="348" y="16" text-anchor="middle" font-size="9" fill="#4a6a7a">{{day5Label}}</text>
+    <text x="348" y="38" text-anchor="middle" font-size="13" font-weight="bold" fill="var(--text-l{{day5Level}})">{{day5Count}}</text>
+    
+    <rect x="384" width="56" height="52" rx="10" fill="var(--l{{day6Level}})" opacity="0.9"/>
+    <text x="412" y="16" text-anchor="middle" font-size="9" fill="#4a6a7a">{{day6Label}}</text>
+    <text x="412" y="38" text-anchor="middle" font-size="13" font-weight="bold" fill="var(--text-l{{day6Level}})">{{day6Count}}</text>
+  </g>
+  
+  <text x="480" y="210" text-anchor="end" font-size="8" fill="#2a4a5a">{{lastUpdated}}</text>
+</svg>`,
+    cyberpunkMatrix: `<svg width="460" height="190" viewBox="0 0 460 190" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    :root { --l0: #0a0a0a; --l1: #002200; --l2: #004400; --l3: #008800; --l4: #00ff41; --text-l0: #003300; --text-l1: #00aa00; --text-l2: #00dd00; --text-l3: #00ff41; --text-l4: #000000; }
+    @keyframes scanline {
+      0% { transform: translateY(-190px); }
+      100% { transform: translateY(190px); }
+    }
+    @keyframes flicker {
+      0%, 100% { opacity: 1; }
+      92% { opacity: 1; }
+      93% { opacity: 0.3; }
+      94% { opacity: 1; }
+      96% { opacity: 0.8; }
+      97% { opacity: 1; }
+    }
+    @keyframes cursorBlink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+    .screen { animation: flicker 5s linear infinite; }
+    .label { font: bold 10px monospace; fill: #00aa00; text-transform: uppercase; letter-spacing: 2px; }
+    .stat { font: bold 24px monospace; fill: #00ff41; }
+    .date { font: 9px monospace; fill: #005500; }
+    .cursor { animation: cursorBlink 1s steps(1) infinite; }
+    .scanline-bar { animation: scanline 4s linear infinite; }
+  </style>
+  <rect width="460" height="190" rx="8" fill="#0a0a0a"/>
+  <rect x="1" y="1" width="458" height="188" rx="7" fill="none" stroke="#00ff41" stroke-width="1" opacity="0.3"/>
+  
+  <rect x="0" y="0" width="460" height="4" fill="#00ff41" opacity="0.05" class="scanline-bar"/>
+  
+  <g class="screen">
+    <g transform="translate(25, 35)">
+      <text class="label">$ streak.current</text>
+      <text y="28" class="stat">{{currentStreak}}<tspan class="cursor" font-size="24">_</tspan></text>
+      <text y="46" class="date">{{currentStreakDate}}</text>
+    </g>
+    <g transform="translate(185, 35)">
+      <text class="label">$ streak.best</text>
+      <text y="28" class="stat">{{personalBest}}</text>
+      <text y="46" class="date">{{personalBestDate}}</text>
+    </g>
+    <g transform="translate(335, 35)">
+      <text class="label">$ total</text>
+      <text y="28" class="stat">{{totalContribs}}</text>
+      <text y="46" class="date">{{totalContribsDate}}</text>
+    </g>
+    
+    <g transform="translate(25, 110)">
+      <rect x="0" width="50" height="46" rx="2" fill="var(--l{{day0Level}})" stroke="#003300" stroke-width="1"/>
+      <text x="25" y="14" text-anchor="middle" font-size="8" font-family="monospace" fill="#005500">{{day0Label}}</text>
+      <text x="25" y="34" text-anchor="middle" font-size="12" font-weight="bold" font-family="monospace" fill="var(--text-l{{day0Level}})">{{day0Count}}</text>
+      
+      <rect x="58" width="50" height="46" rx="2" fill="var(--l{{day1Level}})" stroke="#003300" stroke-width="1"/>
+      <text x="83" y="14" text-anchor="middle" font-size="8" font-family="monospace" fill="#005500">{{day1Label}}</text>
+      <text x="83" y="34" text-anchor="middle" font-size="12" font-weight="bold" font-family="monospace" fill="var(--text-l{{day1Level}})">{{day1Count}}</text>
+      
+      <rect x="116" width="50" height="46" rx="2" fill="var(--l{{day2Level}})" stroke="#003300" stroke-width="1"/>
+      <text x="141" y="14" text-anchor="middle" font-size="8" font-family="monospace" fill="#005500">{{day2Label}}</text>
+      <text x="141" y="34" text-anchor="middle" font-size="12" font-weight="bold" font-family="monospace" fill="var(--text-l{{day2Level}})">{{day2Count}}</text>
+      
+      <rect x="174" width="50" height="46" rx="2" fill="var(--l{{day3Level}})" stroke="#003300" stroke-width="1"/>
+      <text x="199" y="14" text-anchor="middle" font-size="8" font-family="monospace" fill="#005500">{{day3Label}}</text>
+      <text x="199" y="34" text-anchor="middle" font-size="12" font-weight="bold" font-family="monospace" fill="var(--text-l{{day3Level}})">{{day3Count}}</text>
+      
+      <rect x="232" width="50" height="46" rx="2" fill="var(--l{{day4Level}})" stroke="#003300" stroke-width="1"/>
+      <text x="257" y="14" text-anchor="middle" font-size="8" font-family="monospace" fill="#005500">{{day4Label}}</text>
+      <text x="257" y="34" text-anchor="middle" font-size="12" font-weight="bold" font-family="monospace" fill="var(--text-l{{day4Level}})">{{day4Count}}</text>
+      
+      <rect x="290" width="50" height="46" rx="2" fill="var(--l{{day5Level}})" stroke="#003300" stroke-width="1"/>
+      <text x="315" y="14" text-anchor="middle" font-size="8" font-family="monospace" fill="#005500">{{day5Label}}</text>
+      <text x="315" y="34" text-anchor="middle" font-size="12" font-weight="bold" font-family="monospace" fill="var(--text-l{{day5Level}})">{{day5Count}}</text>
+      
+      <rect x="348" width="50" height="46" rx="2" fill="var(--l{{day6Level}})" stroke="#003300" stroke-width="1"/>
+      <text x="373" y="14" text-anchor="middle" font-size="8" font-family="monospace" fill="#005500">{{day6Label}}</text>
+      <text x="373" y="34" text-anchor="middle" font-size="12" font-weight="bold" font-family="monospace" fill="var(--text-l{{day6Level}})">{{day6Count}}</text>
+    </g>
+  </g>
+  
+  <text x="440" y="182" text-anchor="end" font-size="7" font-family="monospace" fill="#003300">{{lastUpdated}}</text>
+</svg>`,
+    oceanWaves: `<svg width="520" height="210" viewBox="0 0 520 210" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    :root { --l0: #0a1628; --l1: #0d3b66; --l2: #1a6baa; --l3: #3a9ed8; --l4: #7dd3fc; --text-l0: #3a5a7a; --text-l1: #7abadd; --text-l2: #b0e0ff; --text-l3: #ffffff; --text-l4: #0a1628; }
+    @keyframes wave1 {
+      0%, 100% { d: path("M0,180 C80,170 160,195 260,180 C360,165 440,190 520,175 L520,210 L0,210 Z"); }
+      50% { d: path("M0,185 C80,195 160,170 260,185 C360,190 440,175 520,185 L520,210 L0,210 Z"); }
+    }
+    @keyframes wave2 {
+      0%, 100% { d: path("M0,190 C100,182 200,198 300,188 C400,178 480,195 520,188 L520,210 L0,210 Z"); }
+      50% { d: path("M0,192 C100,198 200,182 300,192 C400,198 480,185 520,192 L520,210 L0,210 Z"); }
+    }
+    .wave-1 { animation: wave1 6s ease-in-out infinite; fill: #1a4a6a; opacity: 0.5; }
+    .wave-2 { animation: wave2 4s ease-in-out infinite; fill: #0d3b66; opacity: 0.3; }
+    .label { font: bold 11px sans-serif; fill: #7dd3fc; text-transform: uppercase; letter-spacing: 1.5px; }
+    .stat { font: bold 28px sans-serif; fill: #e0f4ff; }
+    .date { font: 10px sans-serif; fill: #3a5a7a; }
+  </style>
+  <defs>
+    <linearGradient id="ocean-sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0a1628"/>
+      <stop offset="100%" stop-color="#0d3b66"/>
+    </linearGradient>
+  </defs>
+  <rect width="520" height="210" rx="20" fill="url(#ocean-sky)"/>
+  <path class="wave-2" d="M0,190 C100,182 200,198 300,188 C400,178 480,195 520,188 L520,210 L0,210 Z" rx="20"/>
+  <path class="wave-1" d="M0,180 C80,170 160,195 260,180 C360,165 440,190 520,175 L520,210 L0,210 Z" rx="20"/>
+  <rect x="1" y="1" width="518" height="208" rx="19" fill="none" stroke="#1a4a6a" stroke-width="1"/>
+  
+  <g transform="translate(35, 40)">
+    <text class="label">Current Streak</text>
+    <text y="34" class="stat">🌊 {{currentStreak}}</text>
+    <text y="54" class="date">{{currentStreakDate}}</text>
+  </g>
+  <g transform="translate(210, 40)">
+    <text class="label">Personal Best</text>
+    <text y="34" class="stat">⚡ {{personalBest}}</text>
+    <text y="54" class="date">{{personalBestDate}}</text>
+  </g>
+  <g transform="translate(390, 40)">
+    <text class="label">Total</text>
+    <text y="34" class="stat">{{totalContribs}}+</text>
+    <text y="54" class="date">{{totalContribsDate}}</text>
+  </g>
+  
+  <g transform="translate(35, 115)">
+    <rect x="0" width="58" height="44" rx="10" fill="var(--l{{day0Level}})" opacity="0.85"/>
+    <text x="29" y="14" text-anchor="middle" font-size="9" fill="#3a5a7a">{{day0Label}}</text>
+    <text x="29" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day0Level}})">{{day0Count}}</text>
+    
+    <rect x="66" width="58" height="44" rx="10" fill="var(--l{{day1Level}})" opacity="0.85"/>
+    <text x="95" y="14" text-anchor="middle" font-size="9" fill="#3a5a7a">{{day1Label}}</text>
+    <text x="95" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day1Level}})">{{day1Count}}</text>
+    
+    <rect x="132" width="58" height="44" rx="10" fill="var(--l{{day2Level}})" opacity="0.85"/>
+    <text x="161" y="14" text-anchor="middle" font-size="9" fill="#3a5a7a">{{day2Label}}</text>
+    <text x="161" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day2Level}})">{{day2Count}}</text>
+    
+    <rect x="198" width="58" height="44" rx="10" fill="var(--l{{day3Level}})" opacity="0.85"/>
+    <text x="227" y="14" text-anchor="middle" font-size="9" fill="#3a5a7a">{{day3Label}}</text>
+    <text x="227" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day3Level}})">{{day3Count}}</text>
+    
+    <rect x="264" width="58" height="44" rx="10" fill="var(--l{{day4Level}})" opacity="0.85"/>
+    <text x="293" y="14" text-anchor="middle" font-size="9" fill="#3a5a7a">{{day4Label}}</text>
+    <text x="293" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day4Level}})">{{day4Count}}</text>
+    
+    <rect x="330" width="58" height="44" rx="10" fill="var(--l{{day5Level}})" opacity="0.85"/>
+    <text x="359" y="14" text-anchor="middle" font-size="9" fill="#3a5a7a">{{day5Label}}</text>
+    <text x="359" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day5Level}})">{{day5Count}}</text>
+    
+    <rect x="396" width="58" height="44" rx="10" fill="var(--l{{day6Level}})" opacity="0.85"/>
+    <text x="425" y="14" text-anchor="middle" font-size="9" fill="#3a5a7a">{{day6Label}}</text>
+    <text x="425" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day6Level}})">{{day6Count}}</text>
+  </g>
+  
+  <text x="500" y="200" text-anchor="end" font-size="8" fill="#1a4a6a">{{lastUpdated}}</text>
+</svg>`,
+    fireEmber: `<svg width="440" height="200" viewBox="0 0 440 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    :root { --l0: #1a0a00; --l1: #3a1500; --l2: #7a2a00; --l3: #cc4400; --l4: #ff6a00; --text-l0: #553300; --text-l1: #cc7700; --text-l2: #ffaa00; --text-l3: #ffffff; --text-l4: #ffffff; }
+    @keyframes emberFloat1 {
+      0%, 100% { transform: translateY(0px); opacity: 0.6; }
+      50% { transform: translateY(-8px); opacity: 1; }
+    }
+    @keyframes emberFloat2 {
+      0%, 100% { transform: translateY(0px); opacity: 0.4; }
+      50% { transform: translateY(-12px); opacity: 0.8; }
+    }
+    @keyframes emberFloat3 {
+      0%, 100% { transform: translateY(0px); opacity: 0.5; }
+      50% { transform: translateY(-6px); opacity: 0.9; }
+    }
+    @keyframes fireGlow {
+      0%, 100% { stop-color: #1a0500; }
+      50% { stop-color: #2a1000; }
+    }
+    .ember1 { animation: emberFloat1 3s ease-in-out infinite; }
+    .ember2 { animation: emberFloat2 4s ease-in-out infinite 0.5s; }
+    .ember3 { animation: emberFloat3 3.5s ease-in-out infinite 1s; }
+    .label { font: bold 11px sans-serif; fill: #ff8c00; text-transform: uppercase; letter-spacing: 1px; }
+    .stat { font: bold 26px sans-serif; fill: #ffe0b0; }
+    .date { font: 10px sans-serif; fill: #664400; }
+  </style>
+  <defs>
+    <radialGradient id="fire-glow" cx="50%" cy="80%" r="60%">
+      <stop offset="0%" stop-color="#3a1500" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#0a0200" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="440" height="200" rx="16" fill="#0a0200"/>
+  <rect width="440" height="200" rx="16" fill="url(#fire-glow)"/>
+  <rect x="1" y="1" width="438" height="198" rx="15" fill="none" stroke="#3a1500" stroke-width="1.5"/>
+  
+  <circle cx="80" cy="180" r="2" fill="#ff6a00" class="ember1"/>
+  <circle cx="200" cy="185" r="1.5" fill="#ffaa00" class="ember2"/>
+  <circle cx="320" cy="178" r="1.8" fill="#ff8800" class="ember3"/>
+  <circle cx="140" cy="175" r="1" fill="#ff4400" class="ember2"/>
+  <circle cx="380" cy="182" r="1.2" fill="#ffcc00" class="ember1"/>
+  
+  <g transform="translate(30, 40)">
+    <text class="label">🔥 Current Streak</text>
+    <text y="34" class="stat">{{currentStreak}}</text>
+    <text y="54" class="date">{{currentStreakDate}}</text>
+  </g>
+  <g transform="translate(180, 40)">
+    <text class="label">🏆 Personal Best</text>
+    <text y="34" class="stat">{{personalBest}}</text>
+    <text y="54" class="date">{{personalBestDate}}</text>
+  </g>
+  <g transform="translate(330, 40)">
+    <text class="label">Total</text>
+    <text y="34" class="stat">{{totalContribs}}+</text>
+    <text y="54" class="date">{{totalContribsDate}}</text>
+  </g>
+  
+  <g transform="translate(30, 120)">
+    <rect x="0" width="50" height="44" rx="8" fill="var(--l{{day0Level}})"/>
+    <text x="25" y="14" text-anchor="middle" font-size="9" fill="#664400">{{day0Label}}</text>
+    <text x="25" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day0Level}})">{{day0Count}}</text>
+    
+    <rect x="58" width="50" height="44" rx="8" fill="var(--l{{day1Level}})"/>
+    <text x="83" y="14" text-anchor="middle" font-size="9" fill="#664400">{{day1Label}}</text>
+    <text x="83" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day1Level}})">{{day1Count}}</text>
+    
+    <rect x="116" width="50" height="44" rx="8" fill="var(--l{{day2Level}})"/>
+    <text x="141" y="14" text-anchor="middle" font-size="9" fill="#664400">{{day2Label}}</text>
+    <text x="141" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day2Level}})">{{day2Count}}</text>
+    
+    <rect x="174" width="50" height="44" rx="8" fill="var(--l{{day3Level}})"/>
+    <text x="199" y="14" text-anchor="middle" font-size="9" fill="#664400">{{day3Label}}</text>
+    <text x="199" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day3Level}})">{{day3Count}}</text>
+    
+    <rect x="232" width="50" height="44" rx="8" fill="var(--l{{day4Level}})"/>
+    <text x="257" y="14" text-anchor="middle" font-size="9" fill="#664400">{{day4Label}}</text>
+    <text x="257" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day4Level}})">{{day4Count}}</text>
+    
+    <rect x="290" width="50" height="44" rx="8" fill="var(--l{{day5Level}})"/>
+    <text x="315" y="14" text-anchor="middle" font-size="9" fill="#664400">{{day5Label}}</text>
+    <text x="315" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day5Level}})">{{day5Count}}</text>
+    
+    <rect x="348" width="50" height="44" rx="8" fill="var(--l{{day6Level}})"/>
+    <text x="373" y="14" text-anchor="middle" font-size="9" fill="#664400">{{day6Label}}</text>
+    <text x="373" y="34" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day6Level}})">{{day6Count}}</text>
+  </g>
+  
+  <text x="420" y="192" text-anchor="end" font-size="8" fill="#442200">{{lastUpdated}}</text>
+</svg>`,
+    midnightCity: `<svg width="550" height="240" viewBox="0 0 550 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    :root { --l0: #0f0f1a; --l1: #1a1a3a; --l2: #3a3a6a; --l3: #6a6aaa; --l4: #aaaaff; --text-l0: #3a3a5a; --text-l1: #7a7aaa; --text-l2: #bbbbee; --text-l3: #ffffff; --text-l4: #0f0f1a; }
+    @keyframes starTwinkle1 {
+      0%, 100% { opacity: 0.3; r: 1; }
+      50% { opacity: 1; r: 1.5; }
+    }
+    @keyframes starTwinkle2 {
+      0%, 100% { opacity: 0.5; r: 0.8; }
+      50% { opacity: 0.9; r: 1.2; }
+    }
+    @keyframes starTwinkle3 {
+      0%, 100% { opacity: 0.2; r: 1.2; }
+      50% { opacity: 0.8; r: 1.8; }
+    }
+    @keyframes buildingGlow {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.8; }
+    }
+    .star1 { animation: starTwinkle1 3s ease-in-out infinite; }
+    .star2 { animation: starTwinkle2 4s ease-in-out infinite 1s; }
+    .star3 { animation: starTwinkle3 5s ease-in-out infinite 2s; }
+    .bldg-win { animation: buildingGlow 2s ease-in-out infinite; }
+    .label { font: bold 11px sans-serif; fill: #8888cc; text-transform: uppercase; letter-spacing: 1.5px; }
+    .stat { font: bold 30px sans-serif; fill: #ddddff; }
+    .date { font: 10px sans-serif; fill: #4a4a6a; }
+  </style>
+  <defs>
+    <linearGradient id="night-sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#05051a"/>
+      <stop offset="60%" stop-color="#0f0f2a"/>
+      <stop offset="100%" stop-color="#1a1a3a"/>
+    </linearGradient>
+  </defs>
+  <rect width="550" height="240" rx="20" fill="url(#night-sky)"/>
+  
+  <circle cx="50" cy="25" r="1" fill="#ffffff" class="star1"/>
+  <circle cx="120" cy="15" r="0.8" fill="#aaaaff" class="star2"/>
+  <circle cx="200" cy="30" r="1.2" fill="#ffffff" class="star3"/>
+  <circle cx="280" cy="12" r="0.8" fill="#ccccff" class="star1"/>
+  <circle cx="350" cy="22" r="1" fill="#ffffff" class="star2"/>
+  <circle cx="420" cy="18" r="0.6" fill="#aaaaff" class="star3"/>
+  <circle cx="480" cy="28" r="1.2" fill="#ffffff" class="star1"/>
+  <circle cx="160" cy="10" r="0.5" fill="#ddddff" class="star3"/>
+  <circle cx="510" cy="14" r="0.7" fill="#ccccff" class="star2"/>
+  
+  <rect x="30" y="195" width="18" height="45" rx="2" fill="#1a1a2a"/>
+  <rect x="36" y="202" width="4" height="4" rx="1" fill="#ffcc44" class="bldg-win" opacity="0.6"/>
+  <rect x="36" y="210" width="4" height="4" rx="1" fill="#ffcc44" opacity="0.3"/>
+  <rect x="60" y="180" width="22" height="60" rx="2" fill="#15152a"/>
+  <rect x="66" y="186" width="4" height="4" rx="1" fill="#88aaff" class="bldg-win" opacity="0.5"/>
+  <rect x="72" y="186" width="4" height="4" rx="1" fill="#ffcc44" opacity="0.3"/>
+  <rect x="66" y="196" width="4" height="4" rx="1" fill="#ffcc44" class="bldg-win" opacity="0.4"/>
+  <rect x="460" y="188" width="20" height="52" rx="2" fill="#1a1a2a"/>
+  <rect x="466" y="194" width="4" height="4" rx="1" fill="#ffcc44" class="bldg-win" opacity="0.5"/>
+  <rect x="490" y="200" width="16" height="40" rx="2" fill="#15152a"/>
+  <rect x="496" y="206" width="4" height="4" rx="1" fill="#88aaff" class="bldg-win" opacity="0.4"/>
+  
+  <rect x="1" y="1" width="548" height="238" rx="19" fill="none" stroke="#2a2a4a" stroke-width="1"/>
+  
+  <g transform="translate(100, 45)">
+    <text class="label">Current Streak</text>
+    <text y="38" class="stat">🌙 {{currentStreak}}</text>
+    <text y="58" class="date">{{currentStreakDate}}</text>
+  </g>
+  <g transform="translate(260, 45)">
+    <text class="label">Personal Best</text>
+    <text y="38" class="stat">⭐ {{personalBest}}</text>
+    <text y="58" class="date">{{personalBestDate}}</text>
+  </g>
+  <g transform="translate(420, 45)">
+    <text class="label">Total</text>
+    <text y="38" class="stat">{{totalContribs}}+</text>
+    <text y="58" class="date">{{totalContribsDate}}</text>
+  </g>
+  
+  <g transform="translate(100, 130)">
+    <rect x="0" width="44" height="44" rx="22" fill="var(--l{{day0Level}})"/>
+    <text x="22" y="15" text-anchor="middle" font-size="8" fill="#4a4a6a">{{day0Label}}</text>
+    <text x="22" y="32" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day0Level}})">{{day0Count}}</text>
+    
+    <rect x="52" width="44" height="44" rx="22" fill="var(--l{{day1Level}})"/>
+    <text x="74" y="15" text-anchor="middle" font-size="8" fill="#4a4a6a">{{day1Label}}</text>
+    <text x="74" y="32" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day1Level}})">{{day1Count}}</text>
+    
+    <rect x="104" width="44" height="44" rx="22" fill="var(--l{{day2Level}})"/>
+    <text x="126" y="15" text-anchor="middle" font-size="8" fill="#4a4a6a">{{day2Label}}</text>
+    <text x="126" y="32" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day2Level}})">{{day2Count}}</text>
+    
+    <rect x="156" width="44" height="44" rx="22" fill="var(--l{{day3Level}})"/>
+    <text x="178" y="15" text-anchor="middle" font-size="8" fill="#4a4a6a">{{day3Label}}</text>
+    <text x="178" y="32" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day3Level}})">{{day3Count}}</text>
+    
+    <rect x="208" width="44" height="44" rx="22" fill="var(--l{{day4Level}})"/>
+    <text x="230" y="15" text-anchor="middle" font-size="8" fill="#4a4a6a">{{day4Label}}</text>
+    <text x="230" y="32" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day4Level}})">{{day4Count}}</text>
+    
+    <rect x="260" width="44" height="44" rx="22" fill="var(--l{{day5Level}})"/>
+    <text x="282" y="15" text-anchor="middle" font-size="8" fill="#4a4a6a">{{day5Label}}</text>
+    <text x="282" y="32" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day5Level}})">{{day5Count}}</text>
+    
+    <rect x="312" width="44" height="44" rx="22" fill="var(--l{{day6Level}})"/>
+    <text x="334" y="15" text-anchor="middle" font-size="8" fill="#4a4a6a">{{day6Label}}</text>
+    <text x="334" y="32" text-anchor="middle" font-size="12" font-weight="bold" fill="var(--text-l{{day6Level}})">{{day6Count}}</text>
+  </g>
+  
+  <text x="530" y="230" text-anchor="end" font-size="8" fill="#2a2a4a">{{lastUpdated}}</text>
+</svg>`,
+    tripleColumnPulse: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 195" width="500" height="195">
+  <style>
+    @keyframes currstreak {
+      0% { font-size: 3px; opacity: 0.2; }
+      80% { font-size: 34px; opacity: 1; }
+      100% { font-size: 28px; opacity: 1; }
+    }
+    @keyframes fadein {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    .text-title { font-family: system-ui, sans-serif; font-weight: 400; font-size: 14px; fill: #A6ACCD; opacity: 0; animation: fadein 0.5s linear forwards 0.7s; }
+    .text-stat { font-family: system-ui, sans-serif; font-weight: 700; font-size: 28px; fill: #FFFFFF; opacity: 0; animation: fadein 0.5s linear forwards 0.6s; }
+    .text-date { font-family: system-ui, sans-serif; font-weight: 400; font-size: 12px; fill: #717CB4; opacity: 0; animation: fadein 0.5s linear forwards 0.8s; }
+    .streak-stat { font-family: system-ui, sans-serif; font-weight: 700; font-size: 28px; fill: #F7768E; animation: currstreak 0.6s linear forwards; }
+    .streak-title { font-family: system-ui, sans-serif; font-weight: 700; font-size: 14px; fill: #F7768E; opacity: 0; animation: fadein 0.5s linear forwards 0.9s; }
+  </style>
+  <defs>
+    <clipPath id="outer_rect">
+      <rect width="500" height="195" rx="16"/>
+    </clipPath>
+    <mask id="ring_mask">
+      <rect width="500" height="195" fill="white"/>
+      <ellipse cx="250" cy="32" rx="13" ry="18" fill="black"/>
+    </mask>
+    <linearGradient id="fireGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#ffcc00" />
+      <stop offset="40%" stop-color="#ff6600" />
+      <stop offset="100%" stop-color="#cc0000" />
+    </linearGradient>
+  </defs>
+  
+  <g clip-path="url(#outer_rect)">
+    <rect width="500" height="195" rx="16" fill="#1A1B26"/>
+    
+    <line x1="166" y1="30" x2="166" y2="165" stroke="#292E42" stroke-width="2" stroke-linecap="round"/>
+    <line x1="334" y1="30" x2="334" y2="165" stroke="#292E42" stroke-width="2" stroke-linecap="round"/>
+    
+    <g transform="translate(83, 48)">
+      <text x="0" y="32" text-anchor="middle" class="text-stat">{{totalContribs}}</text>
+    </g>
+    <g transform="translate(83, 84)">
+      <text x="0" y="32" text-anchor="middle" class="text-title">Total Contributions</text>
+    </g>
+    <g transform="translate(83, 114)">
+      <text x="0" y="32" text-anchor="middle" class="text-date">{{totalContribsDate}}</text>
+    </g>
+
+    <g transform="translate(250, 108)">
+      <text x="0" y="32" text-anchor="middle" class="streak-title">Current Streak</text>
+    </g>
+    <g transform="translate(250, 145)">
+      <text x="0" y="21" text-anchor="middle" class="text-date" style="animation-delay: 0.9s;">{{currentStreakDate}}</text>
+    </g>
+    <g mask="url(#ring_mask)">
+      <circle cx="250" cy="71" r="40" fill="none" stroke="#73DACA" stroke-width="4" style="opacity: 0; animation: fadein 0.5s linear forwards 0.4s"/>
+    </g>
+    <g transform="translate(250, 19.5)" style="opacity: 0; animation: fadein 0.5s linear forwards 0.6s">
+      <path d="M 1.5 0.67 C 1.5 0.67 2.24 3.32 2.24 5.47 C 2.24 7.53 0.89 9.2 -1.17 9.2 C -3.23 9.2 -4.79 7.53 -4.79 5.47 L -4.76 5.11 C -6.78 7.51 -8 10.62 -8 13.99 C -8 18.41 -4.42 22 0 22 C 4.42 22 8 18.41 8 13.99 C 8 8.6 5.41 3.79 1.5 0.67 Z M -0.29 19 C -2.07 19 -3.51 17.6 -3.51 15.86 C -3.51 14.24 -2.46 13.1 -0.7 12.74 C 1.07 12.38 2.9 11.53 3.92 10.16 C 4.31 11.45 4.51 12.81 4.51 14.2 C 4.51 16.85 2.36 19 -0.29 19 Z" fill="url(#fireGrad)"/>
+    </g>
+    <g transform="translate(250, 48)">
+      <text x="0" y="32" text-anchor="middle" class="streak-stat">{{currentStreak}}</text>
+    </g>
+
+    <g transform="translate(416, 48)">
+      <text x="0" y="32" text-anchor="middle" class="text-stat" style="animation-delay: 1.2s;">{{personalBest}}</text>
+    </g>
+    <g transform="translate(416, 84)">
+      <text x="0" y="32" text-anchor="middle" class="text-title" style="animation-delay: 1.3s;">Personal Best</text>
+    </g>
+    <g transform="translate(416, 114)">
+      <text x="0" y="32" text-anchor="middle" class="text-date" style="animation-delay: 1.4s;">{{personalBestDate}}</text>
+    </g>
+  </g>
+  <text x="490" y="185" text-anchor="end" font-family="system-ui, sans-serif" font-size="10" fill="#414868">{{lastUpdated}}</text>
 </svg>`
   }
 
@@ -581,16 +1419,31 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <select id="template-select" class="theme-select" onchange="loadTemplate()">
-                  <option value="default">Default</option>
-                  <option value="catppuccin">Catppuccin</option>
-                  <option value="nord">Nord</option>
-                  <option value="dracula">Dracula</option>
-                  <option value="monokai">Monokai</option>
-                  <option value="synthwave">Synthwave</option>
-                  <option value="solarizedDark">Solarized Dark</option>
-                  <option value="solarizedLight">Solarized Light</option>
-                  <option value="onedark">One Dark</option>
-                  <option value="gruvbox">Gruvbox</option>
+                  <optgroup label="Standard Themes">
+                    <option value="default">Default</option>
+                    <option value="catppuccin">Catppuccin</option>
+                    <option value="nord">Nord</option>
+                    <option value="dracula">Dracula</option>
+                    <option value="monokai">Monokai</option>
+                    <option value="synthwave">Synthwave</option>
+                    <option value="solarizedDark">Solarized Dark</option>
+                    <option value="solarizedLight">Solarized Light</option>
+                    <option value="onedark">One Dark</option>
+                    <option value="gruvbox">Gruvbox</option>
+                  </optgroup>
+                  <optgroup label="Advanced Themes">
+                    <option value="animatedGradient">✨ Animated Gradient</option>
+                    <option value="compactMinimal">📦 Compact Minimal</option>
+                    <option value="verticalCard">📐 Vertical Card</option>
+                    <option value="glassmorphism">💎 Glassmorphism</option>
+                    <option value="neonPulse">💜 Neon Pulse</option>
+                    <option value="auroraBorealis">🌌 Aurora Borealis</option>
+                    <option value="cyberpunkMatrix">🖥️ Cyberpunk Matrix</option>
+                    <option value="oceanWaves">🌊 Ocean Waves</option>
+                    <option value="fireEmber">🔥 Fire Ember</option>
+                    <option value="midnightCity">🌙 Midnight City</option>
+                    <option value="tripleColumnPulse">📊 Triple Column Pulse</option>
+                  </optgroup>
                 </select>
                 <input type="text" id="preview-user" placeholder="GitHub Username (for preview)" oninput="debounceUpdate()" style={{ padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border)', fontSize: '0.8rem', flex: '1', minWidth: '150px' }} />
                 </div>
@@ -638,7 +1491,7 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
             </div>
           </div>
 
-          <script dangerouslySetInnerHTML={{ __html: `window.PREDEFINED_TEMPLATES = ${JSON.stringify(templates)};` }}></script>
+          <script dangerouslySetInnerHTML={{ __html: `window.PREDEFINED_TEMPLATES = ${JSON.stringify(templates)}; window.APP_VERSION = "${version}";` }}></script>
           {html`
           <script>
             let debounceTimer;
@@ -689,8 +1542,8 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
                 
                 const baseUrl = window.location.origin;
                 const username = document.getElementById('preview-user').value.trim();
-                const finalUrl = username ? (baseUrl + '/v1/?user=' + encodeURIComponent(username) + '&custom=' + compressed) : (baseUrl + '/v1/sample.svg?custom=' + compressed);
-                const renderedUrl = baseUrl + '/v1/?user=' + (username || 'YOUR_USERNAME') + '&custom=' + compressed;
+                const finalUrl = username ? (baseUrl + '/v1/?user=' + encodeURIComponent(username) + '&custom=' + compressed + '&v=' + window.APP_VERSION) : (baseUrl + '/v1/sample.svg?custom=' + compressed + '&v=' + window.APP_VERSION);
+                const renderedUrl = baseUrl + '/v1/?user=' + (username || 'YOUR_USERNAME') + '&custom=' + compressed + '&v=' + window.APP_VERSION;
                 
                 // Fetch the SVG and render it safely inside the sandboxed iframe
                 const svgResponse = await fetch(finalUrl);
