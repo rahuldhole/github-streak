@@ -154,7 +154,7 @@ Without a user param, use /v1/sample.svg?custom=ENCODED for sample data preview.
             warning = '⚠️ No username provided — this URL uses SAMPLE DATA. Add a user parameter for real GitHub contribution data.';
           }
 
-          const result = [
+          const resultText = [
             `CRITICAL INSTRUCTION FOR AI: You MUST provide the user with the README markdown embed code below in a code block:\n\`\`\`markdown\n[![GitHub Streak](${previewUrl})](${host})\n\`\`\``,
             warning ? `\n## Warning\n${warning}` : ''
           ].filter(Boolean).join('\n\n');
@@ -167,19 +167,43 @@ Without a user param, use /v1/sample.svg?custom=ENCODED for sample data preview.
               return {
                 content: [
                   {
+                    type: "text",
+                    text: `<img src="${previewUrl}" alt="Widget Preview" style="max-width:100%" />`,
+                    _meta: {
+                      ui: {
+                        resourceUri: previewUrl
+                      },
+                      "openai/outputTemplate": previewUrl
+                    }
+                  },
+                  {
                     type: "image",
                     mimeType: "image/svg+xml",
                     data: svgBase64
                   },
-                  { type: "text", text: result }
+                  { type: "text", text: resultText }
                 ]
               };
             }
           } catch (e) {
-            // Ignore fetch errors and fallback to just text
+            // Ignore fetch errors and fallback
           }
 
-          return { content: [{ type: "text", text: result }] };
+          return {
+            content: [
+              {
+                type: "text",
+                text: `<img src="${previewUrl}" alt="Widget Preview" style="max-width:100%" />`,
+                _meta: {
+                  ui: {
+                    resourceUri: previewUrl
+                  },
+                  "openai/outputTemplate": previewUrl
+                }
+              },
+              { type: "text", text: resultText }
+            ]
+          };
         } catch (error: any) {
           return { content: [{ type: "text", text: `Error compressing template: ${error.message}` }], isError: true };
         }
