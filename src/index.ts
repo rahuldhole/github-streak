@@ -182,8 +182,17 @@ async function getStreakData(c: any, queryUser: string, forceRefresh: boolean, f
     } else {
         if (newCurrentBlob && !forceRefresh && !fullRefresh && !isProfileDataMissing) {
             // Background SWR execution
-            if (c.executionCtx?.waitUntil) {
-                c.executionCtx.waitUntil(
+            let waitUntilFn: ((promise: Promise<any>) => void) | undefined
+            try {
+                if (c.executionCtx && c.executionCtx.waitUntil) {
+                    waitUntilFn = c.executionCtx.waitUntil.bind(c.executionCtx)
+                }
+            } catch (e) {
+                // Ignore missing executionCtx
+            }
+
+            if (waitUntilFn) {
+                waitUntilFn(
                     refreshUserData(c, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh, needsProfileData, newCurrentBlob).catch((err: any) => {
                       logEvent({ name: 'error', data: { type: 'background_refresh_failed', username, error: getSafeErrorMessage(err) } })
                     })
