@@ -11,22 +11,14 @@ import { ProfilePage } from './components/ProfilePage.tsx'
  * Renders the main GitHub Streak SVG card
  */
 export function renderSVG(stats: StreakStats, last7: GitHubContributionDay[], maxCount: number, theme: Theme = 'transparent', lastUpdated?: string) {
-  return (
-    <GitHubStreakSVG 
-      stats={stats} 
-      last7={last7} 
-      maxCount={maxCount} 
-      theme={theme} 
-      lastUpdated={lastUpdated}
-    />
-  )
+  return GitHubStreakSVG({ stats, last7, maxCount, theme, lastUpdated })
 }
 
 /**
  * Renders a stylized error SVG card
  */
 export function renderErrorSVG(message: string) {
-  return <ErrorSVG message={message} />
+  return ErrorSVG({ message })
 }
 
 /**
@@ -56,16 +48,14 @@ export function renderProfileSVG(
   theme: Theme = 'dark', 
   lastUpdated?: string
 ) {
-  return (
-    <ProfileSVG 
-      username={username}
-      name={name}
-      avatarUrl={avatarUrl}
-      stats={stats} 
-      last7={last7} 
-      maxCount={maxCount} 
-      theme={theme} 
-      lastUpdated={lastUpdated}
-    />
-  )
+  return ProfileSVG({
+    username,
+    name,
+    avatarUrl,
+    stats,
+    last7,
+    maxCount,
+    theme,
+    lastUpdated
+  })
 }
