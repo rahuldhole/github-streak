@@ -15,7 +15,9 @@
         "npm:@netlify/blobs@^10.7.4",
         "npm:@netlify/functions@^5.3.0",
         "npm:@resvg/resvg-wasm@^2.6.2",
+        "npm:@types/eventsource@3",
         "npm:@types/node@^26.1.1",
+        "npm:eventsource@^4.1.0",
         "npm:hono@^4.12.8",
         "npm:typescript@^7.0.2",
         "npm:zod@^4.4.3"
