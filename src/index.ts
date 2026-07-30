@@ -125,11 +125,16 @@ app.all('/mcp', async (c) => {
 
     // Send ui/initialize to host
     if (window.parent !== window) {
-      window.parent.postMessage(JSON.stringify({
+      window.parent.postMessage({
         jsonrpc: '2.0',
+        id: 1,
         method: 'ui/initialize',
-        params: { name: 'GitHub Streak Widget', version: '1.0.0' }
-      }), '*');
+        params: {
+          protocolVersion: '2024-11-05',
+          capabilities: {},
+          clientInfo: { name: 'GitHub Streak Widget', version: '1.0.0' }
+        }
+      }, '*');
     }
   </script>
 </body>
