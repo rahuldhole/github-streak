@@ -12,7 +12,82 @@ import pkg from '../package.json' with { type: 'json' }
 
 const cacheStoreVersion = pkg.cacheStoreVersion
 
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
+import { fileURLToPath } from "node:url";
+import { z } from "zod";
+
 export const app = new Hono<{ Bindings: Bindings }>()
+
+const mcpSessions = new Map<string, WebStandardStreamableHTTPServerTransport>();
+
+function setupMcpServer() {
+  const mcpServer = new McpServer({ name: "github-streak-svg-designer", version: pkg.version });
+  
+  mcpServer.registerTool("save_ai_template",
+    {
+      description: "Save an AI-designed SVG template for the GitHub Streak app.",
+      inputSchema: {
+        name: z.string(),
+        svgContent: z.string(),
+      }
+    },
+    async ({ name, svgContent }) => {
+      try {
+        const templatesFile = path.join(process.cwd(), "src", "ai-templates.json");
+        let currentTemplates: Record<string, string> = {};
+        try {
+          const fileContent = await fs.readFile(templatesFile, "utf-8");
+          currentTemplates = JSON.parse(fileContent);
+        } catch (err: any) {
+          if (err.code !== "ENOENT") throw err;
+        }
+        currentTemplates[name] = svgContent;
+        await fs.writeFile(templatesFile, JSON.stringify(currentTemplates, null, 2), "utf-8");
+        return { content: [{ type: "text", text: `Successfully saved AI template '${name}'!` }] };
+      } catch (error: any) {
+        return { content: [{ type: "text", text: `Error: ${error.message}` }], isError: true };
+      }
+    }
+  );
+
+  const transport = new WebStandardStreamableHTTPServerTransport({
+    sessionIdGenerator: () => crypto.randomUUID(),
+    onsessioninitialized: (sessionId) => {
+      mcpSessions.set(sessionId, transport);
+    },
+    onsessionclosed: (sessionId) => {
+      mcpSessions.delete(sessionId);
+    }
+  });
+  
+  mcpServer.connect(transport).catch(console.error);
+  return transport;
+}
+
+app.all('/mcp', async (c) => {
+  if (process.env.NODE_ENV === 'production') {
+    return c.text('Not found', 404);
+  }
+
+  const req = c.req.raw;
+  const url = new URL(req.url);
+  const sessionId = url.searchParams.get("sessionId");
+
+  if (req.method === "GET") {
+    const transport = setupMcpServer();
+    return transport.handleRequest(req);
+  } else if (req.method === "POST") {
+    if (!sessionId || !mcpSessions.has(sessionId)) {
+      return c.text('Session not found', 400);
+    }
+    return mcpSessions.get(sessionId)!.handleRequest(req);
+  } else {
+    return c.text('Method not allowed', 405);
+  }
+})
 
 const ipRateLimit = new Map<string, { count: number, reset: number }>()
 const RATE_LIMIT_WINDOW = 60 * 1000 

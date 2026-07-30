@@ -1,11 +1,12 @@
 /** @jsxImportSource hono/jsx */
 import { html } from 'hono/html'
 import pkg from '../../package.json' with { type: 'json' }
+import aiTemplates from '../ai-templates.json' with { type: 'json' }
 
 export function CustomizePage({ origin = '' }: { origin?: string }) {
   const version = pkg.version
 
-  const templates = {
+  const baseTemplates = {
     default: `<svg width="420" height="180" viewBox="0 0 420 180" fill="none" xmlns="http://www.w3.org/2000/svg">
   <style>
     :root { --l0: #1e293b14; --l1: #0e4429ff; --l2: #006d32ff; --l3: #26a641ff; --l4: #39d353ff; --text-l0: #c9d1d9; --text-l1: #ffffff; --text-l2: #ffffff; --text-l3: #000000; --text-l4: #000000; }\n        .label { font: bold 10px sans-serif; fill: #8b949e; text-transform: uppercase; letter-spacing: 1px; }
@@ -1361,6 +1362,8 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
 </svg>`
   }
 
+  const templates = { ...baseTemplates, ...(aiTemplates as Record<string, string>) }
+
   return (
     <>
       {html`<!DOCTYPE html>`}
@@ -1454,6 +1457,13 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
                     <option value="midnightCity">🌙 Midnight City</option>
                     <option value="tripleColumnPulse">📊 Triple Column Pulse</option>
                   </optgroup>
+                  {Object.keys(aiTemplates).length > 0 && (
+                    <optgroup label="AI Generated">
+                      {Object.keys(aiTemplates).map((key) => (
+                        <option value={key}>🤖 {key}</option>
+                      ))}
+                    </optgroup>
+                  )}
                 </select>
                 </div>
               </div>
