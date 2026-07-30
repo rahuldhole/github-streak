@@ -14,6 +14,7 @@ const cacheStoreVersion = pkg.cacheStoreVersion
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { registerAppTool, registerAppResource, RESOURCE_MIME_TYPE } from "@modelcontextprotocol/ext-apps/server";
 
 export const app = new Hono<{ Bindings: Bindings }>()
 
@@ -67,15 +68,7 @@ app.all('/mcp', async (c) => {
     });
 
     // Register the UI resource that ChatGPT/Claude/etc will render in an iframe
-    mcpServer.resource(
-      "github-streak-widget",
-      WIDGET_RESOURCE_URI,
-      { mimeType: "text/html" },
-      async () => ({
-        contents: [{
-          uri: WIDGET_RESOURCE_URI,
-          mimeType: "text/html",
-          text: `<!DOCTYPE html>
+    const widgetHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -101,13 +94,11 @@ app.all('/mcp', async (c) => {
     function handleMessage(event) {
       try {
         const msg = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-        // Handle both ui/toolResult and direct structured content
         const result = msg?.params?.result || msg?.result || msg;
         const structured = result?.structuredContent || result;
         if (structured?.previewUrl) {
           renderWidget(structured);
         }
-        // Also check content array for text with URLs
         const content = result?.content || [];
         for (const c of content) {
           if (c.type === 'image' && c.data) {
@@ -118,7 +109,7 @@ app.all('/mcp', async (c) => {
             return;
           }
         }
-      } catch(e) { /* ignore non-MCP messages */ }
+      } catch(e) {}
     }
     window.addEventListener('message', handleMessage);
 
@@ -128,9 +119,7 @@ app.all('/mcp', async (c) => {
       if (data.warning) {
         html += '<p class="warning">' + data.warning + '</p>';
       }
-      const embedUrl = data.previewUrl;
-      const host = data.host || '';
-      html += '<div id="embed-code">[![GitHub Streak](' + embedUrl + ')](' + host + ')</div>';
+      html += '<div id="embed-code">[![GitHub Streak](' + data.previewUrl + ')](' + (data.host || '') + ')</div>';
       widget.innerHTML = html;
     }
 
@@ -144,7 +133,18 @@ app.all('/mcp', async (c) => {
     }
   </script>
 </body>
-</html>`
+</html>`;
+
+    registerAppResource(
+      mcpServer,
+      "GitHub Streak Widget",
+      WIDGET_RESOURCE_URI,
+      { description: "Interactive GitHub streak widget preview" },
+      async () => ({
+        contents: [{
+          uri: WIDGET_RESOURCE_URI,
+          mimeType: RESOURCE_MIME_TYPE,
+          text: widgetHtml
         }]
       })
     );
@@ -215,13 +215,21 @@ Without a user param, use /v1/sample.svg?custom=ENCODED for sample data preview.
     );
 
     // Tool 2: Generate a live widget URL from an SVG template
-    // _meta.ui.resourceUri in annotations tells ChatGPT/Claude to fetch the ui:// resource and render it
-    mcpServer.tool("generate_widget_url",
-      "Takes a custom SVG template string, brotli-compresses it, and returns a ready-to-use widget URL. WARNING: If no username is provided, the URL will use sample data instead of real GitHub data.",
+    // registerAppTool puts _meta.ui.resourceUri in the TOOL DEFINITION (tools/list)
+    // so ChatGPT/Claude know to render the ui:// resource when this tool is called
+    registerAppTool(
+      mcpServer,
+      "generate_widget_url",
       {
-        svgTemplate: z.string().describe("The raw SVG template string with {{variables}} placeholders."),
-        username: z.string().optional().describe("GitHub username for live data. If omitted, sample data is used."),
-        theme: z.string().optional().describe("Theme name (e.g. 'dark', 'catppuccin'). Defaults to 'dark'.")
+        description: "Takes a custom SVG template string, brotli-compresses it, and returns a ready-to-use widget URL. WARNING: If no username is provided, the URL will use sample data instead of real GitHub data.",
+        inputSchema: {
+          svgTemplate: z.string().describe("The raw SVG template string with {{variables}} placeholders."),
+          username: z.string().optional().describe("GitHub username for live data. If omitted, sample data is used."),
+          theme: z.string().optional().describe("Theme name (e.g. 'dark', 'catppuccin'). Defaults to 'dark'.")
+        },
+        _meta: {
+          ui: { resourceUri: WIDGET_RESOURCE_URI }
+        }
       },
       async ({ svgTemplate, username, theme }) => {
         try {
@@ -275,11 +283,7 @@ Without a user param, use /v1/sample.svg?custom=ENCODED for sample data preview.
 
           return {
             structuredContent,
-            content: contentBlocks,
-            _meta: {
-              ui: { resourceUri: WIDGET_RESOURCE_URI },
-              "openai/outputTemplate": WIDGET_RESOURCE_URI
-            }
+            content: contentBlocks
           };
         } catch (error: any) {
           return { content: [{ type: "text", text: `Error compressing template: ${error.message}` }], isError: true };

@@ -11,6 +11,7 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
+        "npm:@modelcontextprotocol/ext-apps@^1.7.5",
         "npm:@modelcontextprotocol/sdk@^1.30.0",
         "npm:@netlify/blobs@^10.7.4",
         "npm:@netlify/functions@^5.3.0",
