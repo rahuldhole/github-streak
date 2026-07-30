@@ -86,51 +86,78 @@ app.all('/mcp', async (c) => {
     <p id="loading" class="loading">Waiting for SVG preview...</p>
     <img id="preview" style="display: none;" alt="SVG Preview" />
   </div>
-  <script>
-    function handleMessage(event) {
-      try {
-        const msg = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-        const result = msg?.params?.result || msg?.result || msg;
-        
-        const structured = result?.structuredContent || result;
-        const url = structured?.previewUrl || structured?.url || (typeof result === 'string' && result.startsWith('http') ? result : null);
+  <script type="module">
+    let initReqId = 1;
 
-        if (url) {
-          const img = document.getElementById('preview');
-          img.src = url;
+    function sendRequest(method, params) {
+      const id = initReqId++;
+      window.parent.postMessage({ jsonrpc: '2.0', id, method, params }, '*');
+      return id;
+    }
+
+    function sendNotification(method, params) {
+      window.parent.postMessage({ jsonrpc: '2.0', method, params }, '*');
+    }
+
+    function handleToolResult(result) {
+      if (!result) return;
+      const structured = result.structuredContent || result;
+      const url = structured?.previewUrl || structured?.url || (typeof result === 'string' && result.startsWith('http') ? result : null);
+
+      const img = document.getElementById('preview');
+      const loading = document.getElementById('loading');
+
+      if (url) {
+        img.src = url;
+        img.style.display = 'inline-block';
+        if (loading) loading.style.display = 'none';
+        return;
+      }
+
+      const content = result.content || [];
+      for (let i = 0; i < content.length; i++) {
+        const c = content[i];
+        if (c.type === 'image' && c.data) {
+          img.src = 'data:' + (c.mimeType || 'image/svg+xml') + ';base64,' + c.data;
           img.style.display = 'inline-block';
-          document.getElementById('loading').style.display = 'none';
+          if (loading) loading.style.display = 'none';
           return;
         }
-
-        const content = result?.content || [];
-        for (let i = 0; i < content.length; i++) {
-          const c = content[i];
-          if (c.type === 'image' && c.data) {
-            const img = document.getElementById('preview');
-            img.src = 'data:' + (c.mimeType || 'image/svg+xml') + ';base64,' + c.data;
-            img.style.display = 'inline-block';
-            document.getElementById('loading').style.display = 'none';
-            return;
-          }
-        }
-      } catch(e) {
-        document.getElementById('loading').innerText = "Error parsing message: " + e.message;
       }
     }
-    window.addEventListener('message', handleMessage);
 
-    if (window.parent !== window) {
-      window.parent.postMessage({
-        jsonrpc: '2.0',
-        id: 1,
-        method: 'ui/initialize',
-        params: {
-          protocolVersion: '2024-11-05',
-          capabilities: {},
-          clientInfo: { name: 'SVG Preview Tool', version: '1.0.0' }
+    window.addEventListener('message', (event) => {
+      try {
+        const msg = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+        if (!msg || typeof msg !== 'object') return;
+
+        // 1. Handle initialize response from host -> send initialized notification to complete handshake
+        if (msg.id === 1 && msg.result) {
+          sendNotification('ui/notifications/initialized');
         }
-      }, '*');
+
+        // 2. Handle standard MCP Apps tool result notification
+        if (msg.method === 'ui/notifications/tool-result') {
+          handleToolResult(msg.params);
+        }
+
+        // 3. Fallback for custom or legacy host messages
+        if (!msg.method && (msg.params?.result || msg.result || msg.structuredContent || msg.content)) {
+          const result = msg?.params?.result || msg?.result || msg;
+          handleToolResult(result);
+        }
+      } catch (e) {
+        console.error('[ext-apps] Error handling message:', e);
+      }
+    });
+
+    // Start MCP Apps initialization handshake
+    if (window.parent !== window) {
+      sendRequest('ui/initialize', {
+        protocolVersion: '2025-11-21',
+        appInfo: { name: 'SVG Preview Tool', version: '1.0.0' },
+        appCapabilities: {}
+      });
     }
   </script>
 </body>

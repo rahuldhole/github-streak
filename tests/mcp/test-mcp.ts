@@ -95,9 +95,9 @@ async function test() {
   const resourceResult = await client.readResource({ uri: "ui://github-streak/svg-preview" });
   const htmlContent = (resourceResult.contents[0] as any)?.text || "";
   assert(htmlContent.includes("<!DOCTYPE html>"), "Resource should return HTML");
-  assert(htmlContent.includes("postMessage"), "Resource HTML should use postMessage bridge");
-  assert(htmlContent.includes("getElementById('preview')"), "Resource HTML should reuse the preview img element");
-  assert(htmlContent.includes("getElementById('loading').style.display"), "Resource HTML should hide the loading element");
+  assert(htmlContent.includes("ui/notifications/initialized"), "Resource HTML should send ui/notifications/initialized handshake completion");
+  assert(htmlContent.includes("ui/notifications/tool-result"), "Resource HTML should handle ui/notifications/tool-result notifications");
+  assert(htmlContent.includes("getElementById('preview')"), "Resource HTML should target preview img element");
   console.log(`   ✅ ui:// resource returns HTML (${htmlContent.length} chars)\n`);
 
   // --- Done ---
