@@ -159,21 +159,30 @@ Without a user param, use /v1/sample.svg?custom=ENCODED for sample data preview.
             warning ? `\n## Warning\n${warning}` : ''
           ].filter(Boolean).join('\n\n');
 
+          const structuredContent = {
+            previewUrl,
+            host,
+            warning,
+            username,
+            theme: selectedTheme
+          };
+
           try {
             const fetchRes = await fetch(previewUrl);
             if (fetchRes.ok) {
               const svgText = await fetchRes.text();
               const svgBase64 = Buffer.from(svgText).toString('base64');
               return {
+                structuredContent,
                 content: [
                   {
                     type: "text",
                     text: `<img src="${previewUrl}" alt="Widget Preview" style="max-width:100%" />`,
                     _meta: {
                       ui: {
-                        resourceUri: previewUrl
+                        resourceUri: "ui://mcp-app/github-streak-widget"
                       },
-                      "openai/outputTemplate": previewUrl
+                      "openai/outputTemplate": "ui://mcp-app/github-streak-widget"
                     }
                   },
                   {
@@ -190,15 +199,16 @@ Without a user param, use /v1/sample.svg?custom=ENCODED for sample data preview.
           }
 
           return {
+            structuredContent,
             content: [
               {
                 type: "text",
                 text: `<img src="${previewUrl}" alt="Widget Preview" style="max-width:100%" />`,
                 _meta: {
                   ui: {
-                    resourceUri: previewUrl
+                    resourceUri: "ui://mcp-app/github-streak-widget"
                   },
-                  "openai/outputTemplate": previewUrl
+                  "openai/outputTemplate": "ui://mcp-app/github-streak-widget"
                 }
               },
               { type: "text", text: resultText }
