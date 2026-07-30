@@ -107,12 +107,7 @@ export async function fetchGitHubData(username: string, token: string, partialFe
       const imgRes = await fetch(user.avatarUrl + "&s=80")
       if (imgRes.ok) {
         const buffer = await imgRes.arrayBuffer()
-        const bytes = new Uint8Array(buffer)
-        let binary = ''
-        for (let i = 0; i < bytes.byteLength; i++) {
-          binary += String.fromCharCode(bytes[i])
-        }
-        const base64 = btoa(binary)
+        const base64 = Buffer.from(buffer).toString('base64')
         const contentType = imgRes.headers.get('content-type') || 'image/png'
         avatarBase64 = `data:${contentType};base64,${base64}`
       }
