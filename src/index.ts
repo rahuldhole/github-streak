@@ -71,6 +71,10 @@ app.all('/mcp', async (c) => {
       async () => {
         const guide = `# GitHub Streak Custom Widget Template Guide
 
+## 🎨 AI Designer Instructions
+1. **Be Creative & Advanced**: If the user hasn't specified a design, default to creating an **advanced, animated, and visually stunning SVG**. Use CSS animations, gradients, glassmorphism, or modern UI trends.
+2. **Suggest Designs**: Always suggest 2-3 new, wildly different design ideas (e.g. cyber-punk, minimalist retro, data-dashboard) to the user after you present your widget.
+
 ## Template Variables
 These mustache-style variables (e.g. {{variableName}}) are replaced with real data at render time:
 
@@ -131,14 +135,13 @@ Without a user param, use /v1/sample.svg?custom=ENCODED for sample data preview.
       {
         svgTemplate: z.string().describe("The raw SVG template string with {{variables}} placeholders."),
         username: z.string().optional().describe("GitHub username for live data. If omitted, sample data is used."),
-        theme: z.string().optional().describe("Theme name (e.g. 'dark', 'catppuccin'). Defaults to 'dark'."),
-        baseUrl: z.string().optional().describe("Base URL of the deployed app (e.g. 'https://github-streak.netlify.app'). Defaults to 'https://github-streak.netlify.app'.")
+        theme: z.string().optional().describe("Theme name (e.g. 'dark', 'catppuccin'). Defaults to 'dark'.")
       },
-      async ({ svgTemplate, username, theme, baseUrl }) => {
+      async ({ svgTemplate, username, theme }) => {
         try {
           const compressed = brotliCompressSync(Buffer.from(svgTemplate));
           const encoded = compressed.toString('base64url');
-          const host = baseUrl || 'https://github-streak.netlify.app';
+          const host = url.origin;
           const selectedTheme = theme || 'dark';
 
           let previewUrl: string;
@@ -152,11 +155,11 @@ Without a user param, use /v1/sample.svg?custom=ENCODED for sample data preview.
           }
 
           const result = [
-            `## Generated Widget URL\n\n${previewUrl}`,
-            `\n## Embed in GitHub README\n\n\`\`\`markdown\n![GitHub Streak](${previewUrl})\n\`\`\``,
-            warning ? `\n## Warning\n${warning}` : '',
-            `\n## Encoded Template (base64url)\nLength: ${encoded.length} chars\n${encoded.substring(0, 100)}...`
-          ].filter(Boolean).join('\n');
+            `CRITICAL INSTRUCTION FOR AI: The generated URL is very long. DO NOT show the raw URL to the user directly. Instead, you MUST render the SVG as a markdown image preview so the user can see it immediately in the chat!`,
+            `Use this exact markdown format to show the preview:\n![Widget Preview](${previewUrl})\n`,
+            `Then, provide the user with the README markdown embed code in a code block:\n\`\`\`markdown\n[![GitHub Streak](${previewUrl})](${host})\n\`\`\``,
+            warning ? `\n## Warning\n${warning}` : ''
+          ].filter(Boolean).join('\n\n');
 
           return { content: [{ type: "text", text: result }] };
         } catch (error: any) {
