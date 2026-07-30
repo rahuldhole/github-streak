@@ -43,11 +43,27 @@ async function test() {
       svgTemplate: '<svg xmlns="http://www.w3.org/2000/svg" width="420" height="180"><text x="10" y="40" fill="#fff">🔥 {{currentStreak}}</text></svg>'
     }
   });
-  const noUserText = (noUserResult.content as any[]).find(c => c.type === 'text')?.text || "";
+  // Helper: join all text content blocks
+  const allText = (result: any) =>
+    (result.content as any[])
+      .filter((c: any) => c.type === 'text')
+      .map((c: any) => c.text)
+      .join('\n');
+
+  const noUserText = allText(noUserResult);
   assert(noUserText.includes("sample.svg"), "URL without user should point to sample.svg");
   assert(noUserText.includes("SAMPLE DATA"), "Should warn about sample data");
 
-  console.log("   ✅ Sample URL generated with warning\n");
+  // Verify ChatGPT UI meta is present
+  const uiBlock = (noUserResult.content as any[]).find((c: any) => c._meta?.ui?.resourceUri);
+  assert(!!uiBlock, "Should have a content block with _meta.ui.resourceUri");
+  assert(uiBlock._meta.ui.resourceUri === "ui://mcp-app/github-streak-widget", "resourceUri should be ui://mcp-app/github-streak-widget");
+
+  // Verify structuredContent is present
+  assert(!!(noUserResult as any).structuredContent, "Should have structuredContent");
+  assert((noUserResult as any).structuredContent.previewUrl?.includes("sample.svg"), "structuredContent.previewUrl should contain sample.svg");
+
+  console.log("   ✅ Sample URL generated with warning + ChatGPT UI meta\n");
 
   // --- Test 4: Call generate_widget_url with username ---
   console.log("🔗 Calling generate_widget_url (with username)...");
@@ -59,11 +75,17 @@ async function test() {
       theme: "catppuccin"
     }
   });
-  const withUserText = (withUserResult.content as any[]).find(c => c.type === 'text')?.text || "";
+  const withUserText = allText(withUserResult);
   assert(withUserText.includes("user=rahuldhole"), "URL should contain the username");
   assert(withUserText.includes("theme=catppuccin"), "URL should contain the theme");
   assert(!withUserText.includes("SAMPLE DATA"), "Should NOT warn about sample data");
-  console.log("   ✅ Live URL generated with username\n");
+
+  // Verify image content block is present
+  const imageBlock = (withUserResult.content as any[]).find((c: any) => c.type === 'image');
+  assert(!!imageBlock, "Should have an image content block");
+  assert(imageBlock.mimeType === "image/svg+xml", "Image mimeType should be image/svg+xml");
+
+  console.log("   ✅ Live URL generated with username + image preview\n");
 
   // --- Done ---
   await client.close();
