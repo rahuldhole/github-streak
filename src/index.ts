@@ -59,7 +59,8 @@ async function refreshUserData(
   activeVersion: number, 
   isHistoryStale: boolean, 
   fullRefresh: boolean,
-  needsProfileData: boolean = true
+  needsProfileData: boolean = true,
+  existingCurrentBlob?: any
 ) {
   const token = c.env.GITHUB_TOKEN
   if (!token) throw new Error('Config Error');
@@ -100,18 +101,18 @@ async function refreshUserData(
     stats, 
     last7, 
     maxCount, 
-    name: fresh.name,
-    avatarUrl: fresh.avatarUrl,
-    bio: fresh.bio,
-    company: fresh.company,
-    location: fresh.location,
-    websiteUrl: fresh.websiteUrl,
-    twitterUsername: fresh.twitterUsername,
-    email: fresh.email,
-    followers: fresh.followers,
-    following: fresh.following,
-    repositories: fresh.repositories,
-    pinnedItems: fresh.pinnedItems,
+    name: fresh.name !== undefined ? fresh.name : existingCurrentBlob?.name,
+    avatarUrl: fresh.avatarUrl !== undefined ? fresh.avatarUrl : existingCurrentBlob?.avatarUrl,
+    bio: fresh.bio !== undefined ? fresh.bio : existingCurrentBlob?.bio,
+    company: fresh.company !== undefined ? fresh.company : existingCurrentBlob?.company,
+    location: fresh.location !== undefined ? fresh.location : existingCurrentBlob?.location,
+    websiteUrl: fresh.websiteUrl !== undefined ? fresh.websiteUrl : existingCurrentBlob?.websiteUrl,
+    twitterUsername: fresh.twitterUsername !== undefined ? fresh.twitterUsername : existingCurrentBlob?.twitterUsername,
+    email: fresh.email !== undefined ? fresh.email : existingCurrentBlob?.email,
+    followers: fresh.followers !== undefined ? fresh.followers : existingCurrentBlob?.followers,
+    following: fresh.following !== undefined ? fresh.following : existingCurrentBlob?.following,
+    repositories: fresh.repositories !== undefined ? fresh.repositories : existingCurrentBlob?.repositories,
+    pinnedItems: fresh.pinnedItems !== undefined ? fresh.pinnedItems : existingCurrentBlob?.pinnedItems,
     timestamp: Date.now(), 
     cacheVersion: activeVersion 
   }
@@ -172,28 +173,30 @@ async function getStreakData(c: any, queryUser: string, forceRefresh: boolean, f
   let newHistoryBlob = historyBlob;
   let newCurrentBlob = currentBlob;
 
-  if ((isCurrentStale || forceRefresh || fullRefresh || isHistoryStale) && !isIpRateLimited) {
+  const isProfileDataMissing = needsProfileData && currentBlob && !currentBlob.avatarUrl;
+
+  if ((isCurrentStale || forceRefresh || fullRefresh || isHistoryStale || isProfileDataMissing) && !isIpRateLimited) {
     const isQuotaExhausted = githubRateLimitRemaining === 0 && Date.now() < githubRateLimitResetAt
     if ((githubRateLimitRemaining < 20 || isQuotaExhausted) && newCurrentBlob) {
         logEvent({ name: 'warn_quota_low', data: { username } })
     } else {
-        if (newCurrentBlob && !forceRefresh && !fullRefresh) {
+        if (newCurrentBlob && !forceRefresh && !fullRefresh && !isProfileDataMissing) {
             // Background SWR execution
             if (c.executionCtx?.waitUntil) {
                 c.executionCtx.waitUntil(
-                    refreshUserData(c, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh, needsProfileData).catch((err: any) => {
+                    refreshUserData(c, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh, needsProfileData, newCurrentBlob).catch((err: any) => {
                       logEvent({ name: 'error', data: { type: 'background_refresh_failed', username, error: getSafeErrorMessage(err) } })
                     })
                 )
             } else {
-                refreshUserData(c, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh, needsProfileData).catch((err: any) => {
+                refreshUserData(c, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh, needsProfileData, newCurrentBlob).catch((err: any) => {
                   logEvent({ name: 'error', data: { type: 'background_refresh_failed', username, error: getSafeErrorMessage(err) } })
                 })
             }
         } else {
             // Synchronous cold start fetch
             try {
-                const refreshed = await refreshUserData(c, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh, needsProfileData)
+                const refreshed = await refreshUserData(c, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh, needsProfileData, newCurrentBlob)
                 newCurrentBlob = refreshed.newCurrentBlob
                 if (refreshed.newHistoryBlob) newHistoryBlob = refreshed.newHistoryBlob
             } catch (error: any) {
