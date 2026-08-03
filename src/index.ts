@@ -362,10 +362,6 @@ Without a user param, use /v1/sample.svg?custom=ENCODED for sample data preview.
   return c.json({ error: 'Method not allowed' }, 405);
 })
 
-const ipRateLimit = new Map<string, { count: number, reset: number }>()
-const RATE_LIMIT_WINDOW = 60 * 1000 
-const MAX_REQUESTS_PER_WINDOW = 30
-
 let githubRateLimitRemaining = 5000
 let githubRateLimitResetAt = 0
 
@@ -379,8 +375,8 @@ app.onError((err, c) => {
     c.header('Vary', 'Accept')
     return c.body(renderErrorSVG(safeMessage).toString(), 200, {
       'Content-Type': 'image/svg+xml',
-      'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400',
-      'Netlify-CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400'
+      'Cache-Control': 'public, max-age=0, s-maxage=60',
+      'Netlify-CDN-Cache-Control': 'public, s-maxage=60'
     })
   }
   const status = (err as any).status || 500
@@ -394,8 +390,8 @@ app.notFound((c) => {
     c.header('Vary', 'Accept')
     return c.body(renderErrorSVG('Path Not Found').toString(), 200, {
       'Content-Type': 'image/svg+xml',
-      'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400',
-      'Netlify-CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400'
+      'Cache-Control': 'public, max-age=0, s-maxage=60',
+      'Netlify-CDN-Cache-Control': 'public, s-maxage=60'
     })
   }
   c.header('Vary', 'Accept')
@@ -485,22 +481,6 @@ async function getStreakData(c: any, queryUser: string, forceRefresh: boolean, f
     return { error: 'Invalid Username' }
   }
 
-  const ip = c.req.header('x-forwarded-for') || 'unknown'
-  const now = Date.now()
-  const userLimit = ipRateLimit.get(ip)
-  let isIpRateLimited = false
-
-  if (userLimit && now < userLimit.reset) {
-    if (userLimit.count >= MAX_REQUESTS_PER_WINDOW) {
-      isIpRateLimited = true
-      logEvent({ name: 'rate_limited', data: { type: 'ip' } })
-    } else {
-      userLimit.count++
-    }
-  } else {
-    ipRateLimit.set(ip, { count: 1, reset: now + RATE_LIMIT_WINDOW })
-  }
-
   const streakStore = getStore('streak-data')
   const historyKey = `${username}:history`
   const currentKey = `${username}:current`
@@ -526,7 +506,7 @@ async function getStreakData(c: any, queryUser: string, forceRefresh: boolean, f
 
   const isProfileDataMissing = needsProfileData && currentBlob && !currentBlob.avatarUrl;
 
-  if ((isCurrentStale || forceRefresh || fullRefresh || isHistoryStale || isProfileDataMissing) && !isIpRateLimited) {
+  if (isCurrentStale || forceRefresh || fullRefresh || isHistoryStale || isProfileDataMissing) {
     const isQuotaExhausted = githubRateLimitRemaining === 0 && Date.now() < githubRateLimitResetAt
     if ((githubRateLimitRemaining < 20 || isQuotaExhausted) && newCurrentBlob) {
         logEvent({ name: 'warn_quota_low', data: { username } })
@@ -569,8 +549,7 @@ async function getStreakData(c: any, queryUser: string, forceRefresh: boolean, f
   }
 
   if (!newCurrentBlob) {
-    const errorMsg = isIpRateLimited ? 'Rate Limit Exceeded' : 'Data Not Available'
-    return { error: errorMsg }
+    return { error: 'Data Not Available' }
   }
 
   const aggregatedTotal = (newHistoryBlob?.total || 0) + newCurrentBlob.stats.total
@@ -589,8 +568,8 @@ function returnErrorSVG(c: any, msg: string) {
   c.header('Vary', 'Accept')
   return c.body(renderErrorSVG(msg).toString(), 200, {
     'Content-Type': 'image/svg+xml',
-    'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400',
-    'Netlify-CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400'
+    'Cache-Control': 'public, max-age=0, s-maxage=60',
+    'Netlify-CDN-Cache-Control': 'public, s-maxage=60'
   })
 }
 
