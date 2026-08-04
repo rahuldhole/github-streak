@@ -44,3 +44,10 @@ You can build and zip the extension for all major browsers:
 - **Opera**: `task build:opera` and `task zip:opera`
 
 The compiled output will be available in the `.output` directory.
+
+### Publishing Note (Chrome Web Store)
+
+> [!WARNING]
+> **EEA Consumer Protection Declaration:** When publishing this extension to the Chrome Web Store, you will be prompted to declare if your account is a "trader" or "non-trader" under European Economic Area (EEA) laws. 
+> 
+> As this is a personal, non-monetized open-source project, you should select **"This is a non-trader account"**. Selecting trader is intended for formal businesses, companies, or individuals monetizing extensions as their primary profession.

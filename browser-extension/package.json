@@ -1,6 +1,6 @@
 {
-  "name": "wxt-react-starter",
-  "description": "manifest.json description",
+  "name": "github-streak-extension",
+  "description": "Native GitHub Streak stats integration and Camo cache purger.",
   "private": true,
   "version": "0.0.1",
   "type": "module",
