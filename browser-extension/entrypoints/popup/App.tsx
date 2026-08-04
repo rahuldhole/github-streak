@@ -98,7 +98,7 @@ function App() {
         <h2 style={{ margin: 0, fontSize: '15px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
           {username}'s Streak
           <a 
-            href={`https://github-streak.rahuldhole.com/profile/${username}`} 
+            href={`https://github-streak.rahuldhole.com/profile/${username}/dark`} 
             target="_blank"
             title="View Full Profile"
             style={{ color: '#8b949e', textDecoration: 'none', display: 'flex', alignItems: 'center' }}
