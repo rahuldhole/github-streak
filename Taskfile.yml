@@ -1,0 +1,28 @@
+version: '3'
+
+includes:
+  ext:
+    taskfile: ./browser-extension/Taskfile.yml
+    dir: ./browser-extension
+
+tasks:
+  default:
+    desc: List all available tasks
+    cmds:
+      - task --list-all
+
+  install:
+    desc: Install dependencies for both the main project and the browser extension
+    cmds:
+      - bun install
+      - task: ext:install
+
+  dev:
+    desc: Start the local Netlify development server for the main API/project
+    cmds:
+      - bun run dev
+
+  test:
+    desc: Run tests for the main project
+    cmds:
+      - bun run test

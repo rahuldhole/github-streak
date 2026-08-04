@@ -1,0 +1,62 @@
+version: '3'
+
+tasks:
+  install:
+    desc: Install dependencies for the browser extension
+    cmds:
+      - bun install
+
+  dev:
+    desc: Run the browser extension in development mode (auto-reloads and opens a fresh browser)
+    cmds:
+      - bun run dev
+
+  build:
+    desc: Build the browser extension for production (Chrome Manifest V3)
+    cmds:
+      - bun run build
+
+  build:firefox:
+    desc: Build the browser extension for Firefox (Manifest V2/V3 compatibility)
+    cmds:
+      - bun run build:firefox
+
+  build:safari:
+    desc: Build the browser extension for Safari
+    cmds:
+      - bun run build:safari
+
+  build:edge:
+    desc: Build the browser extension for Microsoft Edge
+    cmds:
+      - bun run build:edge
+
+  build:opera:
+    desc: Build the browser extension for Opera
+    cmds:
+      - bun run build:opera
+
+  zip:
+    desc: Package the Chrome extension into a .zip file for publishing
+    cmds:
+      - bun run zip
+
+  zip:firefox:
+    desc: Package the Firefox extension into a .zip file for publishing
+    cmds:
+      - bun run zip:firefox
+
+  zip:safari:
+    desc: Package the Safari extension into a .zip file for publishing
+    cmds:
+      - bun run zip:safari
+
+  zip:edge:
+    desc: Package the Edge extension into a .zip file for publishing
+    cmds:
+      - bun run zip:edge
+
+  zip:opera:
+    desc: Package the Opera extension into a .zip file for publishing
+    cmds:
+      - bun run zip:opera

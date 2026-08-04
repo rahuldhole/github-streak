@@ -1,6 +1,7 @@
 [build]
   command = "bun run test"
   publish = "public"
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':!browser-extension'"
 
 [[edge_functions]]
   path = "/*"
