@@ -179,7 +179,7 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
             </div>
 
 
-            <div style={{
+            <div id="caching-strategy" style={{
               marginTop: '1.5rem',
               padding: '1.25rem',
               backgroundColor: 'rgba(255, 171, 0, 0.1)',
@@ -191,6 +191,14 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
               <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text)', lineHeight: '1.5' }}>
                 To save on API quota, we cache the most recent 6 months of data for 1 hour, and older history for 1 month. If you recently deleted repositories or made significant changes, you can explicitly force a refresh to recalculate your history cache.
               </p>
+              <details style={{ margin: '0.5rem 0 0 0', cursor: 'pointer' }}>
+                <summary style={{ fontSize: '0.8rem', color: '#ffab00', fontWeight: '600', outline: 'none' }}>
+                  README not updating?
+                </summary>
+                <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.8rem', color: 'var(--text)', lineHeight: '1.5', paddingLeft: '0.5rem', borderLeft: '2px solid #ffab00' }}>
+                  <strong>Note:</strong> GitHub aggressively caches all images via their Camo proxy. This is outside of our control. If your streak is updated here but stuck on your profile README, you can install our <strong>Browser Extension</strong> to easily purge GitHub's image cache.
+                </p>
+              </details>
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
                 <button onclick="forceRefreshCache(false)" id="soft-refresh-btn" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', fontWeight: '600', backgroundColor: '#ffab00', color: '#000', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
                   Soft Refresh (Recent 6 mo)

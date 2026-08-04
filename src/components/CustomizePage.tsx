@@ -1540,6 +1540,9 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
                     Once you're happy with your design, copy the <strong>Markdown</strong> or <strong>HTML</strong> snippet from above and paste it into your <code>README.md</code>. 
                     Alternatively, keep your <strong>Custom URL</strong> safe. Whenever you paste that URL back into the browser bar above, it will instantly load your custom SVG back into the editor!
                   </p>
+                  <p style={{ margin: '0.75rem 0 0 0', fontSize: '0.85rem', color: 'var(--muted)' }}>
+                    Having trouble with stale data or GitHub caching? <a href="/#caching-strategy" target="_blank" style={{ color: '#ffab00', textDecoration: 'none', fontWeight: '600' }}>Read our Caching Strategy & Refresh Guide</a>
+                  </p>
 
                   <div id="mcp" style={{ marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
