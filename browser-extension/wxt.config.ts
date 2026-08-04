@@ -12,6 +12,14 @@ export default defineConfig({
       "32": "assets/icons/fire.png",
       "48": "assets/icons/fire.png",
       "128": "assets/icons/fire.png"
+    },
+    browser_specific_settings: {
+      gecko: {
+        id: "github-streak@example.com",
+        data_collection_permissions: {
+          required: ["none"]
+        }
+      }
     }
   },
 });
