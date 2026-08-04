@@ -85,3 +85,8 @@ tasks:
     desc: Package the extension into .zip files for all browsers
     cmds:
       - bun run zip:all
+
+  zip:source:
+    desc: Package the source code into a .zip file for Mozilla Add-on store review
+    cmds:
+      - zip -r source-code.zip . -x "node_modules/*" -x ".output/*" -x ".wxt/*" -x ".git/*" -x "bun.lock"
