@@ -1,8 +1,8 @@
 import { expect, test, describe, mock } from "bun:test";
 
 // Mock Netlify Blobs for local testing
-const mockGet = mock(async () => null);
-const mockSet = mock(async () => {});
+const mockGet = mock(async (...args: any[]): Promise<any> => null);
+const mockSet = mock(async (...args: any[]) => {});
 
 mock.module("@netlify/blobs", () => ({
   getStore: () => ({
@@ -30,7 +30,7 @@ globalThis.fetch = mock(async () => {
           }
       })
   } as any;
-});
+}) as any;
 
 import { app } from "../src/index.ts";
 
