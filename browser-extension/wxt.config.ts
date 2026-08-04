@@ -8,10 +8,10 @@ export default defineConfig({
     permissions: ['activeTab', 'storage', 'scripting'],
     host_permissions: ['*://github.com/*'],
     icons: {
-      "16": "assets/icons/fire.png",
-      "32": "assets/icons/fire.png",
-      "48": "assets/icons/fire.png",
-      "128": "assets/icons/fire.png"
+      "16": "assets/icons/fire-16.png",
+      "32": "assets/icons/fire-32.png",
+      "48": "assets/icons/fire-48.png",
+      "128": "assets/icons/fire-128.png"
     },
     browser_specific_settings: {
       gecko: {
