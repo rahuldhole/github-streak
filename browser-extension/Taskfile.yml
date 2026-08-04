@@ -11,10 +11,20 @@ tasks:
     cmds:
       - bun run dev
 
+  dev:chrome:
+    desc: Run the browser extension for Chrome in development mode
+    cmds:
+      - bun run dev:chrome
+
   build:
     desc: Build the browser extension for production (Chrome Manifest V3)
     cmds:
       - bun run build
+
+  build:chrome:
+    desc: Build the browser extension for Chrome
+    cmds:
+      - bun run build:chrome
 
   build:firefox:
     desc: Build the browser extension for Firefox (Manifest V2/V3 compatibility)
@@ -36,10 +46,20 @@ tasks:
     cmds:
       - bun run build:opera
 
+  build:all:
+    desc: Build the browser extension for all browsers
+    cmds:
+      - bun run build:all
+
   zip:
     desc: Package the Chrome extension into a .zip file for publishing
     cmds:
       - bun run zip
+
+  zip:chrome:
+    desc: Package the Chrome extension into a .zip file for publishing explicitly
+    cmds:
+      - bun run zip:chrome
 
   zip:firefox:
     desc: Package the Firefox extension into a .zip file for publishing
@@ -60,3 +80,8 @@ tasks:
     desc: Package the Opera extension into a .zip file for publishing
     cmds:
       - bun run zip:opera
+
+  zip:all:
+    desc: Package the extension into .zip files for all browsers
+    cmds:
+      - bun run zip:all
