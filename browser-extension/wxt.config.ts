@@ -5,7 +5,7 @@ export default defineConfig({
   modules: ['@wxt-dev/module-react'],
   publicDir: '../public',
   manifest: {
-    permissions: ['activeTab', 'storage'],
+    permissions: ['activeTab', 'storage', 'scripting'],
     host_permissions: ['*://github.com/*'],
     icons: {
       "16": "assets/icons/fire.png",
