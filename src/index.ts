@@ -375,7 +375,9 @@ app.onError((err, c) => {
     c.header('Vary', 'Accept')
     return c.body(renderErrorSVG(safeMessage).toString(), 200, {
       'Content-Type': 'image/svg+xml',
-      'Cache-Control': 'public, max-age=0, s-maxage=60',
+      'Cache-Control': 'max-age=0, no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
       'Netlify-CDN-Cache-Control': 'public, s-maxage=60'
     })
   }
@@ -390,7 +392,9 @@ app.notFound((c) => {
     c.header('Vary', 'Accept')
     return c.body(renderErrorSVG('Path Not Found').toString(), 200, {
       'Content-Type': 'image/svg+xml',
-      'Cache-Control': 'public, max-age=0, s-maxage=60',
+      'Cache-Control': 'max-age=0, no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
       'Netlify-CDN-Cache-Control': 'public, s-maxage=60'
     })
   }
@@ -568,7 +572,9 @@ function returnErrorSVG(c: any, msg: string) {
   c.header('Vary', 'Accept')
   return c.body(renderErrorSVG(msg).toString(), 200, {
     'Content-Type': 'image/svg+xml',
-    'Cache-Control': 'public, max-age=0, s-maxage=60',
+    'Cache-Control': 'max-age=0, no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
     'Netlify-CDN-Cache-Control': 'public, s-maxage=60'
   })
 }
@@ -660,7 +666,9 @@ const handleSampleSVG = (c: any) => {
   c.header('Vary', 'Accept')
   return c.body(svgStr, 200, { 
     'Content-Type': 'image/svg+xml', 
-    'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400',
+    'Cache-Control': 'max-age=0, no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
     'Netlify-CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400'
   })
 }
@@ -741,7 +749,9 @@ async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfile
     )
     return c.body(svg.toString(), 200, {
       'Content-Type': 'image/svg+xml',
-      'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400',
+      'Cache-Control': 'max-age=0, no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
       'Netlify-CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
       'Vary': 'Accept',
       'X-Cache': isCurrentStale ? 'STALE' : 'HIT'
@@ -767,7 +777,9 @@ async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfile
 
   return c.body(svgStr, 200, {
     'Content-Type': 'image/svg+xml',
-    'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400',
+    'Cache-Control': 'max-age=0, no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
     'Netlify-CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
     'Vary': 'Accept',
     'X-Cache': isCurrentStale ? 'STALE' : 'HIT'
