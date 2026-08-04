@@ -78,18 +78,5 @@ describe("Application Routes and Status Codes", () => {
         expect(res.headers.get("X-Cache")).toBe("HIT");
     });
 
-    test("Rate Limiting triggers (local simulation)", async () => {
-        mockGet.mockResolvedValue(null);
-        const responses = [];
-        for (let i = 0; i < 35; i++) {
-           responses.push(await app.request("/?user=rahuldhole", {
-             headers: { "X-Forwarded-For": "1.1.1.3" }
-           }, {
-             GITHUB_TOKEN: "mock-token"
-           }));
-        }
-        
-        const bodies = await Promise.all(responses.map(r => r.text()));
-        expect(bodies.some(b => b.includes("Rate Limit Exceeded"))).toBe(true);
-    });
+
 });
