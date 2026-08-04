@@ -196,6 +196,14 @@ export function ProfilePage({ origin, user, theme, profile }: { origin: string, 
                 <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--muted)', lineHeight: '1.4' }}>
                   To save on API quota, we cache the most recent 6 months of data for 1 hour, and older history for 1 month.
                 </p>
+                <details style={{ margin: '0.5rem 0 0 0', cursor: 'pointer' }}>
+                  <summary style={{ fontSize: '0.75rem', color: '#ffab00', fontWeight: '600', outline: 'none' }}>
+                    README not updating?
+                  </summary>
+                  <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.75rem', color: 'var(--muted)', lineHeight: '1.4', paddingLeft: '0.5rem', borderLeft: '2px solid #ffab00' }}>
+                    <strong>Note:</strong> GitHub aggressively caches all images via their Camo proxy. This is outside of our control. If your streak is updated here but stuck on your profile README, you can install our <strong>Browser Extension</strong> to easily purge GitHub's image cache.
+                  </p>
+                </details>
                 <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
                   <button onclick={`window.location.href='?no-cache=true&theme=${theme}'`} style={{ padding: '0.3rem 0.6rem', fontSize: '0.7rem', fontWeight: '600', backgroundColor: '#ffab00', color: '#000', border: 'none', borderRadius: '4px', cursor: 'pointer', transition: 'all 0.2s' }}>
                     Soft Refresh
