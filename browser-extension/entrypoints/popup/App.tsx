@@ -9,6 +9,11 @@ function App() {
   const [copied, setCopied] = useState(false);
   const [purgeAll, setPurgeAll] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(Date.now());
+  const [imageLoading, setImageLoading] = useState(true);
+
+  useEffect(() => {
+    setImageLoading(true);
+  }, [username, refreshTrigger]);
 
   useEffect(() => {
     browser.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
@@ -120,11 +125,18 @@ function App() {
       </div>
 
       {/* Widget Image */}
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', minHeight: '195px', alignItems: 'center', position: 'relative' }}>
+        {imageLoading && (
+          <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b949e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="spinner"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>
+            <span style={{ color: '#8b949e', fontSize: '12px' }}>Loading Stats...</span>
+          </div>
+        )}
         <img 
           src={`https://github-streak.rahuldhole.com/profile-svg/${username}?theme=dark&t=${refreshTrigger}`} 
-          alt="GitHub Streak" 
-          style={{ width: '100%', height: 'auto', borderRadius: '4px' }} 
+          alt="GitHub Streak"
+          onLoad={() => setImageLoading(false)}
+          style={{ width: '100%', height: 'auto', borderRadius: '4px', opacity: imageLoading ? 0 : 1, transition: 'opacity 0.3s' }} 
         />
       </div>
 
