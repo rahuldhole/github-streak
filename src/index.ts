@@ -523,12 +523,14 @@ async function getStreakData(c: any, queryUser: string, forceRefresh: boolean, f
   
   let newHistoryBlob = historyBlob;
   let newCurrentBlob = currentBlob;
+  let tokenTriggered: 'primary' | 'secondary' | 'none' = 'none';
 
   const isProfileDataMissing = needsProfileData && currentBlob && !currentBlob.avatarUrl;
 
   if (isCurrentStaleFast || forceRefresh || fullRefresh || isHistoryStale || isProfileDataMissing) {
     if (newCurrentBlob && !forceRefresh && !fullRefresh && !isProfileDataMissing) {
       if (!isCurrentStaleSlow) {
+        tokenTriggered = 'secondary';
         // FAST LANE - Secondary Token (if configured)
         const isSecondaryQuotaExhausted = secondaryRateLimitRemaining === 0 && now < secondaryRateLimitResetAt
         if (!isSecondaryQuotaExhausted && secondaryToken) {
@@ -543,6 +545,7 @@ async function getStreakData(c: any, queryUser: string, forceRefresh: boolean, f
           if (waitUntilFn) waitUntilFn(fetchTask)
         }
       } else {
+        tokenTriggered = 'primary';
         // SLOW LANE - Primary Token
         const isPrimaryQuotaExhausted = primaryRateLimitRemaining === 0 && now < primaryRateLimitResetAt
         if (primaryRateLimitRemaining < 20 || isPrimaryQuotaExhausted) {
@@ -563,6 +566,7 @@ async function getStreakData(c: any, queryUser: string, forceRefresh: boolean, f
         // Synchronous cold start or forced fetch
         const tokenToUse = (forceRefresh || fullRefresh) && secondaryToken ? secondaryToken : primaryToken;
         const isSecondary = tokenToUse === secondaryToken && !!secondaryToken;
+        tokenTriggered = isSecondary ? 'secondary' : 'primary';
         
         const isExhausted = isSecondary 
           ? (secondaryRateLimitRemaining === 0 && now < secondaryRateLimitResetAt)
@@ -597,7 +601,8 @@ async function getStreakData(c: any, queryUser: string, forceRefresh: boolean, f
     currentBlob: newCurrentBlob,
     aggregatedTotal,
     lastUpdated,
-    isCurrentStale
+    isCurrentStale,
+    tokenTriggered
   }
 }
 
@@ -760,7 +765,7 @@ async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfile
     return returnErrorSVG(c, data.error)
   }
 
-  const { username, currentBlob, aggregatedTotal, lastUpdated, isCurrentStale } = data as any
+  const { username, currentBlob, aggregatedTotal, lastUpdated, isCurrentStale, tokenTriggered } = data as any
 
   if (type === 'json') {
     c.header('Vary', 'Accept')
@@ -769,7 +774,7 @@ async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfile
   }
 
   if (isProfileSVG) {
-    logEvent({ name: 'profile_svg_rendered', data: { username, theme, cacheHit: !isCurrentStale } })
+    logEvent({ name: 'profile_svg_rendered', data: { username, theme, cacheHit: !isCurrentStale, token: tokenTriggered } })
     const svg = renderProfileSVG(
       username as string, 
       currentBlob.name,
@@ -791,7 +796,7 @@ async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfile
     })
   }
 
-  logEvent({ name: 'svg_rendered', data: { username, theme, cacheHit: !isCurrentStale } })
+  logEvent({ name: 'svg_rendered', data: { username, theme, cacheHit: !isCurrentStale, token: tokenTriggered } })
   const custom = c.req.query('custom')
   let svgStr = ''
   
