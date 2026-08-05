@@ -2,7 +2,7 @@
   "name": "github-streak-extension",
   "description": "Native GitHub Streak stats integration and Camo cache purger.",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "scripts": {
     "dev": "wxt",

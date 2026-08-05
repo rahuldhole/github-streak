@@ -5,6 +5,7 @@ export default defineConfig({
   modules: ['@wxt-dev/module-react'],
   publicDir: '../public',
   manifest: {
+    name: "GitHub Streak",
     permissions: ['activeTab', 'storage', 'scripting'],
     host_permissions: ['*://github.com/*'],
     icons: {
