@@ -362,8 +362,10 @@ Without a user param, use /v1/sample.svg?custom=ENCODED for sample data preview.
   return c.json({ error: 'Method not allowed' }, 405);
 })
 
-let githubRateLimitRemaining = 5000
-let githubRateLimitResetAt = 0
+let primaryRateLimitRemaining = 5000
+let primaryRateLimitResetAt = 0
+let secondaryRateLimitRemaining = 5000
+let secondaryRateLimitResetAt = 0
 
 // Global error handler
 app.onError((err, c) => {
@@ -403,7 +405,7 @@ app.notFound((c) => {
 })
 
 async function refreshUserData(
-  c: any, 
+  token: string, 
   username: string, 
   historyKey: string, 
   currentKey: string, 
@@ -411,18 +413,24 @@ async function refreshUserData(
   isHistoryStale: boolean, 
   fullRefresh: boolean,
   needsProfileData: boolean = true,
-  existingCurrentBlob?: any
+  existingCurrentBlob?: any,
+  isSecondary: boolean = false
 ) {
-  const token = c.env.GITHUB_TOKEN
   if (!token) throw new Error('Config Error');
   const currentYear = new Date().getFullYear()
 
   const partialFetch = (!isHistoryStale && !fullRefresh) ? true : false
+  logEvent({ name: 'github_api_fetch', data: { username, token: isSecondary ? 'secondary' : 'primary', partial: partialFetch } })
   const fresh = await fetchGitHubData(username, token, partialFetch, needsProfileData)
   
   if (fresh.rateLimit) {
-    githubRateLimitRemaining = fresh.rateLimit.remaining
-    githubRateLimitResetAt = new Date(fresh.rateLimit.resetAt).getTime()
+    if (isSecondary) {
+      secondaryRateLimitRemaining = fresh.rateLimit.remaining
+      secondaryRateLimitResetAt = new Date(fresh.rateLimit.resetAt).getTime()
+    } else {
+      primaryRateLimitRemaining = fresh.rateLimit.remaining
+      primaryRateLimitResetAt = new Date(fresh.rateLimit.resetAt).getTime()
+    }
   }
 
   const sixMonthsAgo = new Date()
@@ -489,6 +497,9 @@ async function getStreakData(c: any, queryUser: string, forceRefresh: boolean, f
   const historyKey = `${username}:history`
   const currentKey = `${username}:current`
 
+  const primaryToken = c.env?.GITHUB_TOKEN
+  const secondaryToken = c.env?.GITHUB_TOKEN_SECONDARY
+
   // Parallelize Netlify Blob Reads
   const [historyBlob, currentBlob] = await Promise.all([
     streakStore.get(historyKey, { type: 'json' }).catch(() => null),
@@ -503,44 +514,66 @@ async function getStreakData(c: any, queryUser: string, forceRefresh: boolean, f
   const isHistoryVersionStale = historyStoredVersion < activeVersion
   const isHistoryStale = isHistoryVersionStale || !historyBlob || (Date.now() - (historyBlob.timestamp || 0) > 30 * 24 * 60 * 60 * 1000)
 
-  const isCurrentStale = isVersionStale || !currentBlob || (Date.now() - currentBlob.timestamp > 3600000)
+  const now = Date.now()
+  const fastLaneMs = (Number(c.env?.FAST_LANE_TTL_MINUTES) || 5) * 60000
+  const slowLaneMs = (Number(c.env?.SLOW_LANE_TTL_MINUTES) || 60) * 60000
+  const isCurrentStaleFast = isVersionStale || !currentBlob || (now - currentBlob.timestamp > fastLaneMs)
+  const isCurrentStaleSlow = isVersionStale || !currentBlob || (now - currentBlob.timestamp > slowLaneMs)
+  const isCurrentStale = isCurrentStaleSlow // Keep original meaning for external return payload
   
   let newHistoryBlob = historyBlob;
   let newCurrentBlob = currentBlob;
 
   const isProfileDataMissing = needsProfileData && currentBlob && !currentBlob.avatarUrl;
 
-  if (isCurrentStale || forceRefresh || fullRefresh || isHistoryStale || isProfileDataMissing) {
-    const isQuotaExhausted = githubRateLimitRemaining === 0 && Date.now() < githubRateLimitResetAt
-    if ((githubRateLimitRemaining < 20 || isQuotaExhausted) && newCurrentBlob) {
-        logEvent({ name: 'warn_quota_low', data: { username } })
-    } else {
-        if (newCurrentBlob && !forceRefresh && !fullRefresh && !isProfileDataMissing) {
-            // Background SWR execution
-            let waitUntilFn: ((promise: Promise<any>) => void) | undefined
-            try {
-                if (c.executionCtx && c.executionCtx.waitUntil) {
-                    waitUntilFn = c.executionCtx.waitUntil.bind(c.executionCtx)
-                }
-            } catch (e) {
-                // Ignore missing executionCtx
-            }
+  if (isCurrentStaleFast || forceRefresh || fullRefresh || isHistoryStale || isProfileDataMissing) {
+    if (newCurrentBlob && !forceRefresh && !fullRefresh && !isProfileDataMissing) {
+      if (!isCurrentStaleSlow) {
+        // FAST LANE - Secondary Token (if configured)
+        const isSecondaryQuotaExhausted = secondaryRateLimitRemaining === 0 && now < secondaryRateLimitResetAt
+        if (!isSecondaryQuotaExhausted && secondaryToken) {
+          let waitUntilFn: ((promise: Promise<any>) => void) | undefined
+          try {
+              if (c.executionCtx && c.executionCtx.waitUntil) waitUntilFn = c.executionCtx.waitUntil.bind(c.executionCtx)
+          } catch (e) {}
 
-            if (waitUntilFn) {
-                waitUntilFn(
-                    refreshUserData(c, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh, needsProfileData, newCurrentBlob).catch((err: any) => {
-                      logEvent({ name: 'error', data: { type: 'background_refresh_failed', username, error: getSafeErrorMessage(err) } })
-                    })
-                )
-            } else {
-                refreshUserData(c, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh, needsProfileData, newCurrentBlob).catch((err: any) => {
-                  logEvent({ name: 'error', data: { type: 'background_refresh_failed', username, error: getSafeErrorMessage(err) } })
-                })
-            }
+          const fetchTask = refreshUserData(secondaryToken, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh, needsProfileData, newCurrentBlob, true).catch((err: any) => {
+              logEvent({ name: 'error', data: { type: 'fast_lane_refresh_failed', username, error: getSafeErrorMessage(err) } })
+          })
+          if (waitUntilFn) waitUntilFn(fetchTask)
+        }
+      } else {
+        // SLOW LANE - Primary Token
+        const isPrimaryQuotaExhausted = primaryRateLimitRemaining === 0 && now < primaryRateLimitResetAt
+        if (primaryRateLimitRemaining < 20 || isPrimaryQuotaExhausted) {
+          logEvent({ name: 'warn_quota_low', data: { username, token: 'primary' } })
         } else {
-            // Synchronous cold start fetch
+          let waitUntilFn: ((promise: Promise<any>) => void) | undefined
+          try {
+              if (c.executionCtx && c.executionCtx.waitUntil) waitUntilFn = c.executionCtx.waitUntil.bind(c.executionCtx)
+          } catch (e) {}
+
+          const fetchTask = refreshUserData(primaryToken, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh, needsProfileData, newCurrentBlob, false).catch((err: any) => {
+              logEvent({ name: 'error', data: { type: 'background_refresh_failed', username, error: getSafeErrorMessage(err) } })
+          })
+          if (waitUntilFn) waitUntilFn(fetchTask)
+        }
+      }
+    } else {
+        // Synchronous cold start or forced fetch
+        const tokenToUse = (forceRefresh || fullRefresh) && secondaryToken ? secondaryToken : primaryToken;
+        const isSecondary = tokenToUse === secondaryToken && !!secondaryToken;
+        
+        const isExhausted = isSecondary 
+          ? (secondaryRateLimitRemaining === 0 && now < secondaryRateLimitResetAt)
+          : (primaryRateLimitRemaining === 0 && now < primaryRateLimitResetAt);
+
+        if (isExhausted) {
+            logEvent({ name: 'warn_quota_low', data: { username, token: isSecondary ? 'secondary' : 'primary' } })
+            if (!newCurrentBlob) return { error: 'Rate Limit Exceeded' }
+        } else {
             try {
-                const refreshed = await refreshUserData(c, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh, needsProfileData, newCurrentBlob)
+                const refreshed = await refreshUserData(tokenToUse, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh, needsProfileData, newCurrentBlob, isSecondary)
                 newCurrentBlob = refreshed.newCurrentBlob
                 if (refreshed.newHistoryBlob) newHistoryBlob = refreshed.newHistoryBlob
             } catch (error: any) {
