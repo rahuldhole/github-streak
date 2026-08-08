@@ -157,6 +157,10 @@ export function LandingPage({ origin = '', cacheInfo }: { origin?: string, cache
                 <img id="preview-img" class="preview-img" src={sampleUrl} alt="GitHub Streak Preview" />
               </div>
 
+              <div style={{ marginTop: '0.75rem', fontSize: '0.75rem', color: 'var(--muted)', textAlign: 'center' }}>
+                Github refresh cycle: {fastMins + Math.ceil(camoSecs / 60)} minutes
+              </div>
+
               <div id="share-section" class="share-section">
                 <label>Share your streak</label>
                 <div class="share-buttons">
