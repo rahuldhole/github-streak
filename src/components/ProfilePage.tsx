@@ -204,7 +204,12 @@ export function ProfilePage({ origin, user, theme, profile, cacheInfo }: { origi
                     README not updating?
                   </summary>
                   <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.75rem', color: 'var(--muted)', lineHeight: '1.4', paddingLeft: '0.5rem', borderLeft: '2px solid #ffab00' }}>
-                    <strong>Note:</strong> GitHub aggressively caches all images via their Camo proxy for up to {camoSecs / 60} minutes. This is outside of our control. If your streak is updated here but stuck on your profile README, you can install our <strong>Browser Extension</strong> to easily purge GitHub's image cache.
+                    <strong>Note:</strong> GitHub aggressively caches all images via their Camo proxy for up to {camoSecs / 60} minutes. This is outside of our control. If your streak is updated here but stuck on your profile README, you can install our Browser Extension (
+                    <a href="https://chromewebstore.google.com/detail/github-streak/nabgmpdcbbjmjcmnbbjcfaofkclolbdm" target="_blank" style={{ color: '#ffab00', textDecoration: 'underline' }}>Chrome</a> |{' '}
+                    <a href="https://addons.mozilla.org/en-US/firefox/addon/github-streak-extension/" target="_blank" style={{ color: '#ffab00', textDecoration: 'underline' }}>Firefox</a> |{' '}
+                    <span style={{ color: 'var(--muted)' }}>Edge (soon)</span> |{' '}
+                    <span style={{ color: 'var(--muted)' }}>Opera (soon)</span>
+                    ) to easily purge GitHub's image cache.
                   </p>
                 </details>
                 <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>

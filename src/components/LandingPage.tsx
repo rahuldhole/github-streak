@@ -88,7 +88,7 @@ export function LandingPage({ origin = '', cacheInfo }: { origin?: string, cache
           <div class="container">
             <h1 style={{ marginBottom: '0.5rem' }}>🔥 GitHub Streak</h1>
             <p style={{ marginBottom: '1.25rem' }}>Generate a Duolingo-inspired GitHub streak widget for your profile.</p>
-            <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'center', marginBottom: '2.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'center', marginBottom: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
               <a href="https://github.com/rahuldhole/github-streak/releases" target="_blank" style={{ display: 'inline-flex', alignItems: 'center', height: '32px', padding: '0 0.6rem', borderRadius: '6px', border: '1px solid var(--border)', backgroundColor: '#f6f8fa', fontSize: '0.75rem', fontWeight: '600', color: 'var(--muted)', textDecoration: 'none', boxSizing: 'border-box' }}>
                 v{version}
               </a>
@@ -106,6 +106,17 @@ export function LandingPage({ origin = '', cacheInfo }: { origin?: string, cache
               </a>
 
               <iframe src="https://github.com/sponsors/rahuldhole/button" title="Sponsor rahuldhole" height="32" width="114" style={{ border: 0, borderRadius: '6px' }}></iframe>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'center', marginBottom: '2.5rem', alignItems: 'center', flexWrap: 'wrap', fontSize: '0.85rem', color: 'var(--text)' }}>
+              <span style={{ fontWeight: '600' }}>Browser Extension:</span>
+              <a href="https://chromewebstore.google.com/detail/github-streak/nabgmpdcbbjmjcmnbbjcfaofkclolbdm" target="_blank" style={{ color: '#ffab00', textDecoration: 'none', fontWeight: '600' }}>Chrome</a>
+              <span style={{ color: 'var(--border)' }}>|</span>
+              <a href="https://addons.mozilla.org/en-US/firefox/addon/github-streak-extension/" target="_blank" style={{ color: '#ffab00', textDecoration: 'none', fontWeight: '600' }}>Firefox</a>
+              <span style={{ color: 'var(--border)' }}>|</span>
+              <span style={{ color: 'var(--muted)' }}>Edge (soon)</span>
+              <span style={{ color: 'var(--border)' }}>|</span>
+              <span style={{ color: 'var(--muted)' }}>Opera (soon)</span>
             </div>
 
             <div class="card">
@@ -199,7 +210,12 @@ export function LandingPage({ origin = '', cacheInfo }: { origin?: string, cache
                   README not updating?
                 </summary>
                 <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.8rem', color: 'var(--text)', lineHeight: '1.5', paddingLeft: '0.5rem', borderLeft: '2px solid #ffab00' }}>
-                  <strong>Note:</strong> GitHub aggressively caches all images via their Camo proxy for up to {camoSecs / 60} minutes. This is outside of our control. If your streak is updated here but stuck on your profile README, you can install our <strong>Browser Extension</strong> to easily purge GitHub's image cache.
+                  <strong>Note:</strong> GitHub aggressively caches all images via their Camo proxy for up to {camoSecs / 60} minutes. This is outside of our control. If your streak is updated here but stuck on your profile README, you can install our Browser Extension (
+                  <a href="https://chromewebstore.google.com/detail/github-streak/nabgmpdcbbjmjcmnbbjcfaofkclolbdm" target="_blank" style={{ color: '#ffab00', textDecoration: 'underline' }}>Chrome</a> |{' '}
+                  <a href="https://addons.mozilla.org/en-US/firefox/addon/github-streak-extension/" target="_blank" style={{ color: '#ffab00', textDecoration: 'underline' }}>Firefox</a> |{' '}
+                  <span style={{ color: 'var(--muted)' }}>Edge (soon)</span> |{' '}
+                  <span style={{ color: 'var(--muted)' }}>Opera (soon)</span>
+                  ) to easily purge GitHub's image cache.
                 </p>
               </details>
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
