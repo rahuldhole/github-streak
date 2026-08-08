@@ -3,6 +3,7 @@ export type Bindings = {
   GITHUB_TOKEN_SECONDARY?: string
   FAST_LANE_TTL_MINUTES?: string
   SLOW_LANE_TTL_MINUTES?: string
+  CAMO_CACHE_TTL_SECONDS?: string
 }
 
 export type GitHubContributionDay = {

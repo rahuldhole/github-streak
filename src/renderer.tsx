@@ -25,8 +25,8 @@ export function renderErrorSVG(message: string) {
 /**
  * Renders the interactive marketing landing page
  */
-export function renderLandingPage(origin: string = '') {
-  return <LandingPage origin={origin} />
+export function renderLandingPage(origin: string = '', cacheInfo?: any) {
+  return <LandingPage origin={origin} cacheInfo={cacheInfo} />
 }
 
 /**
@@ -39,8 +39,8 @@ export function renderCustomizePage(origin: string = '') {
 /**
  * Renders the social share page
  */
-export function renderProfilePage(origin: string, user: string, theme: string = 'dark', profile?: any) {
-  return <ProfilePage origin={origin} user={user} theme={theme} profile={profile} />
+export function renderProfilePage(origin: string, user: string, theme: string = 'dark', profile?: any, cacheInfo?: any) {
+  return <ProfilePage origin={origin} user={user} theme={theme} profile={profile} cacheInfo={cacheInfo} />
 }
 
 /**

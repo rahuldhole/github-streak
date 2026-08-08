@@ -2,8 +2,11 @@
 import { html } from 'hono/html'
 import pkg from '../../package.json' with { type: 'json' }
 
-export function LandingPage({ origin = '' }: { origin?: string }) {
+export function LandingPage({ origin = '', cacheInfo }: { origin?: string, cacheInfo?: any }) {
   const initialUser = ''
+  const fastMins = cacheInfo?.fast || 5
+  const slowMins = cacheInfo?.slow || 60
+  const camoSecs = cacheInfo?.camo !== undefined ? cacheInfo.camo : 120
   const initialTheme = 'dark'
   const version = pkg.version
   const sampleUrl = `${origin}/sample.svg?theme=${initialTheme}&v=${version}`
@@ -189,14 +192,14 @@ export function LandingPage({ origin = '' }: { origin?: string }) {
             }}>
               <h4 style={{ margin: '0 0 0.5rem 0', color: '#ffab00', fontSize: '0.9rem' }}>⚠️ Caching Strategy</h4>
               <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text)', lineHeight: '1.5' }}>
-                To save on API quota, we cache the most recent 6 months of data for 1 hour, and older history for 1 month. If you recently deleted repositories or made significant changes, you can explicitly force a refresh to recalculate your history cache.
+                To save on API quota, we cache the most recent 6 months of data for {fastMins} minutes (fast lane), and older history for 1 month (soft refreshed every {slowMins} minutes). If you recently deleted repositories or made significant changes, you can explicitly force a refresh to recalculate your history cache.
               </p>
               <details style={{ margin: '0.5rem 0 0 0', cursor: 'pointer' }}>
                 <summary style={{ fontSize: '0.8rem', color: '#ffab00', fontWeight: '600', outline: 'none' }}>
                   README not updating?
                 </summary>
                 <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.8rem', color: 'var(--text)', lineHeight: '1.5', paddingLeft: '0.5rem', borderLeft: '2px solid #ffab00' }}>
-                  <strong>Note:</strong> GitHub aggressively caches all images via their Camo proxy. This is outside of our control. If your streak is updated here but stuck on your profile README, you can install our <strong>Browser Extension</strong> to easily purge GitHub's image cache.
+                  <strong>Note:</strong> GitHub aggressively caches all images via their Camo proxy for up to {camoSecs / 60} minutes. This is outside of our control. If your streak is updated here but stuck on your profile README, you can install our <strong>Browser Extension</strong> to easily purge GitHub's image cache.
                 </p>
               </details>
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>

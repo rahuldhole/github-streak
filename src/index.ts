@@ -643,7 +643,12 @@ app.get('/', (c) => {
   c.header('Cache-Control', 'public, max-age=3600, s-maxage=3600')
   c.header('Netlify-CDN-Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=3600')
   const url = new URL(c.req.url)
-  return c.html(renderLandingPage(url.origin))
+  const cacheInfo = {
+    fast: Number(c.env?.FAST_LANE_TTL_MINUTES) || 5,
+    slow: Number(c.env?.SLOW_LANE_TTL_MINUTES) || 60,
+    camo: c.env?.CAMO_CACHE_TTL_SECONDS !== undefined ? Number(c.env.CAMO_CACHE_TTL_SECONDS) : 120
+  }
+  return c.html(renderLandingPage(url.origin, cacheInfo))
 })
 
 app.get('/v1/', (c) => {
@@ -777,7 +782,12 @@ async function handleProfilePage(c: any, userParam: string, themeParam: Theme) {
   c.header('ETag', etagValue)
   const profileData = { ...currentBlob, total: aggregatedTotal }
   const url = new URL(c.req.url)
-  return c.html(renderProfilePage(url.origin, username as string, theme, profileData))
+  const cacheInfo = {
+    fast: Number(c.env?.FAST_LANE_TTL_MINUTES) || 5,
+    slow: Number(c.env?.SLOW_LANE_TTL_MINUTES) || 60,
+    camo: camoTtl
+  }
+  return c.html(renderProfilePage(url.origin, username as string, theme, profileData, cacheInfo))
 }
 
 async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfileSVG: boolean, apiVersion?: string) {
