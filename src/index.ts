@@ -540,41 +540,28 @@ async function getStreakData(c: any, queryUser: string, forceRefresh: boolean, f
   const isProfileDataMissing = needsProfileData && currentBlob && !currentBlob.avatarUrl;
 
   if (isCurrentStaleFast || forceRefresh || fullRefresh || isHistoryStale || isProfileDataMissing) {
-    if (newCurrentBlob && !forceRefresh && !fullRefresh && !isProfileDataMissing) {
+    if (newCurrentBlob && !forceRefresh && !fullRefresh && !isProfileDataMissing && !isCurrentStaleSlow) {
       let waitUntilFn: ((promise: Promise<any>) => void) | undefined
       try {
           if (c.executionCtx && c.executionCtx.waitUntil) waitUntilFn = c.executionCtx.waitUntil.bind(c.executionCtx)
       } catch (e) {}
 
-      // Optimistically update timestamp to prevent cache stampede (thundering herd)
-      // This prevents concurrent requests from all triggering background fetches
-      newCurrentBlob.timestamp = now;
-      if (waitUntilFn) {
-        waitUntilFn(streakStore.setJSON(currentKey, newCurrentBlob).catch(() => {}));
-      }
+      const isSecondaryQuotaExhausted = secondaryRateLimitRemaining === 0 && now < secondaryRateLimitResetAt
+      
+      if (!isSecondaryQuotaExhausted && secondaryToken) {
+        // Optimistically update timestamp to prevent cache stampede (thundering herd)
+        // This prevents concurrent requests from all triggering background fetches
+        newCurrentBlob.timestamp = now;
+        if (waitUntilFn) {
+          waitUntilFn(streakStore.setJSON(currentKey, newCurrentBlob).catch(() => {}));
+        }
 
-      if (!isCurrentStaleSlow) {
         tokenTriggered = 'secondary';
-        // FAST LANE - Secondary Token (if configured)
-        const isSecondaryQuotaExhausted = secondaryRateLimitRemaining === 0 && now < secondaryRateLimitResetAt
-        if (!isSecondaryQuotaExhausted && secondaryToken) {
-          const fetchTask = refreshUserData(secondaryToken, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh, needsProfileData, newCurrentBlob, true).catch((err: any) => {
-              logEvent({ name: 'error', data: { type: 'fast_lane_refresh_failed', username, error: getSafeErrorMessage(err) } })
-          })
-          if (waitUntilFn) waitUntilFn(fetchTask)
-        }
-      } else {
-        tokenTriggered = 'primary';
-        // SLOW LANE - Primary Token
-        const isPrimaryQuotaExhausted = primaryRateLimitRemaining === 0 && now < primaryRateLimitResetAt
-        if (primaryRateLimitRemaining < 20 || isPrimaryQuotaExhausted) {
-          logEvent({ name: 'warn_quota_low', data: { username, token: 'primary' } })
-        } else {
-          const fetchTask = refreshUserData(primaryToken, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh, needsProfileData, newCurrentBlob, false).catch((err: any) => {
-              logEvent({ name: 'error', data: { type: 'background_refresh_failed', username, error: getSafeErrorMessage(err) } })
-          })
-          if (waitUntilFn) waitUntilFn(fetchTask)
-        }
+        // FAST LANE - Secondary Token
+        const fetchTask = refreshUserData(secondaryToken, username, historyKey, currentKey, activeVersion, isHistoryStale, fullRefresh, needsProfileData, newCurrentBlob, true).catch((err: any) => {
+            logEvent({ name: 'error', data: { type: 'fast_lane_refresh_failed', username, error: getSafeErrorMessage(err) } })
+        })
+        if (waitUntilFn) waitUntilFn(fetchTask)
       }
     } else {
         // Synchronous cold start or forced fetch

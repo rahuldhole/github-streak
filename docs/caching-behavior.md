@@ -21,7 +21,7 @@ The caching behavior is controlled via several variables in your `.env` file:
   The amount of time (in minutes) before the cache is considered stale and a background refresh is permitted using the `GITHUB_TOKEN_SECONDARY`. This ensures rapid updates during active periods without exhausting the primary token limit.
 
 - **`SLOW_LANE_TTL_MINUTES`** (Default: 60)
-  The amount of time before the cache is considered deeply stale, allowing a background refresh using the primary `GITHUB_TOKEN`.
+  The maximum age of the cache before it is considered excessively stale. If the cache is older than this, SWR is bypassed and the server performs a **synchronous fetch** using the primary `GITHUB_TOKEN` to guarantee users never see excessively old data.
 
 - **`CAMO_CACHE_TTL_SECONDS`** (Default: 120)
   The maximum time (in seconds) that an external proxy—specifically GitHub's Camo image proxy—will cache the rendered SVG. This is injected into the `Cache-Control` header (`max-age=X, s-maxage=X`).
@@ -48,3 +48,62 @@ The maximum theoretical delay for a GitHub README to show fresh data is:
 `FAST_LANE_TTL_MINUTES` + `CAMO_CACHE_TTL_SECONDS` (e.g., 5 mins + 2 mins = **7 minutes**).
 
 This slight "eventual consistency" delay is an intended trade-off that ensures the application never crashes under high load, never gets rate-limited by GitHub, and always serves images in milliseconds.
+
+## 4. Flowchart of Cache Logic
+
+Here is a visual representation of the current caching behavior and how the SWR logic is evaluated on every request.
+
+```mermaid
+flowchart TD
+    subgraph Client ["Client Layer"]
+        Camo["GitHub Camo (Proxy)"]
+        User["Direct Viewer"]
+    end
+    
+    Camo -->|Request SVG| API["Serverless Function"]
+    User -->|Request SVG| API
+
+    subgraph Evaluation ["Cache Evaluation (Priority Order)"]
+        API --> ReadBlobs["Read 'history' & 'current' from Netlify Blobs"]
+        
+        ReadBlobs --> CheckSync{"1. Cache Missing,\nProfile Missing,\nor Forced (no-cache/full-refresh)?"}
+        CheckSync -->|Yes| SyncBranch["Synchronous Mode"]
+        
+        CheckSync -->|No| CheckSlow{"2. Older than\nSLOW_LANE_TTL\nor Version Stale?"}
+        CheckSlow -->|Yes| SyncBranch
+        
+        CheckSlow -->|No| CheckFast{"3. Older than\nFAST_LANE_TTL\nor History > 30d stale?"}
+        CheckFast -->|Yes| FastLane["SWR: Fast Lane"]
+        
+        CheckFast -->|No| Fresh["4. Fresh Cache Hit"]
+    end
+
+    subgraph Sync ["Synchronous Path (Blocking)"]
+        SyncBranch --> SyncQuota{"Token Quota > 0?"}
+        SyncQuota -- No --> SyncAbort["Abort Fetch\n(Return Old Data or Error)"]
+        
+        SyncQuota -- Yes --> CheckDepth1{"History > 30d stale\nor full-refresh=true?"}
+        CheckDepth1 -->|Yes| SyncFetchFull["Full GitHub Fetch\n(All Years)"]
+        CheckDepth1 -->|"No\n(e.g., no-cache=true)"| SyncFetchPartial["Partial GitHub Fetch\n(Last 6 Months)"]
+        
+        SyncFetchFull --> SyncSave["Save to Blob Store"]
+        SyncFetchPartial --> SyncSave
+        SyncSave --> SyncReturn["Return New SVG"]
+    end
+    
+    subgraph SWR ["Stale-While-Revalidate Path (Non-Blocking)"]
+        FastLane --> ReturnStale2["Return Stale SVG Instantly"]
+        
+        ReturnStale2 -.->|waitUntil| CheckDepth2{"History > 30d stale\nor full-refresh?"}
+        CheckDepth2 -.->|Yes| AsyncSecondaryFull["Full Background Fetch\n(Secondary Token, All Years)"]
+        CheckDepth2 -.->|No| AsyncSecondaryPartial["Partial Background Fetch\n(Secondary Token, 6 Months)"]
+        
+        AsyncSecondaryFull -.-> Quota2{"Token Quota > 0?"}
+        AsyncSecondaryPartial -.-> Quota2
+        
+        Quota2 -- Yes --> AsyncSave2["Save to Blob Store"]
+        Quota2 -- No --> Abort2["Abort (Rate Limit Protected)"]
+    end
+    
+    Fresh --> ReturnFresh["Return Cached SVG Instantly"]
+```
