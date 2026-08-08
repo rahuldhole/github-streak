@@ -756,6 +756,7 @@ async function handleProfilePage(c: any, userParam: string, themeParam: Theme) {
   if (c.req.header('If-None-Match') === etagValue && !forceRefresh && !fullRefresh) {
     return c.body(null, 304, {
       'Cache-Control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=86400',
+      'Netlify-CDN-Cache-Control': 'public, s-maxage=300, stale-while-revalidate=86400',
       'ETag': etagValue,
       'Vary': 'Accept'
     })
@@ -769,6 +770,7 @@ async function handleProfilePage(c: any, userParam: string, themeParam: Theme) {
   logEvent({ name: 'page_view', data: { page: 'profile', username } })
   c.header('Vary', 'Accept')
   c.header('Cache-Control', 'public, max-age=300, s-maxage=300, stale-while-revalidate=86400')
+  c.header('Netlify-CDN-Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400')
   c.header('ETag', etagValue)
   const profileData = { ...currentBlob, total: aggregatedTotal }
   const url = new URL(c.req.url)
@@ -795,6 +797,7 @@ async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfile
   if (c.req.header('If-None-Match') === etagValue && !forceRefresh && !fullRefresh) {
     return c.body(null, 304, {
       'Cache-Control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=86400',
+      'Netlify-CDN-Cache-Control': 'public, s-maxage=300, stale-while-revalidate=86400',
       'ETag': etagValue,
       'Vary': 'Accept'
     })
@@ -821,6 +824,7 @@ async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfile
     return c.body(svg.toString(), 200, {
       'Content-Type': 'image/svg+xml',
       'Cache-Control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=86400',
+      'Netlify-CDN-Cache-Control': 'public, s-maxage=300, stale-while-revalidate=86400',
       'ETag': etagValue,
       'Vary': 'Accept',
       'X-Cache': isCurrentStale ? 'STALE' : 'HIT'
@@ -846,6 +850,7 @@ async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfile
   return c.body(svgStr, 200, {
     'Content-Type': 'image/svg+xml',
     'Cache-Control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=86400',
+    'Netlify-CDN-Cache-Control': 'public, s-maxage=300, stale-while-revalidate=86400',
     'ETag': etagValue,
     'Vary': 'Accept',
     'X-Cache': isCurrentStale ? 'STALE' : 'HIT'
