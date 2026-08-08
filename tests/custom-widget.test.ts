@@ -32,7 +32,7 @@ globalThis.fetch = mock(async () => {
           }
       })
   } as any;
-});
+}) as any;
 
 import { app } from "../src/index.ts";
 

@@ -41,7 +41,7 @@ describe("fetchGitHubData Logic", () => {
                     }
                 })
             } as any;
-        });
+        }) as any;
 
         const result = await fetchGitHubData("testuser", "testtoken", true);
         if (result.isNotModified) throw new Error("Expected modified result");
@@ -92,7 +92,7 @@ describe("fetchGitHubData Logic", () => {
                     })
                 } as any;
             }
-        });
+        }) as any;
 
         const result = await fetchGitHubData("testuser", "testtoken");
         if (result.isNotModified) throw new Error("Expected modified result");
