@@ -753,12 +753,13 @@ async function handleProfilePage(c: any, userParam: string, themeParam: Theme) {
 
   const { username, currentBlob, aggregatedTotal, lastUpdated } = data as any
   const theme = themeParam
+  const camoTtl = c.env?.CAMO_CACHE_TTL_SECONDS !== undefined ? Number(c.env.CAMO_CACHE_TTL_SECONDS) : 120
   
   const etagValue = `W/"html-${username}-${aggregatedTotal}-${currentBlob.stats.current.count}-${lastUpdated}-${theme}"`
   if (c.req.header('If-None-Match') === etagValue && !forceRefresh && !fullRefresh) {
     return c.body(null, 304, {
-      'Cache-Control': 'public, max-age=120, s-maxage=120',
-      'Netlify-CDN-Cache-Control': 'public, s-maxage=120',
+      'Cache-Control': `public, max-age=${camoTtl}, s-maxage=${camoTtl}`,
+      'Netlify-CDN-Cache-Control': `public, s-maxage=${camoTtl}`,
       'ETag': etagValue,
       'Vary': 'Accept'
     })
@@ -771,8 +772,8 @@ async function handleProfilePage(c: any, userParam: string, themeParam: Theme) {
 
   logEvent({ name: 'page_view', data: { page: 'profile', username } })
   c.header('Vary', 'Accept')
-  c.header('Cache-Control', 'public, max-age=120, s-maxage=120')
-  c.header('Netlify-CDN-Cache-Control', 'public, s-maxage=120')
+  c.header('Cache-Control', `public, max-age=${camoTtl}, s-maxage=${camoTtl}`)
+  c.header('Netlify-CDN-Cache-Control', `public, s-maxage=${camoTtl}`)
   c.header('ETag', etagValue)
   const profileData = { ...currentBlob, total: aggregatedTotal }
   const url = new URL(c.req.url)
@@ -794,12 +795,13 @@ async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfile
   const { username, currentBlob, aggregatedTotal, lastUpdated, isCurrentStale, tokenTriggered } = data as any
 
   const custom = c.req.query('custom')
+  const camoTtl = c.env?.CAMO_CACHE_TTL_SECONDS !== undefined ? Number(c.env.CAMO_CACHE_TTL_SECONDS) : 120
   const etagValue = `W/"${username}-${aggregatedTotal}-${currentBlob.stats.current.count}-${lastUpdated}-${theme}-${isProfileSVG}-${custom || ''}"`
   
   if (c.req.header('If-None-Match') === etagValue && !forceRefresh && !fullRefresh) {
     return c.body(null, 304, {
-      'Cache-Control': 'public, max-age=120, s-maxage=120',
-      'Netlify-CDN-Cache-Control': 'public, s-maxage=120',
+      'Cache-Control': `public, max-age=${camoTtl}, s-maxage=${camoTtl}`,
+      'Netlify-CDN-Cache-Control': `public, s-maxage=${camoTtl}`,
       'ETag': etagValue,
       'Vary': 'Accept'
     })
@@ -825,8 +827,8 @@ async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfile
     )
     return c.body(svg.toString(), 200, {
       'Content-Type': 'image/svg+xml',
-      'Cache-Control': 'public, max-age=120, s-maxage=120',
-      'Netlify-CDN-Cache-Control': 'public, s-maxage=120',
+      'Cache-Control': `public, max-age=${camoTtl}, s-maxage=${camoTtl}`,
+      'Netlify-CDN-Cache-Control': `public, s-maxage=${camoTtl}`,
       'ETag': etagValue,
       'Vary': 'Accept',
       'X-Cache': isCurrentStale ? 'STALE' : 'HIT'
@@ -851,8 +853,8 @@ async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfile
 
   return c.body(svgStr, 200, {
     'Content-Type': 'image/svg+xml',
-    'Cache-Control': 'public, max-age=120, s-maxage=120',
-    'Netlify-CDN-Cache-Control': 'public, s-maxage=120',
+    'Cache-Control': `public, max-age=${camoTtl}, s-maxage=${camoTtl}`,
+    'Netlify-CDN-Cache-Control': `public, s-maxage=${camoTtl}`,
     'ETag': etagValue,
     'Vary': 'Accept',
     'X-Cache': isCurrentStale ? 'STALE' : 'HIT'
