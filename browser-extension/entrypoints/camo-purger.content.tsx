@@ -89,19 +89,5 @@ export default defineContentScript({
 
     // Run on initial load
     checkImages();
-
-    // Use MutationObserver to detect dynamically added content
-    const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (mutation.addedNodes.length > 0) {
-          checkImages();
-        }
-      }
-    });
-
-    const body = document.querySelector('body');
-    if (body) {
-      observer.observe(body, { childList: true, subtree: true });
-    }
   },
 });

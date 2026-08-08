@@ -125,12 +125,12 @@ export function GitHubStreakSVG({
     <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none" xmlns="http://www.w3.org/2000/svg">
       <style>
         
-        .label { font: bold 10px sans-serif; fill: ${t.textMuted}; text-transform: uppercase; letter-spacing: 1px; }
-        .stat { font: bold 22px sans-serif; fill: ${t.text}; }
-        .date { font: 10px sans-serif; fill: ${t.textMuted}; }
-        .day { font: 9px sans-serif; fill: #ffffff; }
-        .count { font: bold 11px sans-serif; fill: #ffffff; }
-        .last-updated { font: 8px sans-serif; fill: ${t.textMuted}; opacity: 0.6; }
+        .label { font: bold 10px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; fill: ${t.textMuted}; text-transform: uppercase; letter-spacing: 1px; }
+        .stat { font: bold 22px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; fill: ${t.text}; }
+        .date { font: 10px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; fill: ${t.textMuted}; }
+        .day { font: 9px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; fill: #ffffff; }
+        .count { font: bold 11px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; fill: #ffffff; }
+        .last-updated { font: 8px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; fill: ${t.textMuted}; opacity: 0.6; }
         
       </style>
       

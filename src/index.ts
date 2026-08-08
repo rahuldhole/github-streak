@@ -421,7 +421,17 @@ async function refreshUserData(
 
   const partialFetch = (!isHistoryStale && !fullRefresh) ? true : false
   logEvent({ name: 'github_api_fetch', data: { username, token: isSecondary ? 'secondary' : 'primary', partial: partialFetch } })
-  const fresh = await fetchGitHubData(username, token, partialFetch, needsProfileData)
+  
+  const cachedEtag = existingCurrentBlob?.githubEtag;
+  const fresh = await fetchGitHubData(username, token, partialFetch, needsProfileData, cachedEtag)
+
+  if (fresh.isNotModified) {
+    const streakStore = getStore('streak-data')
+    existingCurrentBlob.timestamp = Date.now()
+    existingCurrentBlob.githubEtag = fresh.githubEtag || existingCurrentBlob.githubEtag
+    await streakStore.setJSON(currentKey, existingCurrentBlob).catch(() => {})
+    return { newCurrentBlob: existingCurrentBlob, newHistoryBlob: null }
+  }
   
   if (fresh.rateLimit) {
     if (isSecondary) {
@@ -473,7 +483,8 @@ async function refreshUserData(
     repositories: fresh.repositories !== undefined ? fresh.repositories : existingCurrentBlob?.repositories,
     pinnedItems: fresh.pinnedItems !== undefined ? fresh.pinnedItems : existingCurrentBlob?.pinnedItems,
     timestamp: Date.now(), 
-    cacheVersion: activeVersion 
+    cacheVersion: activeVersion,
+    githubEtag: fresh.githubEtag || existingCurrentBlob?.githubEtag
   }
   
   const streakStore = getStore('streak-data')
@@ -767,6 +778,17 @@ async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfile
 
   const { username, currentBlob, aggregatedTotal, lastUpdated, isCurrentStale, tokenTriggered } = data as any
 
+  const custom = c.req.query('custom')
+  const etagValue = `W/"${username}-${aggregatedTotal}-${currentBlob.stats.current.count}-${lastUpdated}-${theme}-${isProfileSVG}-${custom || ''}"`
+  
+  if (c.req.header('If-None-Match') === etagValue && !forceRefresh && !fullRefresh) {
+    return c.body(null, 304, {
+      'Cache-Control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=86400',
+      'ETag': etagValue,
+      'Vary': 'Accept'
+    })
+  }
+
   if (type === 'json') {
     c.header('Vary', 'Accept')
     logEvent({ name: 'api_request', data: { username, theme } })
@@ -787,17 +809,14 @@ async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfile
     )
     return c.body(svg.toString(), 200, {
       'Content-Type': 'image/svg+xml',
-      'Cache-Control': 'max-age=0, no-cache, no-store, must-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': '0',
-      'Netlify-CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      'Cache-Control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=86400',
+      'ETag': etagValue,
       'Vary': 'Accept',
       'X-Cache': isCurrentStale ? 'STALE' : 'HIT'
     })
   }
 
   logEvent({ name: 'svg_rendered', data: { username, theme, cacheHit: !isCurrentStale, token: tokenTriggered } })
-  const custom = c.req.query('custom')
   let svgStr = ''
   
   // Custom templates are strictly tied to /v1/ and its corresponding apiVersion handler,
@@ -815,10 +834,8 @@ async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfile
 
   return c.body(svgStr, 200, {
     'Content-Type': 'image/svg+xml',
-    'Cache-Control': 'max-age=0, no-cache, no-store, must-revalidate',
-    'Pragma': 'no-cache',
-    'Expires': '0',
-    'Netlify-CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+    'Cache-Control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=86400',
+    'ETag': etagValue,
     'Vary': 'Accept',
     'X-Cache': isCurrentStale ? 'STALE' : 'HIT'
   })
