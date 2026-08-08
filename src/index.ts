@@ -482,7 +482,8 @@ async function refreshUserData(
     following: fresh.following !== undefined ? fresh.following : existingCurrentBlob?.following,
     repositories: fresh.repositories !== undefined ? fresh.repositories : existingCurrentBlob?.repositories,
     pinnedItems: fresh.pinnedItems !== undefined ? fresh.pinnedItems : existingCurrentBlob?.pinnedItems,
-    timestamp: Date.now(), 
+    timestamp: Date.now(),
+    dataTimestamp: Date.now(),
     cacheVersion: activeVersion,
     githubEtag: fresh.githubEtag || existingCurrentBlob?.githubEtag
   }
@@ -605,7 +606,7 @@ async function getStreakData(c: any, queryUser: string, forceRefresh: boolean, f
   }
 
   const aggregatedTotal = (newHistoryBlob?.total || 0) + newCurrentBlob.stats.total
-  const lastUpdated = new Date(newCurrentBlob.timestamp).toLocaleTimeString()
+  const lastUpdated = new Date(newCurrentBlob.dataTimestamp || newCurrentBlob.timestamp).toLocaleTimeString()
 
   return {
     username,
