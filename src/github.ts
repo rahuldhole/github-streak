@@ -70,24 +70,27 @@ query($login:String!) {
 }`
 
 export async function fetchGitHubData(username: string, token: string, partialFetch?: boolean, needsProfileData: boolean = true, cachedEtag?: string): Promise<{ 
-  days: GitHubContributionDay[], 
-  totalContributions: number, 
-  contributionYears: number[],
-  name?: string,
-  avatarUrl?: string,
-  bio?: string,
-  company?: string,
-  location?: string,
-  websiteUrl?: string,
-  twitterUsername?: string,
-  email?: string,
-  followers?: number,
-  following?: number,
-  repositories?: number,
-  pinnedItems?: any[],
-  rateLimit?: { remaining: number, resetAt: string },
-  githubEtag?: string,
-  isNotModified?: boolean
+  isNotModified: true;
+  githubEtag?: string;
+} | {
+  isNotModified?: false;
+  days: GitHubContributionDay[];
+  totalContributions: number;
+  contributionYears: number[];
+  name?: string;
+  avatarUrl?: string;
+  bio?: string;
+  company?: string;
+  location?: string;
+  websiteUrl?: string;
+  twitterUsername?: string;
+  email?: string;
+  followers?: number;
+  following?: number;
+  repositories?: number;
+  pinnedItems?: any[];
+  rateLimit?: { remaining: number, resetAt: string };
+  githubEtag?: string;
 }> {
   const headers: any = {
     "Content-Type": "application/json",

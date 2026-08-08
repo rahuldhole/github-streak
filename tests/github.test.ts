@@ -44,6 +44,7 @@ describe("fetchGitHubData Logic", () => {
         });
 
         const result = await fetchGitHubData("testuser", "testtoken", true);
+        if (result.isNotModified) throw new Error("Expected modified result");
         
         // Total contributions should only be the ones in current targetYear (10 + 15 = 25)
         // Wait, for partialFetch, it sums all days returned by GraphQL (10 + 15 + 5 = 30)
@@ -94,6 +95,7 @@ describe("fetchGitHubData Logic", () => {
         });
 
         const result = await fetchGitHubData("testuser", "testtoken");
+        if (result.isNotModified) throw new Error("Expected modified result");
         
         // Should be 100 + 400 = 500
         expect(result.totalContributions).toBe(500);
