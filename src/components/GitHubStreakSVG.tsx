@@ -22,12 +22,12 @@ function formatShortDate(dateStr: string): string {
   let d: Date
   if (match) {
     const [, year, month, day] = match
-    d = new Date(Number(year), Number(month) - 1, Number(day))
+    d = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)))
   } else {
     d = new Date(dateStr)
   }
   if (isNaN(d.getTime())) return '---'
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
 }
 
 function formatNumber(num: number): string {
@@ -95,7 +95,7 @@ export function GitHubStreakSVG({
   const height = 180
   const padding = 25
   const t = themes[theme] || themes.dark
-  const dayLabels = last7.map(d => new Date(d.date).toLocaleDateString("en", { weekday: "short" })[0])
+  const dayLabels = last7.map(d => new Date(d.date).toLocaleDateString("en", { weekday: "short", timeZone: 'UTC' })[0])
 
   let currentStreakDate = '---'
   if (stats.current.start && stats.current.end) {
@@ -125,12 +125,12 @@ export function GitHubStreakSVG({
     <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none" xmlns="http://www.w3.org/2000/svg">
       <style>
         
-        .label { font: bold 10px sans-serif; fill: ${t.textMuted}; text-transform: uppercase; letter-spacing: 1px; }
-        .stat { font: bold 22px sans-serif; fill: ${t.text}; }
-        .date { font: 10px sans-serif; fill: ${t.textMuted}; }
-        .day { font: 9px sans-serif; fill: #ffffff; }
-        .count { font: bold 11px sans-serif; fill: #ffffff; }
-        .last-updated { font: 8px sans-serif; fill: ${t.textMuted}; opacity: 0.6; }
+        .label { font: bold 10px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; fill: ${t.textMuted}; text-transform: uppercase; letter-spacing: 1px; }
+        .stat { font: bold 22px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; fill: ${t.text}; }
+        .date { font: 10px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; fill: ${t.textMuted}; }
+        .day { font: 9px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; fill: #ffffff; }
+        .count { font: bold 11px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; fill: #ffffff; }
+        .last-updated { font: 8px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; fill: ${t.textMuted}; opacity: 0.6; }
         
       </style>
       

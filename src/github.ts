@@ -69,7 +69,7 @@ query($login:String!) {
   }
 }`
 
-export async function fetchGitHubData(username: string, token: string, partialFetch?: boolean, needsProfileData: boolean = true): Promise<{ 
+export async function fetchGitHubData(username: string, token: string, partialFetch?: boolean, needsProfileData: boolean = true, cachedEtag?: string): Promise<{ 
   days: GitHubContributionDay[], 
   totalContributions: number, 
   contributionYears: number[],
@@ -85,12 +85,29 @@ export async function fetchGitHubData(username: string, token: string, partialFe
   following?: number,
   repositories?: number,
   pinnedItems?: any[],
-  rateLimit?: { remaining: number, resetAt: string } 
+  rateLimit?: { remaining: number, resetAt: string },
+  githubEtag?: string,
+  isNotModified?: boolean
 }> {
-  const headers = {
+  const headers: any = {
     "Content-Type": "application/json",
     "Authorization": "Bearer " + token,
     "User-Agent": "Github-Streak-Worker"
+  }
+
+  let newEtag = cachedEtag;
+  try {
+    const headRes = await fetch(`https://api.github.com/users/${username}/events/public?per_page=1`, {
+      method: "HEAD",
+      headers: cachedEtag ? { ...headers, "If-None-Match": cachedEtag } : headers
+    });
+    newEtag = headRes.headers.get("etag") || newEtag;
+    
+    if (headRes.status === 304 && cachedEtag) {
+      return { isNotModified: true, githubEtag: newEtag };
+    }
+  } catch (e) {
+    // Ignore HEAD errors and fall through to GraphQL
   }
 
   // Initial fetch to get the current calendar and the list of contribution years
@@ -165,7 +182,8 @@ export async function fetchGitHubData(username: string, token: string, partialFe
       following: user.following?.totalCount,
       repositories: user.repositories?.totalCount,
       pinnedItems: user.pinnedItems?.nodes,
-      rateLimit
+      rateLimit,
+      githubEtag: newEtag
     }
   }
 
@@ -238,6 +256,7 @@ export async function fetchGitHubData(username: string, token: string, partialFe
     following: user.following?.totalCount,
     repositories: user.repositories?.totalCount,
     pinnedItems: user.pinnedItems?.nodes,
-    rateLimit
+    rateLimit,
+    githubEtag: newEtag
   }
 }

@@ -421,7 +421,17 @@ async function refreshUserData(
 
   const partialFetch = (!isHistoryStale && !fullRefresh) ? true : false
   logEvent({ name: 'github_api_fetch', data: { username, token: isSecondary ? 'secondary' : 'primary', partial: partialFetch } })
-  const fresh = await fetchGitHubData(username, token, partialFetch, needsProfileData)
+  
+  const cachedEtag = existingCurrentBlob?.githubEtag;
+  const fresh = await fetchGitHubData(username, token, partialFetch, needsProfileData, cachedEtag)
+
+  if (fresh.isNotModified) {
+    const streakStore = getStore('streak-data')
+    existingCurrentBlob.timestamp = Date.now()
+    existingCurrentBlob.githubEtag = fresh.githubEtag || existingCurrentBlob.githubEtag
+    await streakStore.setJSON(currentKey, existingCurrentBlob).catch(() => {})
+    return { newCurrentBlob: existingCurrentBlob, newHistoryBlob: null }
+  }
   
   if (fresh.rateLimit) {
     if (isSecondary) {
@@ -472,8 +482,10 @@ async function refreshUserData(
     following: fresh.following !== undefined ? fresh.following : existingCurrentBlob?.following,
     repositories: fresh.repositories !== undefined ? fresh.repositories : existingCurrentBlob?.repositories,
     pinnedItems: fresh.pinnedItems !== undefined ? fresh.pinnedItems : existingCurrentBlob?.pinnedItems,
-    timestamp: Date.now(), 
-    cacheVersion: activeVersion 
+    timestamp: Date.now(),
+    dataTimestamp: Date.now(),
+    cacheVersion: activeVersion,
+    githubEtag: fresh.githubEtag || existingCurrentBlob?.githubEtag
   }
   
   const streakStore = getStore('streak-data')
@@ -594,7 +606,7 @@ async function getStreakData(c: any, queryUser: string, forceRefresh: boolean, f
   }
 
   const aggregatedTotal = (newHistoryBlob?.total || 0) + newCurrentBlob.stats.total
-  const lastUpdated = new Date(newCurrentBlob.timestamp).toLocaleTimeString()
+  const lastUpdated = new Date(newCurrentBlob.dataTimestamp || newCurrentBlob.timestamp).toLocaleTimeString('en-US', { timeZone: 'UTC' }) + ' UTC'
 
   return {
     username,
@@ -737,8 +749,18 @@ async function handleProfilePage(c: any, userParam: string, themeParam: Theme) {
     return returnErrorSVG(c, data.error)
   }
 
-  const { username, currentBlob, aggregatedTotal } = data as any
+  const { username, currentBlob, aggregatedTotal, lastUpdated } = data as any
   const theme = themeParam
+  
+  const etagValue = `W/"html-${username}-${aggregatedTotal}-${currentBlob.stats.current.count}-${lastUpdated}-${theme}"`
+  if (c.req.header('If-None-Match') === etagValue && !forceRefresh && !fullRefresh) {
+    return c.body(null, 304, {
+      'Cache-Control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=86400',
+      'Netlify-CDN-Cache-Control': 'public, s-maxage=300, stale-while-revalidate=86400',
+      'ETag': etagValue,
+      'Vary': 'Accept'
+    })
+  }
   if (type === 'json') {
     c.header('Vary', 'Accept')
     logEvent({ name: 'api_request', data: { username, theme } })
@@ -747,7 +769,9 @@ async function handleProfilePage(c: any, userParam: string, themeParam: Theme) {
 
   logEvent({ name: 'page_view', data: { page: 'profile', username } })
   c.header('Vary', 'Accept')
-  c.header('Cache-Control', 'public, max-age=3600, s-maxage=3600')
+  c.header('Cache-Control', 'public, max-age=300, s-maxage=300, stale-while-revalidate=86400')
+  c.header('Netlify-CDN-Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400')
+  c.header('ETag', etagValue)
   const profileData = { ...currentBlob, total: aggregatedTotal }
   const url = new URL(c.req.url)
   return c.html(renderProfilePage(url.origin, username as string, theme, profileData))
@@ -766,6 +790,18 @@ async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfile
   }
 
   const { username, currentBlob, aggregatedTotal, lastUpdated, isCurrentStale, tokenTriggered } = data as any
+
+  const custom = c.req.query('custom')
+  const etagValue = `W/"${username}-${aggregatedTotal}-${currentBlob.stats.current.count}-${lastUpdated}-${theme}-${isProfileSVG}-${custom || ''}"`
+  
+  if (c.req.header('If-None-Match') === etagValue && !forceRefresh && !fullRefresh) {
+    return c.body(null, 304, {
+      'Cache-Control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=86400',
+      'Netlify-CDN-Cache-Control': 'public, s-maxage=300, stale-while-revalidate=86400',
+      'ETag': etagValue,
+      'Vary': 'Accept'
+    })
+  }
 
   if (type === 'json') {
     c.header('Vary', 'Accept')
@@ -787,17 +823,15 @@ async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfile
     )
     return c.body(svg.toString(), 200, {
       'Content-Type': 'image/svg+xml',
-      'Cache-Control': 'max-age=0, no-cache, no-store, must-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': '0',
-      'Netlify-CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      'Cache-Control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=86400',
+      'Netlify-CDN-Cache-Control': 'public, s-maxage=300, stale-while-revalidate=86400',
+      'ETag': etagValue,
       'Vary': 'Accept',
       'X-Cache': isCurrentStale ? 'STALE' : 'HIT'
     })
   }
 
   logEvent({ name: 'svg_rendered', data: { username, theme, cacheHit: !isCurrentStale, token: tokenTriggered } })
-  const custom = c.req.query('custom')
   let svgStr = ''
   
   // Custom templates are strictly tied to /v1/ and its corresponding apiVersion handler,
@@ -815,10 +849,9 @@ async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfile
 
   return c.body(svgStr, 200, {
     'Content-Type': 'image/svg+xml',
-    'Cache-Control': 'max-age=0, no-cache, no-store, must-revalidate',
-    'Pragma': 'no-cache',
-    'Expires': '0',
-    'Netlify-CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+    'Cache-Control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=86400',
+    'Netlify-CDN-Cache-Control': 'public, s-maxage=300, stale-while-revalidate=86400',
+    'ETag': etagValue,
     'Vary': 'Accept',
     'X-Cache': isCurrentStale ? 'STALE' : 'HIT'
   })

@@ -23,12 +23,12 @@ function formatShortDate(dateStr: string): string {
   let d: Date
   if (match) {
     const [, year, month, day] = match
-    d = new Date(Number(year), Number(month) - 1, Number(day))
+    d = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)))
   } else {
     d = new Date(dateStr)
   }
   if (isNaN(d.getTime())) return '---'
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
 }
 
 function formatNumber(num: number): string {
@@ -79,7 +79,7 @@ export function renderCustomTemplate(
   const width = 420
   const padding = 25
   const t = themes[theme] || themes.dark
-  const dayLabels = last7.map(d => new Date(d.date).toLocaleDateString("en", { weekday: "short" })[0])
+  const dayLabels = last7.map(d => new Date(d.date).toLocaleDateString("en", { weekday: "short", timeZone: 'UTC' })[0])
 
   let currentStreakDate = '---'
   if (stats.current.start && stats.current.end) {
