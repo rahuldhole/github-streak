@@ -3,7 +3,7 @@ import { brotliCompressSync, brotliDecompressSync } from "node:zlib";
 import { Buffer } from "node:buffer";
 
 // Mock Netlify Blobs for local testing
-const mockGet = mock(async () => null);
+const mockGet = mock(async (key?: any, options?: any) => null as any);
 const mockSet = mock(async () => {});
 
 mock.module("@netlify/blobs", () => ({

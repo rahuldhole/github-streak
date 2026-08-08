@@ -1,7 +1,7 @@
 import { expect, test, describe, mock, beforeEach } from "bun:test";
 
 // Mock Netlify Blobs for local testing
-const mockGet = mock(async () => null);
+const mockGet = mock(async (key?: any, options?: any) => null as any);
 const mockSet = mock(async () => {});
 
 mock.module("@netlify/blobs", () => ({
@@ -45,7 +45,7 @@ describe("Contribution Aggregation Logic", () => {
         const res = await app.request("/?user=rahuldhole&type=json");
         expect(res.status).toBe(200);
         
-        const data = await res.json();
+        const data = await res.json() as any;
         // 1000 + 50 = 1050
         expect(data.total).toBe(1050);
     });
@@ -74,7 +74,7 @@ describe("Contribution Aggregation Logic", () => {
         });
 
         const res = await app.request("/?user=rahuldhole&type=json");
-        const data = await res.json();
+        const data = await res.json() as any;
         expect(data.total).toBe(1);
     });
 });
