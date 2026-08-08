@@ -112,8 +112,8 @@ describe("Cache Versioning Logic", () => {
 
         await app.request("/?user=tester", {}, { GITHUB_TOKEN: "test" });
         
-        // Tiered fetch makes ONLY 2 fetch calls (HEAD + Light Mode, no chunk query)
-        expect(fetchMock.mock.calls.length).toBe(2);
+        // Tiered fetch makes ONLY 1 fetch call (Light Mode, no chunk query)
+        expect(fetchMock.mock.calls.length).toBe(1);
     });
 });
 
