@@ -749,8 +749,17 @@ async function handleProfilePage(c: any, userParam: string, themeParam: Theme) {
     return returnErrorSVG(c, data.error)
   }
 
-  const { username, currentBlob, aggregatedTotal } = data as any
+  const { username, currentBlob, aggregatedTotal, lastUpdated } = data as any
   const theme = themeParam
+  
+  const etagValue = `W/"html-${username}-${aggregatedTotal}-${currentBlob.stats.current.count}-${lastUpdated}-${theme}"`
+  if (c.req.header('If-None-Match') === etagValue && !forceRefresh && !fullRefresh) {
+    return c.body(null, 304, {
+      'Cache-Control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=86400',
+      'ETag': etagValue,
+      'Vary': 'Accept'
+    })
+  }
   if (type === 'json') {
     c.header('Vary', 'Accept')
     logEvent({ name: 'api_request', data: { username, theme } })
@@ -759,7 +768,8 @@ async function handleProfilePage(c: any, userParam: string, themeParam: Theme) {
 
   logEvent({ name: 'page_view', data: { page: 'profile', username } })
   c.header('Vary', 'Accept')
-  c.header('Cache-Control', 'public, max-age=3600, s-maxage=3600')
+  c.header('Cache-Control', 'public, max-age=300, s-maxage=300, stale-while-revalidate=86400')
+  c.header('ETag', etagValue)
   const profileData = { ...currentBlob, total: aggregatedTotal }
   const url = new URL(c.req.url)
   return c.html(renderProfilePage(url.origin, username as string, theme, profileData))
