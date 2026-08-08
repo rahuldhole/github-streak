@@ -606,7 +606,7 @@ async function getStreakData(c: any, queryUser: string, forceRefresh: boolean, f
   }
 
   const aggregatedTotal = (newHistoryBlob?.total || 0) + newCurrentBlob.stats.total
-  const lastUpdated = new Date(newCurrentBlob.dataTimestamp || newCurrentBlob.timestamp).toLocaleTimeString()
+  const lastUpdated = new Date(newCurrentBlob.dataTimestamp || newCurrentBlob.timestamp).toLocaleTimeString('en-US', { timeZone: 'UTC' }) + ' UTC'
 
   return {
     username,
