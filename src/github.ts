@@ -99,19 +99,7 @@ export async function fetchGitHubData(username: string, token: string, partialFe
   }
 
   let newEtag = cachedEtag;
-  try {
-    const headRes = await fetch(`https://api.github.com/users/${username}/events/public?per_page=1`, {
-      method: "HEAD",
-      headers: cachedEtag ? { ...headers, "If-None-Match": cachedEtag } : headers
-    });
-    newEtag = headRes.headers.get("etag") || newEtag;
-    
-    if (headRes.status === 304 && cachedEtag) {
-      return { isNotModified: true, githubEtag: newEtag };
-    }
-  } catch (e) {
-    // Ignore HEAD errors and fall through to GraphQL
-  }
+
 
   // Initial fetch to get the current calendar and the list of contribution years
   const res = await fetch("https://api.github.com/graphql", {
