@@ -49,7 +49,16 @@ The maximum theoretical delay for a GitHub README to show fresh data is:
 
 This slight "eventual consistency" delay is an intended trade-off that ensures the application never crashes under high load, never gets rate-limited by GitHub, and always serves images in milliseconds.
 
-## 4. Flowchart of Cache Logic
+## 4. Dual-Cache Architecture (Current vs History)
+
+To prevent burning through GitHub's API rate limits on massive user profiles (10+ years of history), the application splits the database into two separate blobs per user:
+
+1. **`{username}:current`**: This holds only the lightweight, recent 6 months of data. The Fast Lane and Slow Lane constantly update this specific file via **Partial Fetches**.
+2. **`{username}:history`**: This holds the heavy, historical years of data. When normal SWR partial fetches occur, this file is completely ignored, and its internal `timestamp` slowly ages.
+
+Once the `history` blob's timestamp becomes older than 30 days, the server detects this and forces a **Full Fetch** (recalculating all years from the beginning). This updates both blobs and resets the 30-day timer. This dual-cache design guarantees instant updates for recent activity while lazily maintaining long-term history.
+
+## 5. Flowchart of Cache Logic
 
 Here is a visual representation of the current caching behavior and how the SWR logic is evaluated on every request.
 
@@ -86,9 +95,10 @@ flowchart TD
         CheckDepth1 -->|Yes| SyncFetchFull["Full GitHub Fetch\n(All Years)"]
         CheckDepth1 -->|"No\n(e.g., no-cache=true)"| SyncFetchPartial["Partial GitHub Fetch\n(Last 6 Months)"]
         
-        SyncFetchFull --> SyncSave["Save to Blob Store"]
-        SyncFetchPartial --> SyncSave
-        SyncSave --> SyncReturn["Return New SVG"]
+        SyncFetchFull --> SyncSaveFull["Save to BOTH 'history' & 'current'\n(Timestamps reset)"]
+        SyncFetchPartial --> SyncSavePartial["Save to 'current' ONLY\n(History ages)"]
+        SyncSaveFull --> SyncReturn["Return New SVG"]
+        SyncSavePartial --> SyncReturn
     end
     
     subgraph SWR ["Stale-While-Revalidate Path (Non-Blocking)"]
@@ -101,7 +111,10 @@ flowchart TD
         AsyncSecondaryFull -.-> Quota2{"Token Quota > 0?"}
         AsyncSecondaryPartial -.-> Quota2
         
-        Quota2 -- Yes --> AsyncSave2["Save to Blob Store"]
+        Quota2 -- Yes --> AsyncCheckDepth{"Full or Partial?"}
+        AsyncCheckDepth -- Full --> AsyncSaveFull["Save to BOTH 'history' & 'current'\n(Timestamps reset)"]
+        AsyncCheckDepth -- Partial --> AsyncSavePartial["Save to 'current' ONLY\n(History ages)"]
+        
         Quota2 -- No --> Abort2["Abort (Rate Limit Protected)"]
     end
     
