@@ -114,7 +114,7 @@ export function LandingPage({ origin = '', cacheInfo }: { origin?: string, cache
               <span style={{ color: 'var(--border)' }}>|</span>
               <a href="https://addons.mozilla.org/en-US/firefox/addon/github-streak-extension/" target="_blank" style={{ color: '#ffab00', textDecoration: 'none', fontWeight: '600' }}>Firefox</a>
               <span style={{ color: 'var(--border)' }}>|</span>
-              <span style={{ color: 'var(--muted)' }}>Edge (soon)</span>
+              <a href="https://microsoftedge.microsoft.com/addons/detail/githubstreakextension/pfnpbclbamfpfcmcnlkdamabjkddibja" target="_blank" style={{ color: '#ffab00', textDecoration: 'none', fontWeight: '600' }}>Edge</a>
               <span style={{ color: 'var(--border)' }}>|</span>
               <span style={{ color: 'var(--muted)' }}>Opera (soon)</span>
             </div>
@@ -217,7 +217,7 @@ export function LandingPage({ origin = '', cacheInfo }: { origin?: string, cache
                   <strong>Note:</strong> GitHub aggressively caches all images via their Camo proxy for up to {camoSecs / 60} minutes. This is outside of our control. If your streak is updated here but stuck on your profile README, you can install our Browser Extension (
                   <a href="https://chromewebstore.google.com/detail/github-streak/nabgmpdcbbjmjcmnbbjcfaofkclolbdm" target="_blank" style={{ color: '#ffab00', textDecoration: 'underline' }}>Chrome</a> |{' '}
                   <a href="https://addons.mozilla.org/en-US/firefox/addon/github-streak-extension/" target="_blank" style={{ color: '#ffab00', textDecoration: 'underline' }}>Firefox</a> |{' '}
-                  <span style={{ color: 'var(--muted)' }}>Edge (soon)</span> |{' '}
+                  <a href="https://microsoftedge.microsoft.com/addons/detail/githubstreakextension/pfnpbclbamfpfcmcnlkdamabjkddibja" target="_blank" style={{ color: '#ffab00', textDecoration: 'underline' }}>Edge</a> |{' '}
                   <span style={{ color: 'var(--muted)' }}>Opera (soon)</span>
                   ) to easily purge GitHub's image cache.
                 </p>
