@@ -102,6 +102,7 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
                     <option value="tripleColumnPulse">📊 Triple Column Pulse</option>
                     <option value="activityGraph">📈 Activity Graph (7 Days)</option>
                     <option value="activityGraphMonthly">📈 30-Day Activity Trend</option>
+                    <option value="activityBars">📊 Weekly Activity Bars</option>
                   </optgroup>
                   {Object.keys(aiTemplates).length > 0 && (
                     <optgroup label="AI Generated">
