@@ -160,7 +160,7 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
                   <h3 style={{ fontSize: '1rem', marginTop: '1.5rem' }}>Available Variables</h3>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontSize: '0.85rem' }}>
                     <div style={{ background: '#f6f8fa', padding: '1rem', borderRadius: '6px', border: '1px solid var(--border)' }}>
-                      <strong>Statistics</strong>
+                      <strong>Statistics & Theme</strong>
                       <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.2rem', color: 'var(--muted)', lineHeight: '1.6' }}>
                         <li><code>{"{{currentStreak}}"}</code> - Current streak length</li>
                         <li><code>{"{{currentStreakDate}}"}</code> - Current streak date range</li>
@@ -168,18 +168,25 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
                         <li><code>{"{{personalBestDate}}"}</code> - Longest streak date range</li>
                         <li><code>{"{{totalContribs}}"}</code> - Total lifetime contributions</li>
                         <li><code>{"{{totalContribsDate}}"}</code> - Total contribution date range</li>
+                        <li><code>{"{{lastUpdated}}"}</code> - Date the SVG was generated</li>
+                        <li><code>{"{{theme.bg}}"}</code>, <code>{"{{theme.border}}"}</code> - Theme background and border colors</li>
+                        <li><code>{"{{theme.text}}"}</code>, <code>{"{{theme.textMuted}}"}</code> - Theme primary and muted text</li>
+                        <li><code>{"{{theme.accent}}"}</code> - Theme accent color</li>
                       </ul>
                     </div>
                     <div style={{ background: '#f6f8fa', padding: '1rem', borderRadius: '6px', border: '1px solid var(--border)' }}>
-                      <strong>Visuals & Dates (Up to 30 Days)</strong>
+                      <strong>Daily Activity & Visuals (0 to 29)</strong>
                       <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.2rem', color: 'var(--muted)', lineHeight: '1.6' }}>
-                        <li><code>{"{{heatStrip}}"}</code> - Renders default 7-day activity boxes</li>
-                        <li><code>{"{{lastUpdated}}"}</code> - Date the SVG was generated</li>
-                        <li><code>{"{{maxCount}}"}</code> - Peak contribution count across the active period (ideal for CSS chart scaling)</li>
-                        <li><code>{"{{dayXCount}}"}</code> - Contrib count for day X (0 to 29, where 0 is 29 days ago, 29 is today)</li>
-                        <li><code>{"{{dayXLevel}}"}</code> - Heat level for day X (0-4)</li>
-                        <li><code>{"{{dayXLabel}}"}</code> - Day of week label (e.g. M, T, W)</li>
-                        <li><code>{"{{dayAgoXCount}}"}</code> - Count relative to today (e.g. dayAgo0Count is today, dayAgo1Count is yesterday)</li>
+                        <li><code>{"{{maxCount}}"}</code> (or <code>{"{{max}}"}</code>) - Peak contribution count in period</li>
+                        <li><code>{"{{heatStrip}}"}</code> - Pre-rendered 7-day activity box strip</li>
+                        <li><code>{"{{dayXCount}}"}</code> - Contrib count for day X (0 is 29 days ago, 29 is today)</li>
+                        <li><code>{"{{dayXLevel}}"}</code> - Heat level 0 to 4 (based on intensity)</li>
+                        <li><code>{"{{dayXColor}}"}</code> - SVG fill color corresponding to heat level</li>
+                        <li><code>{"{{dayXTextColor}}"}</code> - High-contrast text color for count text</li>
+                        <li><code>{"{{dayXLabel}}"}</code> - Day of week initial (e.g. M, T, W)</li>
+                        <li><code>{"{{dayXDate}}"}</code> - Day date formatted as YYYY-MM-DD</li>
+                        <li><code>{"{{dayAgoXCount}}"}</code> - Relative days (<code>dayAgo0Count</code> is today, <code>dayAgo1Count</code> is yesterday)</li>
+                        <li><code>{"{{dayAgoXColor}}"}</code>, <code>{"{{dayAgoXLevel}}"}</code>, <code>{"{{dayAgoXDate}}"}</code> - Relative color, level, & date</li>
                       </ul>
                     </div>
                   </div>

@@ -348,6 +348,43 @@ describe("Custom Widget V1 — Brotli Encoding Integrity", () => {
     expect(renderedZero).toContain("style=\"--max: 1;");
     expect(renderedZero).not.toContain("{{maxCount}}");
   });
+
+  test("Supports exhaustive replacement of all variables", async () => {
+    const { renderCustomTemplate } = await import("../src/components/CustomTemplateRenderer.ts");
+    const template = `<svg>
+      <text>{{dayAgo0Count}} {{dayAgo0Color}} {{dayAgo0TextColor}} {{dayAgo0Level}} {{dayAgo0Date}} {{dayAgo0Label}}</text>
+      <text>{{dayAgo1Count}} {{dayAgo1Color}} {{dayAgo1TextColor}} {{dayAgo1Level}} {{dayAgo1Date}} {{dayAgo1Label}}</text>
+      <text>{{day0Count}} {{day0Color}} {{day0TextColor}} {{day0Level}} {{day0Date}} {{day0Label}}</text>
+      <text>{{day1Count}} {{day1Color}} {{day1TextColor}} {{day1Level}} {{day1Date}} {{day1Label}}</text>
+      <text>{{last7Day0Count}} {{last7Day0Color}} {{last7Day0TextColor}} {{last7Day0Level}} {{last7Day0Label}}</text>
+      <text>{{currentStreak}} {{currentStreakDate}} {{personalBest}} {{personalBestDate}} {{totalContribs}} {{totalContribsDate}}</text>
+      <text>{{maxCount}} {{max}} {{theme.bg}} {{theme.border}} {{theme.text}} {{theme.textMuted}} {{theme.accent}} {{lastUpdated}}</text>
+      <g>{{heatStrip}}</g>
+    </svg>`;
+
+    const days = [
+      { contributionCount: 2, date: "2024-03-06" }, // day0 (oldest), dayAgo1 (yesterday)
+      { contributionCount: 8, date: "2024-03-07" }, // day1 (newest), dayAgo0 (today)
+    ];
+    const dummyStats = {
+      current: { count: 2, start: "2024-03-06", end: "2024-03-07" },
+      max: { count: 5, start: "2024-01-01", end: "2024-01-05" },
+      total: 10,
+      yearRange: "2024"
+    };
+
+    const rendered = renderCustomTemplate(template, dummyStats as any, days, 8, 'dark', '2024-03-08');
+    
+    // Check key replacements happened
+    expect(rendered).toContain(">8 #39d353ff #000000 4 2024-03-07 ");
+    expect(rendered).toContain("2024-03-06");
+    
+    // Check there are no unreplaced variables left (i.e. no '{{')
+    // We replace the literal string '{{' to ensure none were left behind
+    const unreplacedMatch = rendered.match(/\{\{.*?\}\}/g);
+    expect(unreplacedMatch).toBeNull();
+  });
 });
+
 
 

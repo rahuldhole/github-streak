@@ -210,14 +210,19 @@ These mustache-style variables (e.g. {{variableName}}) are replaced with real da
 - {{lastUpdated}} — Timestamp string (e.g. "Last Updated: 2024-03-07")
 
 ### Daily Contribution Variables (Up to 30 Days)
-- {{maxCount}} — Peak contribution count across the active period (ideal for CSS chart scaling: style="--max: {{maxCount}};")
+- {{maxCount}} (or {{max}}) — Peak contribution count across the active period (ideal for CSS chart scaling: style="--max: {{maxCount}};")
 - {{day0Count}} ... {{day29Count}} — Contribution count for that day (0 is 29 days ago, 29 is today)
 - {{day0Label}} ... {{day29Label}} — Day label ("M", "T", "W", etc.)
 - {{day0Level}} ... {{day29Level}} — Intensity level 0-4 (for CSS var mapping)
 - {{day0Color}} ... {{day29Color}} — Direct hex color for that day's intensity
 - {{day0TextColor}} ... {{day29TextColor}} — Contrasting text color
 - {{day0Date}} ... {{day29Date}} — ISO date string (YYYY-MM-DD)
-- {{dayAgo0Count}} ... {{dayAgo29Count}} — Relative syntax (dayAgo0 is today, dayAgo1 is yesterday, etc.)
+- {{dayAgo0Count}} ... {{dayAgo29Count}} — Relative count (dayAgo0 is today, dayAgo1 is yesterday, etc.)
+- {{dayAgo0Color}} ... {{dayAgo29Color}} — Relative hex color
+- {{dayAgo0TextColor}} ... {{dayAgo29TextColor}} — Relative contrasting text color
+- {{dayAgo0Level}} ... {{dayAgo29Level}} — Relative intensity level (0-4)
+- {{dayAgo0Date}} ... {{dayAgo29Date}} — Relative ISO date string
+- {{dayAgo0Label}} ... {{dayAgo29Label}} — Relative day label
 
 ### Theme Variables
 - {{theme.bg}}, {{theme.border}}, {{theme.text}}, {{theme.textMuted}}, {{theme.accent}}
