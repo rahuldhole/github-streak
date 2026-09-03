@@ -71,7 +71,7 @@ function getIntensityLevel(count: number, maxCount: number): number {
 export function renderCustomTemplate(
   template: string,
   stats: StreakStats,
-  last7: GitHubContributionDay[],
+  days: GitHubContributionDay[],
   maxCount: number,
   theme: Theme = 'transparent',
   lastUpdated?: string
@@ -79,7 +79,10 @@ export function renderCustomTemplate(
   const width = 420
   const padding = 25
   const t = themes[theme] || themes.dark
-  const dayLabels = last7.map(d => new Date(d.date).toLocaleDateString("en", { weekday: "short", timeZone: 'UTC' })[0])
+  
+  // For backwards compatibility, heatStrip is always built from the last 7 days of the provided array
+  const last7 = days.slice(-7)
+  const last7DayLabels = last7.map(d => new Date(d.date).toLocaleDateString("en", { weekday: "short", timeZone: 'UTC' })[0])
 
   let currentStreakDate = '---'
   if (stats.current.start && stats.current.end) {
@@ -99,7 +102,7 @@ export function renderCustomTemplate(
     return `
       <g transform="translate(${x}, 0)">
         <rect width="${rectW}" height="40" rx="6" fill="${color}"/>
-        <text x="${rectW / 2}" y="11" class="day" text-anchor="middle" dominant-baseline="central" opacity="0.8">${dayLabels[i]}</text>
+        <text x="${rectW / 2}" y="11" class="day" text-anchor="middle" dominant-baseline="central" opacity="0.8">${last7DayLabels[i]}</text>
         <text x="${rectW / 2}" y="30" class="count" text-anchor="middle" dominant-baseline="central">${d.contributionCount}</text>
       </g>
     `
@@ -120,17 +123,67 @@ export function renderCustomTemplate(
     .replace(/{{theme\.textMuted}}/g, t.textMuted)
     .replace(/{{theme\.accent}}/g, t.accent)
 
-  // Add granular variables for advanced usage
+  // Detect whether the template is a 30-day template (uses day7Count or higher, or dayAgo variables)
+  const usesExtendedDays = /{{day(1[0-9]|2[0-9]|[7-9])(Count|Color|TextColor|Label|Level|Date)}}/.test(template)
+
+  if (usesExtendedDays) {
+    // 30-Day Mode: day0 is oldest (e.g. 29 days ago), day(N-1) is newest (today)
+    days.forEach((d, i) => {
+      const level = getIntensityLevel(d.contributionCount, maxCount)
+      const color = getCustomIntensityColor(d.contributionCount, maxCount)
+      const textColor = getCustomTextColor(d.contributionCount, maxCount, theme)
+      const dayLabel = new Date(d.date).toLocaleDateString("en", { weekday: "short", timeZone: 'UTC' })[0]
+      result = result
+        .replace(new RegExp(`{{day${i}Count}}`, 'g'), d.contributionCount.toString())
+        .replace(new RegExp(`{{day${i}Color}}`, 'g'), color)
+        .replace(new RegExp(`{{day${i}TextColor}}`, 'g'), textColor)
+        .replace(new RegExp(`{{day${i}Label}}`, 'g'), dayLabel)
+        .replace(new RegExp(`{{day${i}Level}}`, 'g'), level.toString())
+        .replace(new RegExp(`{{day${i}Date}}`, 'g'), d.date)
+    })
+  } else {
+    // 7-Day Compatible Mode: day0 ... day6 ALWAYS map to the last 7 days
+    last7.forEach((d, i) => {
+      const level = getIntensityLevel(d.contributionCount, maxCount)
+      const color = getCustomIntensityColor(d.contributionCount, maxCount)
+      const textColor = getCustomTextColor(d.contributionCount, maxCount, theme)
+      result = result
+        .replace(new RegExp(`{{day${i}Count}}`, 'g'), d.contributionCount.toString())
+        .replace(new RegExp(`{{day${i}Color}}`, 'g'), color)
+        .replace(new RegExp(`{{day${i}TextColor}}`, 'g'), textColor)
+        .replace(new RegExp(`{{day${i}Label}}`, 'g'), last7DayLabels[i])
+        .replace(new RegExp(`{{day${i}Level}}`, 'g'), level.toString())
+        .replace(new RegExp(`{{day${i}Date}}`, 'g'), d.date)
+    })
+  }
+
+  // Relative variables: {{dayAgo0Count}} (0 = today, 1 = yesterday, ..., 29 = 29 days ago)
+  days.forEach((d, idx) => {
+    const daysAgo = (days.length - 1) - idx
+    const level = getIntensityLevel(d.contributionCount, maxCount)
+    const color = getCustomIntensityColor(d.contributionCount, maxCount)
+    const textColor = getCustomTextColor(d.contributionCount, maxCount, theme)
+    const dayLabel = new Date(d.date).toLocaleDateString("en", { weekday: "short", timeZone: 'UTC' })[0]
+    result = result
+      .replace(new RegExp(`{{dayAgo${daysAgo}Count}}`, 'g'), d.contributionCount.toString())
+      .replace(new RegExp(`{{dayAgo${daysAgo}Color}}`, 'g'), color)
+      .replace(new RegExp(`{{dayAgo${daysAgo}TextColor}}`, 'g'), textColor)
+      .replace(new RegExp(`{{dayAgo${daysAgo}Label}}`, 'g'), dayLabel)
+      .replace(new RegExp(`{{dayAgo${daysAgo}Level}}`, 'g'), level.toString())
+      .replace(new RegExp(`{{dayAgo${daysAgo}Date}}`, 'g'), d.date)
+  })
+
+  // Explicit last7 aliases: {{last7Day0Count}} ... {{last7Day6Count}}
   last7.forEach((d, i) => {
     const level = getIntensityLevel(d.contributionCount, maxCount)
     const color = getCustomIntensityColor(d.contributionCount, maxCount)
     const textColor = getCustomTextColor(d.contributionCount, maxCount, theme)
     result = result
-      .replace(new RegExp(`{{day${i}Count}}`, 'g'), d.contributionCount.toString())
-      .replace(new RegExp(`{{day${i}Color}}`, 'g'), color)
-      .replace(new RegExp(`{{day${i}TextColor}}`, 'g'), textColor)
-      .replace(new RegExp(`{{day${i}Label}}`, 'g'), dayLabels[i])
-      .replace(new RegExp(`{{day${i}Level}}`, 'g'), level.toString())
+      .replace(new RegExp(`{{last7Day${i}Count}}`, 'g'), d.contributionCount.toString())
+      .replace(new RegExp(`{{last7Day${i}Color}}`, 'g'), color)
+      .replace(new RegExp(`{{last7Day${i}TextColor}}`, 'g'), textColor)
+      .replace(new RegExp(`{{last7Day${i}Label}}`, 'g'), last7DayLabels[i])
+      .replace(new RegExp(`{{last7Day${i}Level}}`, 'g'), level.toString())
   })
 
   return result

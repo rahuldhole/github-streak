@@ -100,7 +100,8 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
                     <option value="fireEmber">🔥 Fire Ember</option>
                     <option value="midnightCity">🌙 Midnight City</option>
                     <option value="tripleColumnPulse">📊 Triple Column Pulse</option>
-                    <option value="activityGraph">📈 Activity Graph</option>
+                    <option value="activityGraph">📈 Activity Graph (7 Days)</option>
+                    <option value="activityGraphMonthly">📈 30-Day Activity Trend</option>
                   </optgroup>
                   {Object.keys(aiTemplates).length > 0 && (
                     <optgroup label="AI Generated">
@@ -139,13 +140,13 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
                     <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Markdown Snippet</label>
                     <button class="copy-btn tactile-btn" onclick="copyCode('md-code', this, true)">Copy</button>
                   </div>
-                  <input type="text" class="code-block" id="md-code" readonly onclick="this.select()" style={{ marginBottom: '1.5rem', background: '#ffffff', width: '100%', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: '6px', boxSizing: 'border-box', fontFamily: 'monospace', fontSize: '0.8rem', color: '#24292e' }} />
+                  <pre id="md-code" class="code-block" style={{ marginTop: '0.5rem', overflowX: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>Loading...</pre>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem' }}>
                     <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>HTML Snippet</label>
                     <button class="copy-btn tactile-btn" onclick="copyCode('html-code', this, true)">Copy</button>
                   </div>
-                  <input type="text" class="code-block" id="html-code" readonly onclick="this.select()" style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: '6px', boxSizing: 'border-box', fontFamily: 'monospace', fontSize: '0.8rem', background: '#ffffff', color: '#24292e' }} />
+                  <pre id="html-code" class="code-block" style={{ marginTop: '0.5rem', overflowX: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>Loading...</pre>
                 </div>
 
                 <div style={{ width: '100%', maxWidth: '800px', textAlign: 'left' }}>
@@ -169,13 +170,14 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
                       </ul>
                     </div>
                     <div style={{ background: '#f6f8fa', padding: '1rem', borderRadius: '6px', border: '1px solid var(--border)' }}>
-                      <strong>Visuals & Dates</strong>
+                      <strong>Visuals & Dates (Up to 30 Days)</strong>
                       <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.2rem', color: 'var(--muted)', lineHeight: '1.6' }}>
                         <li><code>{"{{heatStrip}}"}</code> - Renders default 7-day activity boxes</li>
                         <li><code>{"{{lastUpdated}}"}</code> - Date the SVG was generated</li>
-                        <li><code>{"{{dayXCount}}"}</code> - Contrib count for day X (0-6)</li>
+                        <li><code>{"{{dayXCount}}"}</code> - Contrib count for day X (0 to 29, where 0 is 29 days ago, 29 is today)</li>
                         <li><code>{"{{dayXLevel}}"}</code> - Heat level for day X (0-4)</li>
-                        <li><code>{"{{dayXLabel}}"}</code> - Day of week label (e.g. Mon)</li>
+                        <li><code>{"{{dayXLabel}}"}</code> - Day of week label (e.g. M, T, W)</li>
+                        <li><code>{"{{dayAgoXCount}}"}</code> - Count relative to today (e.g. dayAgo0Count is today, dayAgo1Count is yesterday)</li>
                       </ul>
                     </div>
                   </div>

@@ -253,5 +253,22 @@ describe("Custom Widget V1 — Brotli Encoding Integrity", () => {
     expect(body).not.toContain("{{day0Count}}");
     expect(body).not.toContain("{{day6Count}}");
     expect(body).not.toContain("{{lastUpdated}}");
+    // In a 7-day template, day6Count must be the most recent day (today = 5 in sample data), not 23 days ago
+    expect(body).toContain(">5 ");
+  });
+
+  test("Supports 30-day variables and activityGraphMonthly template", async () => {
+    const { activityGraphMonthly } = await import("../src/templates/activityGraphMonthly.ts");
+    const encoded = compressTemplate(activityGraphMonthly);
+    const res = await app.request(`/v1/sample.svg?custom=${encoded}`);
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain("<svg");
+    expect(body).toContain("30-DAY ACTIVITY TREND");
+    expect(body).not.toContain("{{day0Count}}");
+    expect(body).not.toContain("{{day29Count}}");
+    expect(body).not.toContain("{{currentStreak}}");
   });
 });
+
+

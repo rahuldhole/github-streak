@@ -20,6 +20,7 @@ import { fireEmber } from "./fireEmber.ts";
 import { midnightCity } from "./midnightCity.ts";
 import { tripleColumnPulse } from "./tripleColumnPulse.ts";
 import { activityGraph } from "./activityGraph.ts";
+import { activityGraphMonthly } from "./activityGraphMonthly.ts";
 
 export const baseTemplates: Record<string, string> = {
   default: defaultTemplate,
@@ -44,4 +45,5 @@ export const baseTemplates: Record<string, string> = {
   midnightCity,
   tripleColumnPulse,
   activityGraph,
+  activityGraphMonthly,
 };

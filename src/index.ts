@@ -208,12 +208,14 @@ These mustache-style variables (e.g. {{variableName}}) are replaced with real da
 - {{totalContribsDate}} — Year range (e.g. "2015 - 2024")
 - {{lastUpdated}} — Timestamp string (e.g. "Last Updated: 2024-03-07")
 
-### Last 7 Days Variables (i = 0 to 6, where 0 is oldest)
-- {{day0Count}} ... {{day6Count}} — Contribution count for that day
-- {{day0Label}} ... {{day6Label}} — Day label ("M", "T", "W", etc.)
-- {{day0Level}} ... {{day6Level}} — Intensity level 0-4 (for CSS var mapping)
-- {{day0Color}} ... {{day6Color}} — Direct hex color for that day's intensity
-- {{day0TextColor}} ... {{day6TextColor}} — Contrasting text color
+### Daily Contribution Variables (Up to 30 Days)
+- {{day0Count}} ... {{day29Count}} — Contribution count for that day (0 is 29 days ago, 29 is today)
+- {{day0Label}} ... {{day29Label}} — Day label ("M", "T", "W", etc.)
+- {{day0Level}} ... {{day29Level}} — Intensity level 0-4 (for CSS var mapping)
+- {{day0Color}} ... {{day29Color}} — Direct hex color for that day's intensity
+- {{day0TextColor}} ... {{day29TextColor}} — Contrasting text color
+- {{day0Date}} ... {{day29Date}} — ISO date string (YYYY-MM-DD)
+- {{dayAgo0Count}} ... {{dayAgo29Count}} — Relative syntax (dayAgo0 is today, dayAgo1 is yesterday, etc.)
 
 ### Theme Variables
 - {{theme.bg}}, {{theme.border}}, {{theme.text}}, {{theme.textMuted}}, {{theme.accent}}
@@ -464,11 +466,13 @@ async function refreshUserData(
 
   const stats = calculateStreakStats(fresh.days, recentTotal, fresh.contributionYears)
   const last7 = fresh.days.slice(-7)
+  const last30 = fresh.days.slice(-30)
   const maxCount = Math.max(...last7.map((d: any) => d.contributionCount), 1)
 
   const newCurrentBlob = { 
     stats, 
     last7, 
+    last30,
     maxCount, 
     name: fresh.name !== undefined ? fresh.name : existingCurrentBlob?.name,
     avatarUrl: fresh.avatarUrl !== undefined ? fresh.avatarUrl : existingCurrentBlob?.avatarUrl,
@@ -692,6 +696,19 @@ const handleSampleSVG = (c: any) => {
     { contributionCount: 7, date: '2024-03-06' },
     { contributionCount: 3, date: '2024-03-07' }
   ]
+  // Generate 30 mock days ending at 2024-03-07
+  const mock30Counts = [
+    3, 5, 0, 8, 4, 12, 6, 2, 7, 9, 
+    4, 0, 11, 8, 5, 3, 14, 6, 9, 2, 
+    4, 10, 2, 8, 5, 7, 3, 6, 8, 5
+  ];
+  const baseDate = new Date('2024-03-07T00:00:00Z');
+  const mockLast30 = mock30Counts.map((count, index) => {
+    const d = new Date(baseDate);
+    d.setUTCDate(baseDate.getUTCDate() - (29 - index));
+    return { contributionCount: count, date: d.toISOString().split('T')[0] };
+  });
+
   const theme = (c.req.query('theme') || 'dark') as Theme
   const custom = c.req.query('custom')
   let svgStr = ''
@@ -699,7 +716,7 @@ const handleSampleSVG = (c: any) => {
   if (custom) {
     try {
       const templateStr = brotliDecompressSync(Buffer.from(custom, 'base64url')).toString()
-      svgStr = renderCustomTemplate(templateStr, mockStats as any, mockLast7 as any, 10, theme, 'Sample Data')
+      svgStr = renderCustomTemplate(templateStr, mockStats as any, mockLast30 as any, 14, theme, 'Sample Data')
     } catch (e) {
       svgStr = renderErrorSVG('Invalid custom template').toString()
     }
@@ -840,7 +857,8 @@ async function handleSVG(c: any, userParam: string, themeParam: Theme, isProfile
   if (custom && !isProfileSVG && (apiVersion === 'v1' || c.req.path.startsWith('/v1/'))) {
     try {
       const templateStr = brotliDecompressSync(Buffer.from(custom, 'base64url')).toString()
-      svgStr = renderCustomTemplate(templateStr, { ...currentBlob.stats, total: aggregatedTotal }, currentBlob.last7, currentBlob.maxCount, theme, lastUpdated)
+      const daysForTemplate = currentBlob.last30 || currentBlob.last7
+      svgStr = renderCustomTemplate(templateStr, { ...currentBlob.stats, total: aggregatedTotal }, daysForTemplate, currentBlob.maxCount, theme, lastUpdated)
     } catch (e) {
       svgStr = renderErrorSVG('Invalid custom template').toString()
     }
