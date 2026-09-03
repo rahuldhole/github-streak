@@ -1,9 +1,9 @@
 export const activityGraphMonthly = `<!-- 
   =============================================================
   HOW TO USE (PURE CSS 30-DAY GRAPH WITH BOUNDARIES):
-  1. On <svg>: Set '--max' to your highest value, or use {{maxCount}}
+  1. On <svg>: Set 'css-var-max' to your highest value, or use {{maxCount}}
      for automatic dynamic scaling.
-  2. On each dot: Set '--val: X;' (or {{dayXCount}}).
+  2. On each dot: Set 'css-var-val: X;' (or {{dayXCount}}).
   3. Pure CSS clamp() strictly bounds dots between baseline (0px)
      and peak (90px), ensuring elements NEVER move out of the frame!
   =============================================================

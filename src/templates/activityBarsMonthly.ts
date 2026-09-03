@@ -1,9 +1,9 @@
 export const activityBarsMonthly = `<!-- 
   =============================================================
   HOW TO USE (PURE CSS 30-DAY BAR CHART WITH BOUNDARIES):
-  1. On <svg>: Set '--max' to your highest value, or use {{maxCount}}
+  1. On <svg>: Set 'css-var-max' to your highest value, or use {{maxCount}}
      for automatic dynamic scaling.
-  2. On each <g class="bar-col">: Set '--val: X;' (or {{dayXCount}}).
+  2. On each <g class="bar-col">: Set 'css-var-val: X;' (or {{dayXCount}}).
      Both the bar height and the badge scale together automatically.
   3. Pure CSS clamp() strictly bounds bars and badges between baseline
      and peak, so they never fly outside the widget or clip-path window!

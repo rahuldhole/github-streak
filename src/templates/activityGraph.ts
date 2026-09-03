@@ -1,9 +1,9 @@
 export const activityGraph = `<!-- 
   =============================================================
   HOW TO USE (PURE CSS GRAPH WITH BOUNDARIES):
-  1. On <svg>: Set '--max' to your highest value, or use {{maxCount}}
+  1. On <svg>: Set 'css-var-max' to your highest value, or use {{maxCount}}
      for automatic dynamic scaling.
-  2. On each dot: Set '--val: X;' to your raw value (or {{dayXCount}}).
+  2. On each dot: Set 'css-var-val: X;' to your raw value (or {{dayXCount}}).
   3. Update the text label inside <text> to match your value.
   Pure CSS clamp() guarantees dots NEVER move out of the widget frame!
   =============================================================
