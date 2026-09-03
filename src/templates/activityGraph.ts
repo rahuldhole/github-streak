@@ -86,7 +86,7 @@ export const activityGraph = `<!--
     .header-stat { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; fill: #8fa0bc; }
     .header-val { font-weight: 700; fill: #ffffff; }
 
-    /* --- Node Animation & Interaction --- */
+    /* --- Node Animation and Interaction --- */
     .data-point {
       fill: #121820;
       stroke: #00d26a;
@@ -178,7 +178,7 @@ export const activityGraph = `<!--
     </text>
   </g>
 
-  <!-- Horizontal Grid Lines & Y-Axis Reference -->
+  <!-- Horizontal Grid Lines and Y-Axis Reference -->
   <g transform="translate(50, 60)" class="grid-group">
     <line x1="0" y1="10" x2="520" y2="10" class="grid-line"/>
     <text x="-12" y="13" text-anchor="end" class="axis-label">High</text>

@@ -107,7 +107,7 @@ export const activityBarsMonthly = `<!--
       fill: #00e676;
     }
 
-    /* Active / Today badge & highlight */
+    /* Active / Today badge and highlight */
     .d29 .val-badge {
       opacity: 1;
       fill: #00e676;
