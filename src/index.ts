@@ -14,7 +14,25 @@ const cacheStoreVersion = pkg.cacheStoreVersion
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { registerAppTool, registerAppResource, RESOURCE_MIME_TYPE } from "@modelcontextprotocol/ext-apps/server";
+
+const RESOURCE_MIME_TYPE = "text/html;profile=mcp-app";
+
+function registerAppTool(server: any, name: string, config: any, cb: any) {
+  const meta = config._meta || {};
+  const ui = meta.ui;
+  const legacyUri = meta["ui/resourceUri"];
+  let mergedMeta = meta;
+  if (ui?.resourceUri && !legacyUri) {
+    mergedMeta = { ...meta, "ui/resourceUri": ui.resourceUri };
+  } else if (legacyUri && !ui?.resourceUri) {
+    mergedMeta = { ...meta, ui: { ...ui, resourceUri: legacyUri } };
+  }
+  return server.registerTool(name, { ...config, _meta: mergedMeta }, cb);
+}
+
+function registerAppResource(server: any, name: string, uri: string, config: any, readCallback: any) {
+  return server.registerResource(name, uri, { mimeType: RESOURCE_MIME_TYPE, ...config }, readCallback);
+}
 
 export const app = new Hono<{ Bindings: Bindings }>()
 
