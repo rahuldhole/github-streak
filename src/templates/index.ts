@@ -47,3 +47,6 @@ export const baseTemplates: Record<string, string> = {
   activityGraph,
   activityGraphMonthly,
 };
+
+export * from './activityGraph';
+
