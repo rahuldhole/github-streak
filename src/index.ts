@@ -1,4 +1,4 @@
-import { Hono } from 'hono'
+import { Hono, type Context } from 'hono'
 import { getStore } from '@netlify/blobs'
 import { Bindings, Theme } from './types.ts'
 import { fetchGitHubData } from './github.ts'
@@ -17,6 +17,7 @@ import { z } from "zod";
 import { registerAppTool, registerAppResource, RESOURCE_MIME_TYPE } from "@modelcontextprotocol/ext-apps/server";
 
 export const app = new Hono<{ Bindings: Bindings }>()
+export type AppContext = Context<{ Bindings: Bindings }>
 
 class HonoSSEServerTransport {
   public controller?: ReadableStreamDefaultController;
@@ -48,7 +49,7 @@ class HonoSSEServerTransport {
 
 const activeTransports = new Map<string, HonoSSEServerTransport>();
 
-app.all('/mcp', async (c) => {
+app.all('/mcp', async (c: AppContext) => {
   const req = c.req.raw;
   const url = new URL(req.url);
   const sessionId = req.headers.get('mcp-session-id') || url.searchParams.get("sessionId");
@@ -370,7 +371,7 @@ let secondaryRateLimitRemaining = 5000
 let secondaryRateLimitResetAt = 0
 
 // Global error handler
-app.onError((err, c) => {
+app.onError((err: Error, c: AppContext) => {
   logEvent({ name: 'error', data: { type: 'app_error', error: err.toString() } })
   const safeMessage = getSafeErrorMessage(err)
   logEvent({ name: 'error', data: { message: safeMessage } })
@@ -390,7 +391,7 @@ app.onError((err, c) => {
   return c.html(`<h1>Error: ${safeMessage}</h1>`, status)
 })
 
-app.notFound((c) => {
+app.notFound((c: AppContext) => {
   logEvent({ name: 'not_found', data: { path: c.req.path } })
   if (c.req.query('user') !== undefined || c.req.path.startsWith('/profile-svg/')) {
     c.header('Vary', 'Accept')
@@ -624,7 +625,7 @@ function returnErrorSVG(c: any, msg: string) {
 
 // Routes
 
-app.get('/', (c) => {
+app.get('/', (c: AppContext) => {
   const queryUser = c.req.query('user')
   if (queryUser) {
     return handleSVG(c, queryUser, c.req.query('theme') as Theme, false)
@@ -642,7 +643,7 @@ app.get('/', (c) => {
   return c.html(renderLandingPage(url.origin, cacheInfo))
 })
 
-app.get('/v1/', (c) => {
+app.get('/v1/', (c: AppContext) => {
   const queryUser = c.req.query('user')
   if (queryUser) {
     return handleSVG(c, queryUser, c.req.query('theme') as Theme, false, 'v1')
@@ -650,14 +651,14 @@ app.get('/v1/', (c) => {
   return c.json({ error: 'Missing user parameter' }, 400)
 })
 
-app.get('/customize', (c) => {
+app.get('/customize', (c: AppContext) => {
   logEvent({ name: 'page_view', data: { page: 'customize' } })
   c.header('Cache-Control', 'public, max-age=3600, s-maxage=3600')
   const url = new URL(c.req.url)
   return c.html(renderCustomizePage(url.origin))
 })
 
-app.post('/api/compress', async (c) => {
+app.post('/api/compress', async (c: AppContext) => {
   try {
     const text = await c.req.text()
     if (!text) return c.json({ error: 'No content' }, 400)
@@ -669,7 +670,7 @@ app.post('/api/compress', async (c) => {
   }
 })
 
-app.post('/api/decompress', async (c) => {
+app.post('/api/decompress', async (c: AppContext) => {
   try {
     const base64Url = await c.req.text()
     if (!base64Url) return c.json({ error: 'No content' }, 400)
@@ -680,7 +681,7 @@ app.post('/api/decompress', async (c) => {
   }
 })
 
-const handleSampleSVG = (c: any) => {
+const handleSampleSVG = (c: AppContext) => {
   const mockStats = { 
     current: { count: 42, start: '2024-01-01', end: '2024-02-12' }, 
     max: { count: 99, start: '2023-05-10', end: '2023-08-17' }, 
@@ -737,19 +738,19 @@ const handleSampleSVG = (c: any) => {
 app.get('/sample.svg', handleSampleSVG)
 app.get('/v1/sample.svg', handleSampleSVG)
 
-app.get('/profile-svg/:user', (c) => {
-  return handleSVG(c, c.req.param('user'), c.req.query('theme') as Theme, true)
+app.get('/profile-svg/:user', (c: AppContext) => {
+  return handleSVG(c, c.req.param('user') || '', c.req.query('theme') as Theme, true)
 })
 
-app.get('/profile/:user', (c) => {
-  return handleProfilePage(c, c.req.param('user'), 'transparent' as Theme)
+app.get('/profile/:user', (c: AppContext) => {
+  return handleProfilePage(c, c.req.param('user') || '', 'transparent' as Theme)
 })
 
-app.get('/profile/:user/:theme', (c) => {
-  return handleProfilePage(c, c.req.param('user'), c.req.param('theme') as Theme)
+app.get('/profile/:user/:theme', (c: AppContext) => {
+  return handleProfilePage(c, c.req.param('user') || '', (c.req.param('theme') || 'transparent') as Theme)
 })
 
-async function handleProfilePage(c: any, userParam: string, themeParam: Theme) {
+async function handleProfilePage(c: AppContext, userParam: string, themeParam: Theme) {
   const forceRefresh = c.req.query('no-cache') === 'true'
   const fullRefresh = c.req.query('full-refresh') === 'true'
   const type = c.req.query('type')

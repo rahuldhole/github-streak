@@ -15,5 +15,14 @@
     "types": [
       "bun"
     ]
-  }
+  },
+  "include": [
+    "src/**/*",
+    "tests/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "browser-extension",
+    "netlify"
+  ]
 }
