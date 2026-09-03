@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
-    "@netlify/blobs": "^10.7.4",
+    "@netlify/blobs": "^11.0.2",
     "@resvg/resvg-wasm": "^2.6.2",
     "hono": "^4.12.8",
     "zod": "^4.4.3"
