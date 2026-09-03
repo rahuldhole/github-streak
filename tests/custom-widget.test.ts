@@ -270,7 +270,23 @@ describe("Custom Widget V1 — Brotli Encoding Integrity", () => {
     expect(body).not.toContain("{{currentStreak}}");
   });
 
-  test("Supports activityBars weekly template", async () => {
+  test("Supports activityGraph weekly template with CSS boundaries and dynamic maxCount", async () => {
+    const { activityGraph } = await import("../src/templates/activityGraph.ts");
+    const encoded = compressTemplate(activityGraph);
+    const res = await app.request(`/v1/sample.svg?custom=${encoded}`);
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain("<svg");
+    expect(body).toContain("ACTIVITY GRAPH");
+    expect(body).toContain("clamp(");
+    expect(body).toContain("style=\"--max: ");
+    expect(body).not.toContain("{{maxCount}}");
+    expect(body).not.toContain("{{day0Count}}");
+    expect(body).not.toContain("{{day6Count}}");
+    expect(body).not.toContain("{{currentStreak}}");
+  });
+
+  test("Supports activityBars weekly template with CSS boundaries and dynamic maxCount", async () => {
     const { activityBars } = await import("../src/templates/activityBars.ts");
     const encoded = compressTemplate(activityBars);
     const res = await app.request(`/v1/sample.svg?custom=${encoded}`);
@@ -278,9 +294,59 @@ describe("Custom Widget V1 — Brotli Encoding Integrity", () => {
     const body = await res.text();
     expect(body).toContain("<svg");
     expect(body).toContain("WEEKLY ACTIVITY BARS");
+    expect(body).toContain("clamp(");
+    expect(body).toContain("style=\"--max: ");
+    expect(body).not.toContain("{{maxCount}}");
     expect(body).not.toContain("{{day0Count}}");
     expect(body).not.toContain("{{day6Count}}");
     expect(body).not.toContain("{{currentStreak}}");
+  });
+
+  test("Supports activityGraphMonthly 30-day template with CSS boundaries and dynamic maxCount", async () => {
+    const { activityGraphMonthly } = await import("../src/templates/activityGraphMonthly.ts");
+    const encoded = compressTemplate(activityGraphMonthly);
+    const res = await app.request(`/v1/sample.svg?custom=${encoded}`);
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain("<svg");
+    expect(body).toContain("30-DAY ACTIVITY TREND");
+    expect(body).toContain("clamp(");
+    expect(body).toContain("style=\"--max: ");
+    expect(body).not.toContain("{{maxCount}}");
+    expect(body).not.toContain("{{day0Count}}");
+    expect(body).not.toContain("{{day29Count}}");
+    expect(body).not.toContain("{{currentStreak}}");
+  });
+
+  test("Handles extreme commit values (200+, 1500) and zero commits safely", async () => {
+    const { renderCustomTemplate } = await import("../src/components/CustomTemplateRenderer.ts");
+    const template = `<svg style="--max: {{maxCount}}; --track-h: 90px;"><style>@keyframes riseUp { to { transform: translateY(clamp(-90px, calc(-1 * var(--val, 0) * (90px / max(var(--max, 1), 1))), 0px)); } }</style><g style="--val: {{day0Count}};"></g></svg>`;
+
+    const highCommitDays = [
+      { contributionCount: 1500, date: "2024-03-01" },
+      { contributionCount: 200, date: "2024-03-02" },
+      { contributionCount: 0, date: "2024-03-03" },
+      { contributionCount: 50, date: "2024-03-04" },
+      { contributionCount: 10, date: "2024-03-05" },
+      { contributionCount: 0, date: "2024-03-06" },
+      { contributionCount: 75, date: "2024-03-07" },
+    ];
+    const dummyStats = {
+      current: { count: 3, start: "2024-03-05", end: "2024-03-07" },
+      max: { count: 10, start: "2024-02-01", end: "2024-02-10" },
+      total: 1835
+    };
+
+    const renderedHigh = renderCustomTemplate(template, dummyStats as any, highCommitDays, 1500);
+    expect(renderedHigh).toContain("style=\"--max: 1500;");
+    expect(renderedHigh).toContain("style=\"--val: 1500;");
+    expect(renderedHigh).not.toContain("{{maxCount}}");
+
+    // All-zero scenario: must safely fallback to max 1 to avoid divide-by-zero
+    const zeroDays = highCommitDays.map(d => ({ ...d, contributionCount: 0 }));
+    const renderedZero = renderCustomTemplate(template, dummyStats as any, zeroDays, 0);
+    expect(renderedZero).toContain("style=\"--max: 1;");
+    expect(renderedZero).not.toContain("{{maxCount}}");
   });
 });
 

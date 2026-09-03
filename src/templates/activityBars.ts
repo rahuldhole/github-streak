@@ -1,14 +1,16 @@
 export const activityBars = `<!-- 
   =============================================================
-  HOW TO USE (PURE CSS BAR CHART):
-  1. On <svg>: Set '--max' to your highest value (e.g. 30, 200, 1500).
-  2. On each <g class="bar-col">: Set '--val: X;' ONCE.
+  HOW TO USE (PURE CSS BAR CHART WITH BOUNDARIES):
+  1. On <svg>: Set '--max' to your highest value, or use {{maxCount}}
+     for automatic dynamic scaling.
+  2. On each <g class="bar-col">: Set '--val: X;' (or {{dayXCount}}).
      Both the bar height and the badge scale together automatically.
-  3. Update the text number inside <text class="val-badge"> to match.
+  3. Pure CSS clamp() strictly bounds bars and badges between baseline
+     and peak, so they never fly outside the widget or clip-path window!
   =============================================================
 -->
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 240" width="600" height="240" style="--max: 30; --track-h: 100px;">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 240" width="600" height="240" style="--max: {{maxCount}}; --track-h: 100px;">
   <style>
     /* --- Base Styles --- */
     .bg { fill: #121820; stroke: #2d3748; stroke-width: 1.5; rx: 16px; }
@@ -27,14 +29,34 @@ export const activityBars = `<!--
       to { opacity: 1; }
     }
 
-    /* Pushes the bar up through the baseline clip-path to exact height */
+    /* 
+      Boundaries Formula:
+      Guarantees bars and badges NEVER fly outside the widget bounds or clip window,
+      even if commits are 200+, 1000s, or 0.
+      - Lower boundary (floor):  0px (Y=160 baseline)
+      - Upper boundary (ceiling): calc(-1 * var(--track-h)) (Y=60 peak / High grid line)
+      - Zero-safe: max(var(--max, 1), 1) avoids division by zero
+    */
     @keyframes riseUp {
-      from { transform: translateY(0px); }
-      to   { transform: translateY(calc(-1 * var(--val) * (var(--track-h) / var(--max)))); }
+      from { 
+        transform: translateY(0px); 
+      }
+      to { 
+        transform: translateY(clamp(
+          calc(-1 * var(--track-h)),
+          calc(-1 * var(--val, 0) * (var(--track-h) / max(var(--max, 1), 1))),
+          0px
+        )); 
+      }
     }
 
     .bar-mover {
-      animation: riseUp var(--dur, 850ms) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transform: translateY(clamp(
+        calc(-1 * var(--track-h)),
+        calc(-1 * var(--val, 0) * (var(--track-h) / max(var(--max, 1), 1))),
+        0px
+      ));
+      animation: riseUp var(--dur, 850ms) cubic-bezier(0.16, 1, 0.3, 1) both;
     }
 
     .bar {

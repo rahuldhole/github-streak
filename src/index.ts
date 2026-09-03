@@ -210,6 +210,7 @@ These mustache-style variables (e.g. {{variableName}}) are replaced with real da
 - {{lastUpdated}} — Timestamp string (e.g. "Last Updated: 2024-03-07")
 
 ### Daily Contribution Variables (Up to 30 Days)
+- {{maxCount}} — Peak contribution count across the active period (ideal for CSS chart scaling: style="--max: {{maxCount}};")
 - {{day0Count}} ... {{day29Count}} — Contribution count for that day (0 is 29 days ago, 29 is today)
 - {{day0Label}} ... {{day29Label}} — Day label ("M", "T", "W", etc.)
 - {{day0Level}} ... {{day29Level}} — Intensity level 0-4 (for CSS var mapping)

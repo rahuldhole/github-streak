@@ -175,6 +175,7 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
                       <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.2rem', color: 'var(--muted)', lineHeight: '1.6' }}>
                         <li><code>{"{{heatStrip}}"}</code> - Renders default 7-day activity boxes</li>
                         <li><code>{"{{lastUpdated}}"}</code> - Date the SVG was generated</li>
+                        <li><code>{"{{maxCount}}"}</code> - Peak contribution count across the active period (ideal for CSS chart scaling)</li>
                         <li><code>{"{{dayXCount}}"}</code> - Contrib count for day X (0 to 29, where 0 is 29 days ago, 29 is today)</li>
                         <li><code>{"{{dayXLevel}}"}</code> - Heat level for day X (0-4)</li>
                         <li><code>{"{{dayXLabel}}"}</code> - Day of week label (e.g. M, T, W)</li>

@@ -125,6 +125,13 @@ export function renderCustomTemplate(
 
   // Detect whether the template is a 30-day template (uses day7Count or higher, or dayAgo variables)
   const usesExtendedDays = /{{day(1[0-9]|2[0-9]|[7-9])(Count|Color|TextColor|Label|Level|Date)}}/.test(template)
+  const activeDays = usesExtendedDays ? days : last7
+  const computedMax = Math.max(...activeDays.map(d => d.contributionCount), 0)
+  const safeMax = computedMax > 0 ? computedMax : (maxCount > 0 ? maxCount : 1)
+
+  result = result
+    .replace(/{{maxCount}}/g, safeMax.toString())
+    .replace(/{{max}}/g, safeMax.toString())
 
   if (usesExtendedDays) {
     // 30-Day Mode: day0 is oldest (e.g. 29 days ago), day(N-1) is newest (today)

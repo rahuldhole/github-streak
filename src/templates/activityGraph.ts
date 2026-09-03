@@ -1,19 +1,35 @@
 export const activityGraph = `<!-- 
   =============================================================
-  HOW TO USE:
-  1. On <svg>: Set '--max' to your highest number (e.g. 30, 200, 1500).
-  2. On each dot: Set '--val: X;' to your raw value.
+  HOW TO USE (PURE CSS GRAPH WITH BOUNDARIES):
+  1. On <svg>: Set '--max' to your highest value, or use {{maxCount}}
+     for automatic dynamic scaling.
+  2. On each dot: Set '--val: X;' to your raw value (or {{dayXCount}}).
   3. Update the text label inside <text> to match your value.
-  The CSS automatically scales and animates the dots proportionally.
+  Pure CSS clamp() guarantees dots NEVER move out of the widget frame!
   =============================================================
 -->
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 240" width="600" height="240" style="--max: 30; --track-h: 90px;">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 240" width="600" height="240" style="--max: {{maxCount}}; --track-h: 90px;">
   <style>
-    /* Auto-calculates exact pixel height: (val / max) * track_height */
+    /* 
+      Boundaries Formula:
+      Guarantees dots NEVER fly outside the widget bounds (0px to -track-h),
+      even if commits are 200+, 1000s, or 0.
+      - Lower boundary (floor):  0px (Y=160 baseline)
+      - Upper boundary (ceiling): calc(-1 * var(--track-h)) (Y=70 peak / High grid line)
+      - Zero-safe: max(var(--max, 1), 1) avoids division by zero
+    */
     @keyframes riseUp {
-      from { transform: translateY(0px); }
-      to   { transform: translateY(calc(-1 * var(--val) * (var(--track-h) / var(--max)))); }
+      from { 
+        transform: translateY(0px); 
+      }
+      to { 
+        transform: translateY(clamp(
+          calc(-1 * var(--track-h)),
+          calc(-1 * var(--val, 0) * (var(--track-h) / max(var(--max, 1), 1))),
+          0px
+        )); 
+      }
     }
 
     @keyframes popIn {
@@ -101,9 +117,14 @@ export const activityGraph = `<!--
     .d5 .data-point, .d5 .point-badge { animation-delay: 0.95s; }
     .d6 .data-point, .d6 .point-badge { animation-delay: 1.10s; }
 
-    /* Dynamic CSS-calculated vertical rise animation from baseline */
+    /* Dynamic CSS-calculated vertical rise animation with strict boundaries */
     .dot-mover {
-      animation: riseUp var(--dur, 900ms) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transform: translateY(clamp(
+        calc(-1 * var(--track-h)),
+        calc(-1 * var(--val, 0) * (var(--track-h) / max(var(--max, 1), 1))),
+        0px
+      ));
+      animation: riseUp var(--dur, 900ms) cubic-bezier(0.16, 1, 0.3, 1) both;
     }
     .d0 .dot-mover { animation-delay: 0.15s; }
     .d1 .dot-mover { animation-delay: 0.30s; }
