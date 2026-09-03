@@ -73,9 +73,9 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
                     <svg height="16" viewBox="0 0 16 16" version="1.1" width="16" aria-hidden="true" fill="currentColor">
                       <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path>
                     </svg>
-                    <input type="text" id="preview-user" placeholder="GitHub Username (for preview)" oninput="debounceUpdate()" style={{ padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border)', fontSize: '0.8rem', flex: '1', minWidth: '150px' }} />
+                    <input type="text" id="preview-user" placeholder="GitHub Username (for preview)" onInput={"debounceUpdate()" as any} style={{ padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border)', fontSize: '0.8rem', flex: '1', minWidth: '150px' }} />
                   </div>
-                  <select id="template-select" class="theme-select" onchange="loadTemplate()">
+                  <select id="template-select" class="theme-select" onChange={"loadTemplate()" as any}>
                   <optgroup label="Standard Themes">
                     <option value="default">Default</option>
                     <option value="catppuccin">Catppuccin</option>
@@ -123,12 +123,12 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
                   <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ffbd2e' }}></div>
                   <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#27c93f' }}></div>
                 </div>
-                <button onclick="triggerReload(this)" style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.1rem', padding: '0 0.2rem', color: '#586069', display: 'flex', alignItems: 'center' }} title="Reload Preview">↻</button>
+                <button onClick={"triggerReload(this)" as any} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.1rem', padding: '0 0.2rem', color: '#586069', display: 'flex', alignItems: 'center' }} title="Reload Preview">↻</button>
                 <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
-                  <input type="text" id="custom-url" placeholder="Paste your generated URL here..." oninput="handleUrlPaste(event)" onclick="this.select()" style={{ width: '100%', padding: '0.4rem 2rem 0.4rem 0.8rem', border: '1px solid #d1d5da', borderRadius: '6px', boxSizing: 'border-box', fontFamily: 'monospace', fontSize: '0.75rem', background: '#ffffff', color: '#24292e', outline: 'none' }} />
-                  <button class="tactile-btn" onclick="clearCustomUrl()" style={{ position: 'absolute', right: '4px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#959da5', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Clear">✖</button>
+                  <input type="text" id="custom-url" placeholder="Paste your generated URL here..." onInput={"handleUrlPaste(event)" as any} onClick={"this.select()" as any} style={{ width: '100%', padding: '0.4rem 2rem 0.4rem 0.8rem', border: '1px solid #d1d5da', borderRadius: '6px', boxSizing: 'border-box', fontFamily: 'monospace', fontSize: '0.75rem', background: '#ffffff', color: '#24292e', outline: 'none' }} />
+                  <button class="tactile-btn" onClick={"clearCustomUrl()" as any} style={{ position: 'absolute', right: '4px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#959da5', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Clear">✖</button>
                 </div>
-                <button class="copy-btn tactile-btn" onclick="copyIcon(this)" style={{ background: '#ffffff', border: '1px solid #d1d5da', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, fontSize: '0.9rem' }} title="Copy URL">📋</button>
+                <button class="copy-btn tactile-btn" onClick={"copyIcon(this)" as any} style={{ background: '#ffffff', border: '1px solid #d1d5da', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, fontSize: '0.9rem' }} title="Copy URL">📋</button>
               </div>
               <div class="sandbox-area" style={{ paddingTop: '1rem', borderLeft: '1px solid #e1e4e8', borderRight: '1px solid #e1e4e8', borderBottom: '1px solid #e1e4e8', margin: '0 2rem 1.5rem 2rem', borderRadius: '0 0 8px 8px', backgroundColor: '#ffffff', width: 'auto' }}>
                 <iframe id="preview" style={{ border: 'none', width: '100%', height: '500px', minHeight: '300px', background: 'transparent', resize: 'vertical', display: 'block' }} sandbox="allow-scripts allow-same-origin"></iframe>
@@ -139,13 +139,13 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
                   <h2 style={{ fontSize: '1.2rem', marginTop: 0, marginBottom: '1.5rem' }}>Embed Options</h2>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Markdown Snippet</label>
-                    <button class="copy-btn tactile-btn" onclick="copyCode('md-code', this, true)">Copy</button>
+                    <button class="copy-btn tactile-btn" onClick={"copyCode('md-code', this, true)" as any}>Copy</button>
                   </div>
                   <pre id="md-code" class="code-block" style={{ marginTop: '0.5rem' }}>Loading...</pre>
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem' }}>
                     <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>HTML Snippet</label>
-                    <button class="copy-btn tactile-btn" onclick="copyCode('html-code', this, true)">Copy</button>
+                    <button class="copy-btn tactile-btn" onClick={"copyCode('html-code', this, true)" as any}>Copy</button>
                   </div>
                   <pre id="html-code" class="code-block" style={{ marginTop: '0.5rem' }}>Loading...</pre>
                 </div>
@@ -212,15 +212,15 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
                     <div style={{ background: '#f6f8fa', borderRadius: '8px', border: '1px solid var(--border)', padding: '1.25rem', marginBottom: '1.25rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                         <strong style={{ fontSize: '0.85rem', color: 'var(--text)' }}>MCP Server URL (SSE)</strong>
-                        <button class="copy-btn tactile-btn" onclick="copyCode('mcp-url', this, true)" style={{ position: 'static' }}>Copy URL</button>
+                        <button class="copy-btn tactile-btn" onClick={"copyCode('mcp-url', this, true)" as any} style={{ position: 'static' }}>Copy URL</button>
                       </div>
-                      <input type="text" class="code-block" id="mcp-url" value={origin ? `${origin}/mcp` : '/mcp'} readonly onclick="this.select()" style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '6px', boxSizing: 'border-box', fontFamily: 'monospace', fontSize: '0.85rem', background: '#ffffff', color: '#24292e' }} />
+                      <input type="text" class="code-block" id="mcp-url" value={origin ? `${origin}/mcp` : '/mcp'} readonly onClick={"this.select()" as any} style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '6px', boxSizing: 'border-box', fontFamily: 'monospace', fontSize: '0.85rem', background: '#ffffff', color: '#24292e' }} />
                     </div>
 
                     <div style={{ background: '#f6f8fa', borderRadius: '8px', border: '1px solid var(--border)', padding: '1.25rem', marginBottom: '1.25rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                         <strong style={{ fontSize: '0.85rem', color: 'var(--text)' }}>Configuration (Claude Desktop / Cursor / Continue)</strong>
-                        <button class="copy-btn tactile-btn" onclick="copyCode('mcp-json-code', this, false)" style={{ position: 'static' }}>Copy JSON</button>
+                        <button class="copy-btn tactile-btn" onClick={"copyCode('mcp-json-code', this, false)" as any} style={{ position: 'static' }}>Copy JSON</button>
                       </div>
                       <pre id="mcp-json-code" style={{ margin: 0, padding: '0.75rem', background: '#ffffff', borderRadius: '6px', border: '1px solid var(--border)', fontFamily: 'monospace', fontSize: '0.8rem', color: '#24292e', overflowX: 'auto' }}>{`{
   "mcpServers": {
