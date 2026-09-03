@@ -1,4 +1,14 @@
-export const activityGraph = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 240" width="600" height="240">
+export const activityGraph = `<!-- 
+  =============================================================
+  HOW TO USE:
+  1. On <svg>: Set '--max' to your highest number (e.g. 30, 200, 1500).
+  2. On each dot: Set '--val: X;' to your raw value.
+  3. Update the text label inside <text> to match your value.
+  The CSS automatically scales and animates the dots proportionally.
+  =============================================================
+-->
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 240" width="600" height="240" style="--max: 30; --track-h: 90px;">
   <style>
     /* --- Keyframe Animations --- */
     @keyframes drawLine {
@@ -10,6 +20,12 @@ export const activityGraph = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0
       0% { opacity: 0; }
       30% { opacity: 0; }
       100% { opacity: 0.85; }
+    }
+
+    /* Auto-calculates exact pixel height: (val / max) * track_height */
+    @keyframes riseUp {
+      from { transform: translateY(0px); }
+      to   { transform: translateY(calc(-1 * var(--val) * (var(--track-h) / var(--max)))); }
     }
 
     @keyframes popIn {
@@ -115,6 +131,18 @@ export const activityGraph = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0
     .d5 .data-point, .d5 .point-badge { animation-delay: 0.95s; }
     .d6 .data-point, .d6 .point-badge { animation-delay: 1.10s; }
 
+    /* Dynamic CSS-calculated vertical rise animation from baseline */
+    .dot-mover {
+      animation: riseUp var(--dur, 900ms) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .d0 .dot-mover { animation-delay: 0.15s; }
+    .d1 .dot-mover { animation-delay: 0.30s; }
+    .d2 .dot-mover { animation-delay: 0.45s; }
+    .d3 .dot-mover { animation-delay: 0.60s; }
+    .d4 .dot-mover { animation-delay: 0.75s; }
+    .d5 .dot-mover { animation-delay: 0.90s; }
+    .d6 .dot-mover { animation-delay: 1.05s; }
+
     /* Live pulse marker on the most recent day (Day 6) */
     .live-pulse {
       fill: none;
@@ -199,52 +227,80 @@ export const activityGraph = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0
   <!-- Data Nodes (Day 0 to Day 6) -->
   <!-- Day 0 -->
   <g transform="translate(70, 0)" class="node-group d0">
-    <circle cx="0" cy="126" r="5" class="data-point"/>
-    <text x="0" y="112" text-anchor="middle" class="point-badge">{{day0Count}}</text>
+    <g transform="translate(0, 160)">
+      <g class="dot-mover" style="--val: {{day0Count}}; --dur: 800ms;">
+        <circle cx="0" cy="0" r="5" class="data-point"/>
+        <text x="0" y="-14" text-anchor="middle" class="point-badge">{{day0Count}}</text>
+      </g>
+    </g>
     <text x="0" y="185" text-anchor="middle" class="day-label">{{day0Label}}</text>
   </g>
 
   <!-- Day 1 -->
   <g transform="translate(150, 0)" class="node-group d1">
-    <circle cx="0" cy="93" r="5" class="data-point"/>
-    <text x="0" y="79" text-anchor="middle" class="point-badge">{{day1Count}}</text>
+    <g transform="translate(0, 160)">
+      <g class="dot-mover" style="--val: {{day1Count}}; --dur: 850ms;">
+        <circle cx="0" cy="0" r="5" class="data-point"/>
+        <text x="0" y="-14" text-anchor="middle" class="point-badge">{{day1Count}}</text>
+      </g>
+    </g>
     <text x="0" y="185" text-anchor="middle" class="day-label">{{day1Label}}</text>
   </g>
 
   <!-- Day 2 -->
   <g transform="translate(230, 0)" class="node-group d2">
-    <circle cx="0" cy="115" r="5" class="data-point"/>
-    <text x="0" y="101" text-anchor="middle" class="point-badge">{{day2Count}}</text>
+    <g transform="translate(0, 160)">
+      <g class="dot-mover" style="--val: {{day2Count}}; --dur: 900ms;">
+        <circle cx="0" cy="0" r="5" class="data-point"/>
+        <text x="0" y="-14" text-anchor="middle" class="point-badge">{{day2Count}}</text>
+      </g>
+    </g>
     <text x="0" y="185" text-anchor="middle" class="day-label">{{day2Label}}</text>
   </g>
 
   <!-- Day 3 -->
   <g transform="translate(310, 0)" class="node-group d3">
-    <circle cx="0" cy="70" r="5" class="data-point"/>
-    <text x="0" y="56" text-anchor="middle" class="point-badge">{{day3Count}}</text>
+    <g transform="translate(0, 160)">
+      <g class="dot-mover" style="--val: {{day3Count}}; --dur: 950ms;">
+        <circle cx="0" cy="0" r="5" class="data-point"/>
+        <text x="0" y="-14" text-anchor="middle" class="point-badge">{{day3Count}}</text>
+      </g>
+    </g>
     <text x="0" y="185" text-anchor="middle" class="day-label">{{day3Label}}</text>
   </g>
 
   <!-- Day 4 -->
   <g transform="translate(390, 0)" class="node-group d4">
-    <circle cx="0" cy="88" r="5" class="data-point"/>
-    <text x="0" y="74" text-anchor="middle" class="point-badge">{{day4Count}}</text>
+    <g transform="translate(0, 160)">
+      <g class="dot-mover" style="--val: {{day4Count}}; --dur: 1000ms;">
+        <circle cx="0" cy="0" r="5" class="data-point"/>
+        <text x="0" y="-14" text-anchor="middle" class="point-badge">{{day4Count}}</text>
+      </g>
+    </g>
     <text x="0" y="185" text-anchor="middle" class="day-label">{{day4Label}}</text>
   </g>
 
   <!-- Day 5 -->
   <g transform="translate(470, 0)" class="node-group d5">
-    <circle cx="0" cy="120" r="5" class="data-point"/>
-    <text x="0" y="106" text-anchor="middle" class="point-badge">{{day5Count}}</text>
+    <g transform="translate(0, 160)">
+      <g class="dot-mover" style="--val: {{day5Count}}; --dur: 1050ms;">
+        <circle cx="0" cy="0" r="5" class="data-point"/>
+        <text x="0" y="-14" text-anchor="middle" class="point-badge">{{day5Count}}</text>
+      </g>
+    </g>
     <text x="0" y="185" text-anchor="middle" class="day-label">{{day5Label}}</text>
   </g>
 
   <!-- Day 6 (Active / Most Recent Day) -->
   <g transform="translate(550, 0)" class="node-group d6">
-    <!-- Pulse radar ring behind node -->
-    <circle cx="0" cy="138" class="live-pulse"/>
-    <circle cx="0" cy="138" r="5" class="data-point"/>
-    <text x="0" y="124" text-anchor="middle" class="point-badge">{{day6Count}}</text>
+    <g transform="translate(0, 160)">
+      <g class="dot-mover" style="--val: {{day6Count}}; --dur: 1100ms;">
+        <!-- Pulse radar ring behind node -->
+        <circle cx="0" cy="0" class="live-pulse"/>
+        <circle cx="0" cy="0" r="5" class="data-point"/>
+        <text x="0" y="-14" text-anchor="middle" class="point-badge">{{day6Count}}</text>
+      </g>
+    </g>
     <text x="0" y="185" text-anchor="middle" class="day-label">{{day6Label}}</text>
   </g>
 
