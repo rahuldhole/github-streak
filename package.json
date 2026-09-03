@@ -8,7 +8,6 @@
     "test": "bun test --max-concurrency=1"
   },
   "dependencies": {
-    "@modelcontextprotocol/ext-apps": "^1.7.5",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@netlify/blobs": "^10.7.4",
     "@resvg/resvg-wasm": "^2.6.2",
