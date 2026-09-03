@@ -1,13 +1,15 @@
 export const activityBarsMonthly = `<!-- 
   =============================================================
-  HOW TO USE (PURE CSS 30-DAY BAR CHART WITH BOUNDARIES):
+  HOW TO USE (PURE CSS 30-DAY BAR CHART WITH CONTINUITY ILLUSION):
   1. On <svg>: Set 'css-var-max' to your highest value, or use {{maxCount}}
      for automatic dynamic scaling.
   2. On each <g class="bar-col">: Set 'css-var-val: X;' (or {{dayXCount}}).
      Both the bar height and the badge scale together automatically.
   3. Pure CSS clamp() strictly bounds bars and badges between baseline
      and peak, so they never fly outside the widget or clip-path window!
-  4. Transparent background allows seamless embedding on any profile.
+  4. Luminous horizontal crest caps and panoramic userSpaceOnUse gradients
+     bridge adjacent bars to produce a seamless wave continuity effect.
+  5. Transparent background allows seamless embedding on any profile.
   =============================================================
 -->
 
@@ -57,12 +59,27 @@ export const activityBarsMonthly = `<!--
         calc(-1 * var(--val, 0) * (var(--track-h) / max(var(--max, 1), 1))),
         0px
       ));
-      animation: riseUp var(--dur, 850ms) cubic-bezier(0.16, 1, 0.3, 1) both;
+      animation: riseUp var(--dur, 800ms) cubic-bezier(0.16, 1, 0.3, 1) both;
+      animation-delay: var(--delay, 0ms);
     }
 
+    /* Panoramic gradient across the entire chart creates unified wave texture */
     .bar {
       fill: url(#barGradMonthly);
+      opacity: 0.85;
       transition: fill 0.2s ease, opacity 0.2s ease, filter 0.2s ease;
+    }
+
+    /* 
+      Continuity Ridge:
+      16px wide crest on a 17.4px pitch leaves only ~1.4px between tops.
+      A 3px blur drop-shadow bridges across the gap with overlapping light,
+      creating the optical illusion of an unbroken continuous contour line!
+    */
+    .bar-crest {
+      fill: url(#crestGradMonthly);
+      filter: drop-shadow(0 -1px 3px rgba(0, 230, 118, 0.75));
+      transition: filter 0.2s ease, fill 0.2s ease;
     }
 
     .val-badge {
@@ -78,35 +95,48 @@ export const activityBarsMonthly = `<!--
     /* Hover Effects */
     .bar-col { cursor: pointer; }
     .bar-col:hover .bar {
-      fill: #00d26a;
-      filter: brightness(1.2) drop-shadow(0 0 6px rgba(0, 210, 106, 0.6));
+      opacity: 1;
+      filter: brightness(1.25) drop-shadow(0 0 6px rgba(0, 230, 118, 0.5));
+    }
+    .bar-col:hover .bar-crest {
+      fill: #ffffff;
+      filter: drop-shadow(0 0 6px rgba(0, 255, 136, 1));
     }
     .bar-col:hover .val-badge {
       opacity: 1;
-      fill: #00d26a;
+      fill: #00e676;
     }
 
-    /* Active / Today badge always visible */
+    /* Active / Today badge & highlight */
     .d29 .val-badge {
       opacity: 1;
-      fill: #00d26a;
+      fill: #00e676;
     }
-    .d29 .bar {
-      filter: drop-shadow(0 0 4px rgba(0, 210, 106, 0.4));
+    .d29 .bar-crest {
+      filter: drop-shadow(0 0 5px rgba(0, 255, 136, 0.95));
     }
   </style>
 
   <defs>
-    <!-- Working Gradient -->
-    <linearGradient id="barGradMonthly" x1="0" y1="1" x2="0" y2="0">
-      <stop offset="0%" stop-color="#00a854" stop-opacity="0.35"/>
-      <stop offset="100%" stop-color="#00d26a" stop-opacity="1"/>
+    <!-- Continuous panoramic gradient across all 30 days (User-Space Coordinates) -->
+    <linearGradient id="barGradMonthly" x1="55" y1="160" x2="560" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#00a854" stop-opacity="0.45"/>
+      <stop offset="40%" stop-color="#00c853" stop-opacity="0.65"/>
+      <stop offset="75%" stop-color="#00e676" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#00ff88" stop-opacity="1"/>
+    </linearGradient>
+
+    <!-- Panoramic top crest gradient linking the tops into a single visual ribbon -->
+    <linearGradient id="crestGradMonthly" x1="55" y1="0" x2="560" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#00e676"/>
+      <stop offset="50%" stop-color="#00ff88"/>
+      <stop offset="100%" stop-color="#69f0ae"/>
     </linearGradient>
 
     <!-- 
       Clipping Window:
       Cuts off everything below the baseline (Y=160), while allowing
-      the bars and badges to show between Y=30 and Y=160.
+      the bars, crests, and badges to show between Y=30 and Y=160.
     -->
     <clipPath id="chart-window-monthly">
       <rect x="0" y="30" width="600" height="130"/>
@@ -147,8 +177,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 0 -->
     <g class="bar-col d0" transform="translate(55, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day0Count}}; --dur: 600ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day0Count}}; --delay: 150ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day0Count}}</text>
         </g>
       </g>
@@ -157,8 +188,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 1 -->
     <g class="bar-col d1" transform="translate(72, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day1Count}}; --dur: 620ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day1Count}}; --delay: 175ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day1Count}}</text>
         </g>
       </g>
@@ -167,8 +199,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 2 -->
     <g class="bar-col d2" transform="translate(90, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day2Count}}; --dur: 640ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day2Count}}; --delay: 200ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day2Count}}</text>
         </g>
       </g>
@@ -177,8 +210,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 3 -->
     <g class="bar-col d3" transform="translate(107, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day3Count}}; --dur: 660ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day3Count}}; --delay: 225ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day3Count}}</text>
         </g>
       </g>
@@ -187,8 +221,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 4 -->
     <g class="bar-col d4" transform="translate(125, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day4Count}}; --dur: 680ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day4Count}}; --delay: 250ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day4Count}}</text>
         </g>
       </g>
@@ -197,8 +232,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 5 -->
     <g class="bar-col d5" transform="translate(142, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day5Count}}; --dur: 700ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day5Count}}; --delay: 275ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day5Count}}</text>
         </g>
       </g>
@@ -207,8 +243,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 6 -->
     <g class="bar-col d6" transform="translate(159, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day6Count}}; --dur: 720ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day6Count}}; --delay: 300ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day6Count}}</text>
         </g>
       </g>
@@ -217,8 +254,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 7 -->
     <g class="bar-col d7" transform="translate(177, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day7Count}}; --dur: 740ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day7Count}}; --delay: 325ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day7Count}}</text>
         </g>
       </g>
@@ -227,8 +265,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 8 -->
     <g class="bar-col d8" transform="translate(194, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day8Count}}; --dur: 760ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day8Count}}; --delay: 350ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day8Count}}</text>
         </g>
       </g>
@@ -237,8 +276,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 9 -->
     <g class="bar-col d9" transform="translate(211, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day9Count}}; --dur: 780ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day9Count}}; --delay: 375ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day9Count}}</text>
         </g>
       </g>
@@ -247,8 +287,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 10 -->
     <g class="bar-col d10" transform="translate(229, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day10Count}}; --dur: 800ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day10Count}}; --delay: 400ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day10Count}}</text>
         </g>
       </g>
@@ -257,8 +298,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 11 -->
     <g class="bar-col d11" transform="translate(246, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day11Count}}; --dur: 820ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day11Count}}; --delay: 425ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day11Count}}</text>
         </g>
       </g>
@@ -267,8 +309,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 12 -->
     <g class="bar-col d12" transform="translate(264, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day12Count}}; --dur: 840ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day12Count}}; --delay: 450ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day12Count}}</text>
         </g>
       </g>
@@ -277,8 +320,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 13 -->
     <g class="bar-col d13" transform="translate(281, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day13Count}}; --dur: 860ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day13Count}}; --delay: 475ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day13Count}}</text>
         </g>
       </g>
@@ -287,8 +331,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 14 -->
     <g class="bar-col d14" transform="translate(298, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day14Count}}; --dur: 880ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day14Count}}; --delay: 500ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day14Count}}</text>
         </g>
       </g>
@@ -297,8 +342,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 15 -->
     <g class="bar-col d15" transform="translate(316, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day15Count}}; --dur: 900ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day15Count}}; --delay: 525ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day15Count}}</text>
         </g>
       </g>
@@ -307,8 +353,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 16 -->
     <g class="bar-col d16" transform="translate(333, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day16Count}}; --dur: 920ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day16Count}}; --delay: 550ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day16Count}}</text>
         </g>
       </g>
@@ -317,8 +364,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 17 -->
     <g class="bar-col d17" transform="translate(350, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day17Count}}; --dur: 940ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day17Count}}; --delay: 575ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day17Count}}</text>
         </g>
       </g>
@@ -327,8 +375,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 18 -->
     <g class="bar-col d18" transform="translate(368, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day18Count}}; --dur: 960ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day18Count}}; --delay: 600ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day18Count}}</text>
         </g>
       </g>
@@ -337,8 +386,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 19 -->
     <g class="bar-col d19" transform="translate(385, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day19Count}}; --dur: 980ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day19Count}}; --delay: 625ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day19Count}}</text>
         </g>
       </g>
@@ -347,8 +397,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 20 -->
     <g class="bar-col d20" transform="translate(403, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day20Count}}; --dur: 1000ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day20Count}}; --delay: 650ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day20Count}}</text>
         </g>
       </g>
@@ -357,8 +408,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 21 -->
     <g class="bar-col d21" transform="translate(420, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day21Count}}; --dur: 1020ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day21Count}}; --delay: 675ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day21Count}}</text>
         </g>
       </g>
@@ -367,8 +419,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 22 -->
     <g class="bar-col d22" transform="translate(437, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day22Count}}; --dur: 1040ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day22Count}}; --delay: 700ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day22Count}}</text>
         </g>
       </g>
@@ -377,8 +430,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 23 -->
     <g class="bar-col d23" transform="translate(455, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day23Count}}; --dur: 1060ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day23Count}}; --delay: 725ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day23Count}}</text>
         </g>
       </g>
@@ -387,8 +441,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 24 -->
     <g class="bar-col d24" transform="translate(472, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day24Count}}; --dur: 1080ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day24Count}}; --delay: 750ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day24Count}}</text>
         </g>
       </g>
@@ -397,8 +452,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 25 -->
     <g class="bar-col d25" transform="translate(489, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day25Count}}; --dur: 1100ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day25Count}}; --delay: 775ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day25Count}}</text>
         </g>
       </g>
@@ -407,8 +463,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 26 -->
     <g class="bar-col d26" transform="translate(507, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day26Count}}; --dur: 1120ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day26Count}}; --delay: 800ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day26Count}}</text>
         </g>
       </g>
@@ -417,8 +474,9 @@ export const activityBarsMonthly = `<!--
     <!-- Day 27 -->
     <g class="bar-col d27" transform="translate(524, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day27Count}}; --dur: 1140ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day27Count}}; --delay: 825ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day27Count}}</text>
         </g>
       </g>
@@ -427,18 +485,20 @@ export const activityBarsMonthly = `<!--
     <!-- Day 28 -->
     <g class="bar-col d28" transform="translate(542, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day28Count}}; --dur: 1160ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day28Count}}; --delay: 850ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day28Count}}</text>
         </g>
       </g>
     </g>
 
-    <!-- Day 29 (Most Recent Day) -->
+    <!-- Day 29 (Today / Most Recent) -->
     <g class="bar-col d29" transform="translate(559, 0)">
       <g transform="translate(0, 160)">
-        <g class="bar-mover" style="--val: {{day29Count}}; --dur: 1180ms;">
-          <rect x="-5" y="0" width="10" height="120" rx="3" class="bar"/>
+        <g class="bar-mover" style="--val: {{day29Count}}; --delay: 875ms;">
+          <rect x="-6" y="0" width="12" height="120" rx="2" class="bar"/>
+          <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" class="bar-crest"/>
           <text x="0" y="-8" text-anchor="middle" class="val-badge">{{day29Count}}</text>
         </g>
       </g>
