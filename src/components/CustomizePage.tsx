@@ -100,6 +100,7 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
                     <option value="fireEmber">🔥 Fire Ember</option>
                     <option value="midnightCity">🌙 Midnight City</option>
                     <option value="tripleColumnPulse">📊 Triple Column Pulse</option>
+                    <option value="activityGraph">📈 Activity Graph</option>
                   </optgroup>
                   {Object.keys(aiTemplates).length > 0 && (
                     <optgroup label="AI Generated">

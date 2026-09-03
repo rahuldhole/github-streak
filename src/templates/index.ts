@@ -19,6 +19,7 @@ import { oceanWaves } from "./oceanWaves.ts";
 import { fireEmber } from "./fireEmber.ts";
 import { midnightCity } from "./midnightCity.ts";
 import { tripleColumnPulse } from "./tripleColumnPulse.ts";
+import { activityGraph } from "./activityGraph.ts";
 
 export const baseTemplates: Record<string, string> = {
   default: defaultTemplate,
@@ -42,4 +43,5 @@ export const baseTemplates: Record<string, string> = {
   fireEmber,
   midnightCity,
   tripleColumnPulse,
+  activityGraph,
 };
