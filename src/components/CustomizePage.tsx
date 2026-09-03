@@ -141,13 +141,13 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
                     <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Markdown Snippet</label>
                     <button class="copy-btn tactile-btn" onclick="copyCode('md-code', this, true)">Copy</button>
                   </div>
-                  <pre id="md-code" class="code-block" style={{ marginTop: '0.5rem', overflowX: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>Loading...</pre>
+                  <pre id="md-code" class="code-block" style={{ marginTop: '0.5rem' }}>Loading...</pre>
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem' }}>
                     <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>HTML Snippet</label>
                     <button class="copy-btn tactile-btn" onclick="copyCode('html-code', this, true)">Copy</button>
                   </div>
-                  <pre id="html-code" class="code-block" style={{ marginTop: '0.5rem', overflowX: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>Loading...</pre>
+                  <pre id="html-code" class="code-block" style={{ marginTop: '0.5rem' }}>Loading...</pre>
                 </div>
 
                 <div style={{ width: '100%', maxWidth: '800px', textAlign: 'left' }}>
