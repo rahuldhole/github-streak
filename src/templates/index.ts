@@ -22,6 +22,7 @@ import { tripleColumnPulse } from "./tripleColumnPulse.ts";
 import { activityGraph } from "./activityGraph.ts";
 import { activityGraphMonthly } from "./activityGraphMonthly.ts";
 import { activityBars } from "./activityBars.ts";
+import { activityBarsMonthly } from "./activityBarsMonthly.ts";
 
 export const baseTemplates: Record<string, string> = {
   default: defaultTemplate,
@@ -48,4 +49,5 @@ export const baseTemplates: Record<string, string> = {
   activityGraph,
   activityGraphMonthly,
   activityBars,
+  activityBarsMonthly,
 };
