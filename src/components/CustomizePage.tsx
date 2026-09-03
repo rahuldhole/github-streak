@@ -346,8 +346,18 @@ export function CustomizePage({ origin = '' }: { origin?: string }) {
                 }
 
                 document.getElementById('custom-url').value = renderedUrl;
-                document.getElementById('md-code').value = \`![GitHub Streak](\${renderedUrl})\`;
-                document.getElementById('html-code').value = \`<img src="\${renderedUrl}" alt="GitHub Streak" />\`;
+                const mdSnippet = \`![GitHub Streak](\${renderedUrl})\`;
+                const htmlSnippet = \`<img src="\${renderedUrl}" alt="GitHub Streak" />\`;
+                const mdElem = document.getElementById('md-code');
+                const htmlElem = document.getElementById('html-code');
+                if (mdElem) {
+                  mdElem.textContent = mdSnippet;
+                  mdElem.value = mdSnippet;
+                }
+                if (htmlElem) {
+                  htmlElem.textContent = htmlSnippet;
+                  htmlElem.value = htmlSnippet;
+                }
                 
               } catch (e) {
                 console.error(e);
