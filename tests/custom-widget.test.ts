@@ -312,6 +312,10 @@ describe("Custom Widget V1 — Brotli Encoding Integrity", () => {
     expect(body).toContain("30-DAY ACTIVITY BARS");
     expect(body).toContain("clamp(");
     expect(body).toContain("fill: transparent");
+    expect(body).toContain("card-surface");
+    expect(body).toContain('viewBox="0 0 840 280"');
+    expect(body).toContain('width="100%"');
+    expect(body).toContain("--track-h: 155px");
     expect(body).toContain("style=\"--max: ");
     expect(body).not.toContain("{{maxCount}}");
     expect(body).not.toContain("{{day0Count}}");
@@ -328,6 +332,9 @@ describe("Custom Widget V1 — Brotli Encoding Integrity", () => {
     expect(body).toContain("<svg");
     expect(body).toContain("30-DAY ACTIVITY TREND");
     expect(body).toContain("clamp(");
+    expect(body).toContain('viewBox="0 0 840 280"');
+    expect(body).toContain('width="100%"');
+    expect(body).toContain("--track-h: 155px");
     expect(body).toContain("style=\"--max: ");
     expect(body).not.toContain("{{maxCount}}");
     expect(body).not.toContain("{{day0Count}}");
