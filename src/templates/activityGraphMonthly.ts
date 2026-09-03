@@ -10,18 +10,6 @@ export const activityGraphMonthly = `<!--
 
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 240" width="600" height="240" style="--max: 30; --track-h: 90px;">
   <style>
-    /* --- Keyframe Animations --- */
-    @keyframes drawLine {
-      from { stroke-dashoffset: 1200; }
-      to { stroke-dashoffset: 0; }
-    }
-
-    @keyframes fadeInArea {
-      0% { opacity: 0; }
-      30% { opacity: 0; }
-      100% { opacity: 0.85; }
-    }
-
     /* Auto-calculates exact pixel height: (val / max) * track_height */
     @keyframes riseUp {
       from { transform: translateY(0px); }
@@ -70,24 +58,6 @@ export const activityGraphMonthly = `<!--
     .header-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; font-weight: 700; fill: #00d26a; letter-spacing: 0.5px; }
     .header-stat { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; fill: #8fa0bc; }
     .header-val { font-weight: 700; fill: #ffffff; }
-
-    /* --- Graph Animations --- */
-    .graph-line {
-      fill: none;
-      stroke: #00d26a;
-      stroke-width: 2.5;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      stroke-dasharray: 1200;
-      stroke-dashoffset: 1200;
-      animation: drawLine 1.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    }
-
-    .area-fill {
-      fill: url(#activityGrad30);
-      opacity: 0;
-      animation: fadeInArea 1.8s ease-out forwards;
-    }
 
     /* --- Node Animation & Interaction --- */
     .data-point {
@@ -171,47 +141,6 @@ export const activityGraphMonthly = `<!--
     <line x1="0" y1="100" x2="525" y2="100" stroke="#334155" stroke-width="1.2"/>
     <text x="-10" y="103" text-anchor="end" class="axis-label">0</text>
   </g>
-
-  <!-- Dynamic Area Fill (30-day wave) -->
-  <path class="area-fill" d="
-    M 55,145
-    Q 73,130 91,125
-    T 127,150
-    T 163,105
-    T 199,135
-    T 235,80
-    T 271,115
-    T 307,145
-    T 343,95
-    T 379,120
-    T 415,75
-    T 451,105
-    T 487,140
-    T 523,90
-    T 559,125
-    L 559,160
-    L 55,160
-    Z
-  "/>
-
-  <!-- Curved Activity Graph Line -->
-  <path class="graph-line" filter="url(#glow30)" d="
-    M 55,145
-    Q 73,130 91,125
-    T 127,150
-    T 163,105
-    T 199,135
-    T 235,80
-    T 271,115
-    T 307,145
-    T 343,95
-    T 379,120
-    T 415,75
-    T 451,105
-    T 487,140
-    T 523,90
-    T 559,125
-  "/>
 
   <!-- 30-Day Nodes with hover tooltips and dynamic {{dayXCount}} -->
   <!-- Week 1 (-30 to -24 days) -->

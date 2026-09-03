@@ -10,18 +10,6 @@ export const activityGraph = `<!--
 
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 240" width="600" height="240" style="--max: 30; --track-h: 90px;">
   <style>
-    /* --- Keyframe Animations --- */
-    @keyframes drawLine {
-      from { stroke-dashoffset: 900; }
-      to { stroke-dashoffset: 0; }
-    }
-
-    @keyframes fadeInArea {
-      0% { opacity: 0; }
-      30% { opacity: 0; }
-      100% { opacity: 0.85; }
-    }
-
     /* Auto-calculates exact pixel height: (val / max) * track_height */
     @keyframes riseUp {
       from { transform: translateY(0px); }
@@ -81,24 +69,6 @@ export const activityGraph = `<!--
     .header-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; font-weight: 700; fill: #00d26a; letter-spacing: 0.5px; }
     .header-stat { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; fill: #8fa0bc; }
     .header-val { font-weight: 700; fill: #ffffff; }
-
-    /* --- Graph Animations --- */
-    .graph-line {
-      fill: none;
-      stroke: #00d26a;
-      stroke-width: 3;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      stroke-dasharray: 900;
-      stroke-dashoffset: 900;
-      animation: drawLine 1.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    }
-
-    .area-fill {
-      fill: url(#activityGrad);
-      opacity: 0;
-      animation: fadeInArea 1.6s ease-out forwards;
-    }
 
     /* --- Node Animation & Interaction --- */
     .data-point {
@@ -198,31 +168,6 @@ export const activityGraph = `<!--
     <line x1="0" y1="100" x2="520" y2="100" stroke="#334155" stroke-width="1.2"/>
     <text x="-12" y="103" text-anchor="end" class="axis-label">0</text>
   </g>
-
-  <!-- Dynamic Area Fill -->
-  <path class="area-fill" d="
-    M 70,126
-    C 110,126 110,93 150,93
-    C 190,93 190,115 230,115
-    C 270,115 270,70 310,70
-    C 350,70 350,88 390,88
-    C 430,88 430,120 470,120
-    C 510,120 510,138 550,138
-    L 550,160
-    L 70,160
-    Z
-  "/>
-
-  <!-- Curved Activity Graph Line -->
-  <path class="graph-line" filter="url(#glow)" d="
-    M 70,126
-    C 110,126 110,93 150,93
-    C 190,93 190,115 230,115
-    C 270,115 270,70 310,70
-    C 350,70 350,88 390,88
-    C 430,88 430,120 470,120
-    C 510,120 510,138 550,138
-  "/>
 
   <!-- Data Nodes (Day 0 to Day 6) -->
   <!-- Day 0 -->
